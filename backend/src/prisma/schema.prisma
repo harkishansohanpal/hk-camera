@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── User ──────────────────────────────────────────────────────
+model User {
+  id               String         @id @default(uuid())
+  email            String         @unique
+  passwordHash     String
+  name             String
+  avatarUrl        String?
+  role             Role           @default(USER)
+  pushSubscription String?        // JSON string of PushSubscription
+  emailAlerts      Boolean        @default(true)
+  pushAlerts       Boolean        @default(true)
+  refreshTokens    RefreshToken[]
+  cameras          Camera[]
+  alerts           Alert[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// ── RefreshToken ──────────────────────────────────────────────
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+// ── Camera ────────────────────────────────────────────────────
+model Camera {
+  id             String      @id @default(uuid())
+  name           String
+  description    String?
+  streamKey      String      @unique @default(uuid())
+  isOnline       Boolean     @default(false)
+  motionDetect   Boolean     @default(true)
+  sensitivity    Int         @default(30)   // 1-100
+  nightVision    Boolean     @default(false)
+  twoWayAudio    Boolean     @default(true)
+  recordOnMotion Boolean     @default(false)
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recordings     Recording[]
+  alerts         Alert[]
+  lastSeen       DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+// ── Recording ─────────────────────────────────────────────────
+model Recording {
+  id         String          @id @default(uuid())
+  filename   String
+  url        String
+  size       Int             // bytes
+  duration   Int?            // seconds
+  trigger    RecordingTrigger @default(MANUAL)
+  cameraId   String
+  camera     Camera          @relation(fields: [cameraId], references: [id], onDelete: Cascade)
+  thumbnailUrl String?
+  createdAt  DateTime        @default(now())
+}
+
+enum RecordingTrigger {
+  MANUAL
+  MOTION
+  SCHEDULED
+}
+
+// ── Alert ─────────────────────────────────────────────────────
+model Alert {
+  id         String      @id @default(uuid())
+  type       AlertType
+  message    String
+  thumbnailUrl String?
+  read       Boolean     @default(false)
+  cameraId   String
+  camera     Camera      @relation(fields: [cameraId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime    @default(now())
+}
+
+enum AlertType {
+  MOTION
+  CAMERA_OFFLINE
+  CAMERA_ONLINE
+  RECORDING_COMPLETE
+}

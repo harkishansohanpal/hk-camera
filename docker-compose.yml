@@ -1,0 +1,95 @@
+version: '3.9'
+
+services:
+  # ── PostgreSQL Database ──────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: hk_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hk
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: hkdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U hk -d hkdb']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis (session / pub-sub) ────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: hk_redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend API + Signaling Server ───────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hk_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://hk:secret@postgres:5432/hkdb
+      REDIS_URL: redis://redis:6379
+      CLIENT_URL: http://localhost:3000
+    env_file:
+      - ./backend/.env
+    ports:
+      - '5000:5000'
+    volumes:
+      - uploads_data:/app/uploads
+      - recordings_data:/app/recordings
+
+  # ── React Frontend ───────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:5000
+        VITE_SOCKET_URL: http://localhost:5000
+    container_name: hk_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - '3000:80'
+
+  # ── Nginx Reverse Proxy ──────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: hk_nginx
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+
+volumes:
+  postgres_data:
+  uploads_data:
+  recordings_data:

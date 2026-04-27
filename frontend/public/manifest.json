@@ -1,0 +1,38 @@
+{
+  "name": "HK Camera",
+  "short_name": "HK",
+  "description": "Turn any device into a smart security camera",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f172a",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["security", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/dashboard",
+      "description": "View all cameras"
+    },
+    {
+      "name": "Alerts",
+      "url": "/alerts",
+      "description": "View motion alerts"
+    }
+  ]
+}
