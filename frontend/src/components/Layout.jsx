@@ -139,10 +139,10 @@ export default function Layout() {
       )}
 
       {/* ── Main content ──────────────────────────────────── */}
-      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${!isViewer ? 'lg:ml-64' : ''}`} style={!isViewer ? { paddingTop: '4.5rem' } : {}}>
+      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${!isViewer ? 'lg:ml-64' : ''}`} style={!isViewer ? { paddingTop: 'clamp(0.5rem, 2vw, 3rem)' } : {}}>
         {/* Mobile header (< lg) */}
         {!isViewer && (
-          <header className="lg:hidden flex items-center gap-3 px-4 py-2 bg-slate-800 border-b border-slate-700">
+          <header className="lg:hidden flex items-center gap-3 px-3 sm:px-4 py-2 bg-slate-800 border-b border-slate-700">
             <button
               onClick={() => setSidebarOpen(true)}
               className="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-white rounded-lg transition-colors"
@@ -158,9 +158,9 @@ export default function Layout() {
 
         {/* Main content area */}
         <main
-          className={`flex-1 ${!isViewer ? 'overflow-y-auto' : 'overflow-hidden'} ${!isViewer ? 'px-[clamp(1rem,5vw,2rem)]' : ''}`}
+          className={`flex-1 ${!isViewer ? 'overflow-y-auto' : 'overflow-hidden'} ${!isViewer ? 'px-2 sm:px-3 md:px-4' : ''}`}
           style={!isViewer ? {
-            paddingBottom: '1rem'
+            paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom) + 0.5rem)'
           } : {}}
         >
           <Outlet />
@@ -171,24 +171,22 @@ export default function Layout() {
       <nav className={`
         fixed bottom-0 left-0 right-0 z-40 lg:hidden
         bg-slate-800/95 backdrop-blur-md border-t border-slate-700/60
-      `} style={{ paddingBottom: '0.5rem' }}>
-        <div className="flex h-[clamp(48px,12vw,64px)]">
+      `} style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="flex h-14">
           {NAV_ITEMS.map(({ to, label, Icon }) => {
             const isActive = location.pathname.startsWith(to);
             return (
               <NavLink
                 key={to}
                 to={to}
-                className="flex-1 flex flex-col items-center justify-center gap-[clamp(2px,1.5vw,4px)] transition-colors min-w-0"
+                className="flex-1 flex flex-col items-center justify-center gap-1 transition-colors min-w-0"
               >
                 <Icon
-                  size={Math.max(18, Math.min(28, window.innerWidth * 0.07))}
+                  size={22}
                   className={isActive ? 'text-hk-400' : 'text-slate-500'}
-                  style={{ width: 'clamp(18px, 6vw, 28px)', height: 'clamp(18px, 6vw, 28px)' }}
                 />
                 <span
-                  className={`font-medium text-center break-words ${isActive ? 'text-hk-400' : 'text-slate-500'}`}
-                  style={{ fontSize: 'clamp(9px, 2.5vw, 12px)', lineHeight: '1' }}
+                  className={`font-medium text-center break-words text-[11px] ${isActive ? 'text-hk-400' : 'text-slate-500'}`}
                 >
                   {label}
                 </span>

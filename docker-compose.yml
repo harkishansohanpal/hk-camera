@@ -51,6 +51,8 @@ services:
       DATABASE_URL: postgresql://hk:secret@postgres:5432/hkdb
       REDIS_URL: redis://redis:6379
       CLIENT_URL: http://localhost:3000
+      JWT_SECRET: hk_jwt_secret_make_this_longer_and_more_random_123456789
+      SESSION_SECRET: hk_session_secret_make_this_longer_and_more_random_123456789
     env_file:
       - ./backend/.env
     ports:
@@ -65,8 +67,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: http://localhost:5000
-        VITE_SOCKET_URL: http://localhost:5000
+        VITE_API_URL: ""
+        VITE_SOCKET_URL: ""
     container_name: hk_frontend
     restart: unless-stopped
     depends_on:
