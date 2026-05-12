@@ -17,9 +17,9 @@ async function listCameras(req, res, next) {
 // ── POST /api/cameras ─────────────────────────────────────────
 async function createCamera(req, res, next) {
   try {
-    const { name, description, motionDetect, sensitivity, recordOnMotion, twoWayAudio } = req.body;
+    const { name, description, motionDetect, sensitivity, recordOnMotion, twoWayAudio, exposure, focus, whiteBalance, iso, brightness, contrast } = req.body;
     const camera = await prisma.camera.create({
-      data: { name, description, motionDetect, sensitivity, recordOnMotion, twoWayAudio, userId: req.user.id },
+      data: { name, description, motionDetect, sensitivity, recordOnMotion, twoWayAudio, exposure, focus, whiteBalance, iso, brightness, contrast, userId: req.user.id },
     });
     logger.info('Camera created', { cameraId: camera.id, userId: req.user.id });
     res.status(201).json({ success: true, data: camera });
@@ -45,10 +45,10 @@ async function getCamera(req, res, next) {
 // ── PATCH /api/cameras/:cameraId ──────────────────────────────
 async function updateCamera(req, res, next) {
   try {
-    const { name, description, motionDetect, sensitivity, recordOnMotion, twoWayAudio, nightVision } = req.body;
+    const { name, description, motionDetect, sensitivity, recordOnMotion, twoWayAudio, nightVision, exposure, focus, whiteBalance, iso, brightness, contrast } = req.body;
     const camera = await prisma.camera.update({
       where: { id: req.params.cameraId },
-      data: { name, description, motionDetect, sensitivity, recordOnMotion, twoWayAudio, nightVision },
+      data: { name, description, motionDetect, sensitivity, recordOnMotion, twoWayAudio, nightVision, exposure, focus, whiteBalance, iso, brightness, contrast },
     });
     res.json({ success: true, data: camera });
   } catch (err) { next(err); }

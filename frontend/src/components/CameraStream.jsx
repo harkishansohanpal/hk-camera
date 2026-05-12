@@ -1,5 +1,6 @@
 import { useRef, useEffect, forwardRef } from 'react';
 import { Camera, CameraOff, RotateCcw, Mic, MicOff, Video, VideoOff } from 'lucide-react';
+import CameraControlsPanel from './CameraControlsPanel';
 
 /**
  * CameraStream
@@ -8,7 +9,7 @@ import { Camera, CameraOff, RotateCcw, Mic, MicOff, Video, VideoOff } from 'luci
  * can read frames directly from the <video> element.
  */
 const CameraStream = forwardRef(function CameraStream(
-  { stream, isBroadcasting, onToggle, onFlip, micOn, onMicToggle, isRecording, onRecordToggle, className = '' },
+  { stream, isBroadcasting, onToggle, onFlip, micOn, onMicToggle, isRecording, onRecordToggle, cameraCapabilities, cameraSettings, onCameraControlChange, onCameraControlReset, className = '' },
   ref
 ) {
   const internalRef = useRef(null);
@@ -80,6 +81,16 @@ const CameraStream = forwardRef(function CameraStream(
           >
             {isRecording ? <VideoOff size={18} /> : <Video size={18} />}
           </button>
+        )}
+
+        {/* Camera controls */}
+        {cameraCapabilities && (
+          <CameraControlsPanel
+            capabilities={cameraCapabilities}
+            settings={cameraSettings}
+            onControlChange={onCameraControlChange}
+            onReset={onCameraControlReset}
+          />
         )}
 
         {/* Broadcast toggle – main CTA */}

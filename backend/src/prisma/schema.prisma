@@ -53,6 +53,12 @@ model Camera {
   nightVision    Boolean     @default(false)
   twoWayAudio    Boolean     @default(true)
   recordOnMotion Boolean     @default(false)
+  exposure       Int         @default(0)      // EV compensation: -3 to 3
+  focus          Int         @default(50)     // Manual focus: 0-100
+  whiteBalance   String      @default("auto") // auto, daylight, cloudy, tungsten, fluorescent
+  iso            Int         @default(100)    // 100-3200
+  brightness     Int         @default(50)     // 0-100
+  contrast       Int         @default(50)     // 0-100
   userId         String
   user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   recordings     Recording[]

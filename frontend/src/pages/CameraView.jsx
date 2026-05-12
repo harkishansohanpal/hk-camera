@@ -16,7 +16,9 @@ import { prefetchIceServers } from '../hooks/useWebRTC';
 import { useWebRTC } from '../hooks/useWebRTC';
 import { useMotionDetection } from '../hooks/useMotionDetection';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
+import { useCameraControls } from '../hooks/useCameraControls';
 import CameraStream from '../components/CameraStream';
+import CameraControlsPanel from '../components/CameraControlsPanel';
 import toast from 'react-hot-toast';
 
 export default function CameraView() {
@@ -246,6 +248,45 @@ export default function CameraView() {
   const startRecordingRef = useRef(startRecording);
   useEffect(() => { startRecordingRef.current = startRecording; }, [startRecording]);
 
+  // ── Camera controls (exposure, focus, white balance, etc.) ───
+  const { capabilities: cameraCapabilities, settings: controlSettings, applyControl } = useCameraControls({
+    streamRef,
+    initialSettings: camera,
+  });
+
+  // Debounced API update for camera controls
+  const updateTimeoutRef = useRef(null);
+  const handleControlChange = useCallback(
+    (key, value) => {
+      applyControl(key, value);
+      clearTimeout(updateTimeoutRef.current);
+      updateTimeoutRef.current = setTimeout(() => {
+        cameraAPI.update(cameraId, { [key]: value }).catch((err) => {
+          console.warn(`Failed to save ${key}:`, err.message);
+        });
+      }, 300);
+    },
+    [cameraId, applyControl]
+  );
+
+  const handleControlReset = useCallback(() => {
+    const defaults = {
+      exposure: 0,
+      focus: 50,
+      whiteBalance: 'auto',
+      iso: 100,
+      brightness: 50,
+      contrast: 50,
+    };
+    Object.entries(defaults).forEach(([key, value]) => {
+      applyControl(key, value);
+    });
+    clearTimeout(updateTimeoutRef.current);
+    updateTimeoutRef.current = setTimeout(() => {
+      cameraAPI.update(cameraId, defaults).catch(() => {});
+    }, 300);
+  }, [cameraId, applyControl]);
+
   // ── Motion detection ────────────────────────────────────────
   const handleMotion = useCallback(({ thumbnail }) => {
     setMotionCount((n) => n + 1);
@@ -414,6 +455,10 @@ export default function CameraView() {
         onMicToggle={() => setMicOn((v) => !v)}
         isRecording={isRecording}
         onRecordToggle={handleRecordToggle}
+        cameraCapabilities={cameraCapabilities}
+        cameraSettings={controlSettings}
+        onCameraControlChange={handleControlChange}
+        onCameraControlReset={handleControlReset}
         className="aspect-video w-full rounded-xl overflow-hidden"
       />
 
