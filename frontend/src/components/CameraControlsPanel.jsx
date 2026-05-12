@@ -9,9 +9,10 @@ export default function CameraControlsPanel({
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!capabilities || Object.values(capabilities).every((v) => !v)) {
-    return null; // No supported controls
-  }
+  console.log('[CameraControlsPanel] props:', { capabilities, settings });
+
+  // Even if no capabilities reported, show controls anyway - some devices don't report properly
+  // but still support constraints
 
   const whiteBalanceOptions = [
     { value: 'auto', label: 'Auto' },
@@ -36,118 +37,106 @@ export default function CameraControlsPanel({
 
       {/* Panel */}
       {isOpen && (
-        <div className="absolute bottom-12 right-0 bg-black/90 backdrop-blur-sm rounded-lg p-4 w-72 shadow-xl border border-white/10 z-40">
-          <div className="space-y-4">
+        <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-black/95 backdrop-blur-sm rounded-lg p-4 w-80 max-w-[calc(100vw-2rem)] max-h-[50vh] shadow-xl border border-white/10 z-40 overflow-y-auto">
+          <div className="space-y-3">
             {/* Exposure */}
-            {capabilities.exposure && (
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-medium text-white">Exposure</label>
-                  <span className="text-xs text-gray-400">{settings.exposure.toFixed(1)} EV</span>
-                </div>
-                <input
-                  type="range"
-                  min="-3"
-                  max="3"
-                  step="0.1"
-                  value={settings.exposure}
-                  onChange={(e) => onControlChange('exposure', parseFloat(e.target.value))}
-                  className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                />
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-xs font-medium text-white">Exposure</label>
+                <span className="text-xs text-gray-400">{settings.exposure.toFixed(1)} EV</span>
               </div>
-            )}
+              <input
+                type="range"
+                min="-3"
+                max="3"
+                step="0.1"
+                value={settings.exposure}
+                onChange={(e) => onControlChange('exposure', parseFloat(e.target.value))}
+                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
 
             {/* Focus */}
-            {capabilities.focus && (
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-medium text-white">Focus</label>
-                  <span className="text-xs text-gray-400">{settings.focus}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={settings.focus}
-                  onChange={(e) => onControlChange('focus', parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                />
-                <p className="text-xs text-gray-500 mt-1">0 = near, 100 = far</p>
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-xs font-medium text-white">Focus</label>
+                <span className="text-xs text-gray-400">{settings.focus}%</span>
               </div>
-            )}
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={settings.focus}
+                onChange={(e) => onControlChange('focus', parseInt(e.target.value))}
+                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+              />
+              <p className="text-xs text-gray-500 mt-1">0 = near, 100 = far</p>
+            </div>
 
             {/* White Balance */}
-            {capabilities.whiteBalance && (
-              <div>
-                <label className="text-sm font-medium text-white block mb-2">White Balance</label>
-                <select
-                  value={settings.whiteBalance}
-                  onChange={(e) => onControlChange('whiteBalance', e.target.value)}
-                  className="w-full bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
-                >
-                  {whiteBalanceOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+            <div>
+              <label className="text-xs font-medium text-white block mb-1">White Balance</label>
+              <select
+                value={settings.whiteBalance}
+                onChange={(e) => onControlChange('whiteBalance', e.target.value)}
+                className="w-full bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+              >
+                {whiteBalanceOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* ISO */}
-            {capabilities.iso && (
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-medium text-white">ISO</label>
-                  <span className="text-xs text-gray-400">{settings.iso}</span>
-                </div>
-                <input
-                  type="range"
-                  min="100"
-                  max="3200"
-                  step="100"
-                  value={settings.iso}
-                  onChange={(e) => onControlChange('iso', parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                />
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-sm font-medium text-white">ISO</label>
+                <span className="text-xs text-gray-400">{settings.iso}</span>
               </div>
-            )}
+              <input
+                type="range"
+                min="100"
+                max="3200"
+                step="100"
+                value={settings.iso}
+                onChange={(e) => onControlChange('iso', parseInt(e.target.value))}
+                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
 
             {/* Brightness */}
-            {capabilities.brightness && (
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-medium text-white">Brightness</label>
-                  <span className="text-xs text-gray-400">{settings.brightness}</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={settings.brightness}
-                  onChange={(e) => onControlChange('brightness', parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                />
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-sm font-medium text-white">Brightness</label>
+                <span className="text-xs text-gray-400">{settings.brightness}</span>
               </div>
-            )}
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={settings.brightness}
+                onChange={(e) => onControlChange('brightness', parseInt(e.target.value))}
+                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
 
             {/* Contrast */}
-            {capabilities.contrast && (
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-medium text-white">Contrast</label>
-                  <span className="text-xs text-gray-400">{settings.contrast}</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={settings.contrast}
-                  onChange={(e) => onControlChange('contrast', parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                />
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-sm font-medium text-white">Contrast</label>
+                <span className="text-xs text-gray-400">{settings.contrast}</span>
               </div>
-            )}
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={settings.contrast}
+                onChange={(e) => onControlChange('contrast', parseInt(e.target.value))}
+                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
 
             {/* Reset button */}
             <button
@@ -155,9 +144,9 @@ export default function CameraControlsPanel({
                 onReset();
                 setIsOpen(false);
               }}
-              className="w-full mt-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition-colors"
+              className="w-full mt-2 px-2 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors"
             >
-              Reset to defaults
+              Reset
             </button>
           </div>
         </div>

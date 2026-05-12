@@ -9,6 +9,7 @@ import { ArrowLeft, Maximize2, Volume2, VolumeX, RotateCcw, Zap, ZapOff, Moon, B
 import { useWebRTC, prefetchIceServers } from '../hooks/useWebRTC';
 import { useMotionDetection } from '../hooks/useMotionDetection';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
+import CameraControlsPanel from '../components/CameraControlsPanel';
 import ViewerStream from '../components/ViewerStream';
 
 // Backoff delays (seconds) for successive reconnect attempts
@@ -31,6 +32,16 @@ export default function Viewer() {
   const [screenDim, setScreenDim]           = useState(false);
   const [backgroundMode, setBackgroundMode] = useState(false);
   const [nightVisionMode, setNightVisionMode] = useState('off');
+
+  // Camera controls (for remote control on host camera)
+  const [cameraControlSettings, setCameraControlSettings] = useState({
+    exposure: 0,
+    focus: 50,
+    whiteBalance: 'auto',
+    iso: 100,
+    brightness: 50,
+    contrast: 50,
+  });
 
   // Torch works on iOS (native) and Android (white screen fallback)
   const isAndroid = /Android/.test(navigator.userAgent);
@@ -84,6 +95,27 @@ export default function Viewer() {
     setRetryCountdown(null);
     handleRetry();
   }
+
+  // ── Camera control handlers (send to host camera)
+  const handleCameraControlChange = useCallback((key, value) => {
+    setCameraControlSettings((prev) => ({ ...prev, [key]: value }));
+    sendCommand('CAMERA_CONTROL', { control: key, value });
+  }, [sendCommand]);
+
+  const handleCameraControlReset = useCallback(() => {
+    const defaults = {
+      exposure: 0,
+      focus: 50,
+      whiteBalance: 'auto',
+      iso: 100,
+      brightness: 50,
+      contrast: 50,
+    };
+    setCameraControlSettings(defaults);
+    Object.entries(defaults).forEach(([key, value]) => {
+      sendCommand('CAMERA_CONTROL', { control: key, value });
+    });
+  }, [sendCommand]);
 
   // ── Prefetch TURN credentials and connect
   useEffect(() => {
@@ -358,6 +390,16 @@ export default function Viewer() {
                 <Eye size={16} />
                 <span className="text-[9px]">{nightVisionMode === 'ir' ? 'IR' : nightVisionMode === 'enhanced' ? 'NV' : 'Night'}</span>
               </button>
+
+              {/* Camera controls */}
+              <div className="relative">
+                <CameraControlsPanel
+                  capabilities={{}}
+                  settings={cameraControlSettings}
+                  onControlChange={handleCameraControlChange}
+                  onReset={handleCameraControlReset}
+                />
+              </div>
             </div>
           </div>
         )}

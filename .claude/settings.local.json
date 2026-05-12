@@ -57,7 +57,10 @@
       "Bash(sed -i '' 's/min-h-screen/min-h-dvh/g' /Users/harkishansohanpal/Desktop/hk-camera/frontend/src/pages/Register.jsx)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(netstat -tlnp)",
+      "Bash(cat /tmp/backend.log)",
+      "Read(//private/tmp/**)"
     ]
   }
 }

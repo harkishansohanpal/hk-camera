@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs cat -n)",
+      "Bash(git reset *)",
+      "Bash(ngrok http *)",
+      "Bash(pkill -f \"nodemon src/index.js\")",
+      "Bash(npm run *)",
+      "Bash(curl -s http://127.0.0.1:4040/api/tunnels)",
+      "Bash(ipconfig getifaddr *)",
+      "Bash(cloudflared --version)",
+      "Bash(pkill ngrok *)"
+    ]
+  }
+}

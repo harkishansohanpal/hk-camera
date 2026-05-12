@@ -141,7 +141,18 @@ export default function CameraView() {
 
   // ── Remote command handler (from viewer) ────────────────────
   async function handleRemoteCommand(command, payload) {
-    if (command === 'TORCH') {
+    if (command === 'CAMERA_CONTROL') {
+      // Handle camera control changes from viewer
+      const { control, value } = payload;
+      applyControl(control, value);
+      // Debounce API update
+      clearTimeout(updateTimeoutRef.current);
+      updateTimeoutRef.current = setTimeout(() => {
+        cameraAPI.update(cameraId, { [control]: value }).catch((err) => {
+          console.warn(`Failed to save ${control}:`, err.message);
+        });
+      }, 300);
+    } else if (command === 'TORCH') {
       if (Capacitor.isNativePlatform()) {
         // Native Android APK: real LED flashlight
         try {

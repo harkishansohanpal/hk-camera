@@ -26,20 +26,27 @@ export function useCameraControls({ streamRef, initialSettings }) {
     if (!streamRef?.current) return;
 
     const track = streamRef.current.getVideoTracks()[0];
-    if (!track) return;
+    if (!track) {
+      console.warn('[useCameraControls] No video track found');
+      return;
+    }
 
     try {
-      const caps = track.getCapabilities();
-      setCapabilities({
-        exposure: !!(caps.exposureCompensation),
-        focus: !!(caps.focusDistance || caps.focusMode),
-        whiteBalance: !!(caps.whiteBalanceMode),
-        iso: !!(caps.iso),
-        brightness: !!(caps.brightness),
-        contrast: !!(caps.contrast),
-      });
+      const caps = track.getCapabilities?.();
+      console.log('[useCameraControls] Raw capabilities:', caps);
+
+      const detectedCaps = {
+        exposure: !!(caps?.exposureCompensation),
+        focus: !!(caps?.focusDistance || caps?.focusMode),
+        whiteBalance: !!(caps?.whiteBalanceMode),
+        iso: !!(caps?.iso),
+        brightness: !!(caps?.brightness),
+        contrast: !!(caps?.contrast),
+      };
+      console.log('[useCameraControls] Detected capabilities:', detectedCaps);
+      setCapabilities(detectedCaps);
     } catch (err) {
-      console.warn('getCapabilities failed:', err);
+      console.warn('[useCameraControls] getCapabilities failed:', err);
     }
   }, [streamRef]);
 
