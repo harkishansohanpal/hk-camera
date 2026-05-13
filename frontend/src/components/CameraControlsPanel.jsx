@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
 
 export default function CameraControlsPanel({
   capabilities,
@@ -8,11 +7,6 @@ export default function CameraControlsPanel({
   onReset,
 }) {
   const [isOpen, setIsOpen] = useState(false);
-
-  console.log('[CameraControlsPanel] props:', { capabilities, settings });
-
-  // Even if no capabilities reported, show controls anyway - some devices don't report properly
-  // but still support constraints
 
   const whiteBalanceOptions = [
     { value: 'auto', label: 'Auto' },
@@ -24,16 +18,15 @@ export default function CameraControlsPanel({
 
   return (
     <div className="relative group">
-      {/* Settings button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex flex-col items-center gap-0.5 py-1.5 px-2 rounded-lg transition-colors text-slate-400 hover:text-white hover:bg-white/5"
+        className="inline-flex flex-col items-center justify-center gap-0.5 w-9 h-9 sm:w-10 sm:h-11 rounded-lg transition-colors text-slate-400 hover:text-white hover:bg-white/5"
         title="Camera settings"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8v-2m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6-8v-2m0 2a2 2 0 100 4m0-4a2 2 0 110 4" />
         </svg>
-        <span className="text-[9px]">Camera</span>
+        <span className="text-[10px] sm:text-xs">Camera</span>
       </button>
 
       {/* Panel - positioned above controls */}

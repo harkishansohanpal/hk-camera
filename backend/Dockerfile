@@ -1,4 +1,4 @@
-FROM node:20-slim AS base
+FROM node:20-bookworm AS base
 WORKDIR /app
 
 # ── Install dependencies ──────────────────────────────────────
@@ -19,11 +19,13 @@ COPY --from=prisma /app/node_modules ./node_modules
 COPY --from=prisma /app/src/prisma  ./src/prisma
 COPY src ./src
 
-RUN mkdir -p uploads recordings \
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh \
+    && mkdir -p uploads recordings \
     && chown -R node:node /app
 
 USER node
 
 EXPOSE 5000
 
-CMD ["node", "src/index.js"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

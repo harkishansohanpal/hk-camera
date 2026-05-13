@@ -24,7 +24,6 @@ export default function Dashboard() {
 
   useEffect(() => { loadCameras(); }, []);
 
-  // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -61,121 +60,113 @@ export default function Dashboard() {
   const totalAlerts = cameras.reduce((acc, c) => acc + (c._count?.alerts ?? 0), 0);
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Dashboard</h1>
-          <p className="text-slate-400 text-sm mt-1">{cameras.length} camera{cameras.length !== 1 ? 's' : ''} registered</p>
+    <div className="page-container">
+      <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
+        <div className="min-w-0 flex-1">
+          <h1 className="page-title">Dashboard</h1>
+          <p className="text-slate-400 text-xs sm:text-sm mt-0.5 truncate">{cameras.length} camera{cameras.length !== 1 ? 's' : ''} registered</p>
         </div>
-        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 px-4 py-2.5 bg-hk-500 hover:bg-hk-600 text-white rounded-xl transition-colors font-medium text-sm">
-          <Plus size={18} /> Add Camera
+        <button onClick={() => setShowAdd(true)} className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-hk-500 hover:bg-hk-600 text-white rounded-xl transition-colors font-medium text-xs sm:text-sm flex-shrink-0">
+          <Plus size={16} /> <span className="hidden xs:inline">Add Camera</span>
         </button>
       </div>
 
-      {/* Stats strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6 lg:mb-8">
         {[
-          { label: 'Total Cameras', value: cameras.length, Icon: Camera,       color: 'text-hk-400' },
-          { label: 'Online Now',    value: onlineCams,     Icon: Wifi,          color: 'text-green-400'  },
-          { label: 'Unread Alerts', value: totalAlerts,    Icon: AlertTriangle, color: 'text-yellow-400' },
+          { label: 'Total', value: cameras.length, Icon: Camera,       color: 'text-hk-400' },
+          { label: 'Online', value: onlineCams,     Icon: Wifi,          color: 'text-green-400'  },
+          { label: 'Alerts', value: totalAlerts,    Icon: AlertTriangle, color: 'text-yellow-400' },
         ].map(({ label, value, Icon, color }) => (
-          <div key={label} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 hover:bg-slate-800/80 transition-colors">
-            <div className="flex items-center gap-3">
-              <Icon size={24} className={`${color} opacity-80`} />
-              <div>
-                <p className="text-2xl font-bold text-white">{value}</p>
-                <p className="text-slate-400 text-xs mt-0.5">{label}</p>
+          <div key={label} className="bg-slate-800/50 border border-slate-700/50 rounded-xl sm:rounded-2xl p-3 sm:p-5">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Icon size={18} className={`${color} opacity-80 flex-shrink-0 sm:w-6 sm:h-6`} />
+              <div className="min-w-0">
+                <p className="text-lg sm:text-2xl font-bold text-white">{value}</p>
+                <p className="text-slate-400 text-[10px] sm:text-xs truncate">{label}</p>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Camera grid */}
       {loading ? (
         <div className="flex justify-center py-20">
           <div className="w-8 h-8 border-4 border-hk-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : cameras.length === 0 ? (
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl text-center py-20 px-6">
-          <Camera size={56} className="text-slate-600 mx-auto mb-4 opacity-60" />
-          <p className="text-slate-200 font-medium text-lg">No cameras yet</p>
-          <p className="text-slate-400 text-sm mt-2">Add your first camera to get started</p>
-          <button onClick={() => setShowAdd(true)} className="mt-6 inline-flex items-center gap-2 px-4 py-2.5 bg-hk-500 hover:bg-hk-600 text-white rounded-xl transition-colors font-medium text-sm">
+        <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl text-center py-16 sm:py-20 px-6">
+          <Camera size={48} className="text-slate-600 mx-auto mb-4 opacity-60" />
+          <p className="text-slate-200 font-medium text-base sm:text-lg">No cameras yet</p>
+          <p className="text-slate-400 text-xs sm:text-sm mt-2">Add your first camera to get started</p>
+          <button onClick={() => setShowAdd(true)} className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-hk-500 hover:bg-hk-600 text-white rounded-xl transition-colors font-medium text-sm">
             <Plus size={18} /> Add Camera
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
           {cameras.map((cam) => (
             <div
               key={cam.id}
-              className="bg-slate-800/50 hover:bg-slate-800/80 rounded-2xl overflow-hidden transition-all duration-200 border border-slate-700/50 hover:border-slate-600/80 shadow-sm hover:shadow-md"
+              className="bg-slate-800/50 hover:bg-slate-800/80 rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-200 border border-slate-700/50 hover:border-slate-600/80 shadow-sm hover:shadow-md"
             >
-              {/* Thumbnail */}
               <div
-                className="w-full h-40 bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center relative overflow-hidden cursor-pointer group/thumb"
+                className="w-full aspect-video sm:h-40 bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center relative overflow-hidden cursor-pointer group/thumb"
                 onClick={() => navigate(`/cameras/${cam.id}`)}
               >
-                <Camera size={36} className="text-slate-600 group-hover/thumb:text-slate-500 transition-colors" />
+                <Camera size={28} className="text-slate-600 group-hover/thumb:text-slate-500 transition-colors sm:w-9 sm:h-9" />
                 {cam.isOnline && (
-                  <div className="absolute top-3 left-3">
-                    <span className="badge-online"><span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" /> Live</span>
+                  <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
+                    <span className="badge-online text-[10px] sm:text-xs"><span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" /> Live</span>
                   </div>
                 )}
               </div>
 
-              {/* Content */}
-              <div className="p-4">
-                <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="p-3 sm:p-4">
+                <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/cameras/${cam.id}`)}>
-                    <h3 className="font-semibold text-white truncate text-base">{cam.name}</h3>
+                    <h3 className="font-semibold text-white truncate text-sm sm:text-base">{cam.name}</h3>
                     {cam.description && (
-                      <p className="text-slate-400 text-xs mt-1 truncate">{cam.description}</p>
+                      <p className="text-slate-400 text-xs mt-0.5 truncate">{cam.description}</p>
                     )}
                   </div>
-                  {/* Menu button */}
                   <div className="relative flex-shrink-0">
                     <button
                       onClick={() => setOpenMenu(openMenu === cam.id ? null : cam.id)}
-                      className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 rounded-lg transition-colors"
+                      className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 rounded-lg transition-colors"
                       title="More options"
                     >
-                      <MoreVertical size={16} />
+                      <MoreVertical size={14} />
                     </button>
-                    {/* Dropdown menu */}
                     {openMenu === cam.id && (
-                      <div className="absolute right-0 mt-1 w-40 bg-slate-700 rounded-xl shadow-lg border border-slate-600/50 z-10 overflow-hidden">
+                      <div ref={menuRef} className="absolute right-0 mt-1 w-36 bg-slate-700 rounded-xl shadow-lg border border-slate-600/50 z-10 overflow-hidden">
                         <button
                           onClick={() => {
                             handleDelete(cam.id);
                             setOpenMenu(null);
                           }}
-                          className="w-full px-4 py-2.5 text-left text-red-400 hover:bg-red-500/10 transition-colors text-sm font-medium flex items-center gap-2"
+                          className="w-full px-3 py-2.5 text-left text-red-400 hover:bg-red-500/10 transition-colors text-xs sm:text-sm font-medium flex items-center gap-2"
                         >
                           <Trash2 size={14} />
-                          Delete Camera
+                          Delete
                         </button>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Status */}
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
                   {cam.isOnline
                     ? <span className="badge-online"><Wifi size={10} /> Online</span>
                     : <span className="badge-offline"><WifiOff size={10} /> Offline</span>}
-                  <span className="text-slate-500 text-xs">{cam._count?.recordings ?? 0} clips</span>
+                  <span className="text-slate-500 text-[10px] sm:text-xs">{cam._count?.recordings ?? 0} clips</span>
                 </div>
 
-                {/* View button */}
                 <button
                   onClick={() => navigate(`/viewer/${cam.streamKey}`)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-hk-500 hover:bg-hk-600 text-white rounded-xl transition-colors font-medium text-sm"
+                  className="w-full flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-hk-500 hover:bg-hk-600 text-white rounded-xl transition-colors font-medium text-xs sm:text-sm"
                 >
-                  <Eye size={16} />
-                  <span>View Live</span>
+                  <Eye size={14} />
+                  View Live
                 </button>
               </div>
             </div>
@@ -183,15 +174,14 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Add camera modal */}
       {showAdd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-slate-800 rounded-2xl border border-slate-700/50 w-full max-w-md shadow-xl">
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-white mb-6">Add New Camera</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-3 sm:p-4">
+          <div className="bg-slate-800 rounded-2xl border border-slate-700/50 w-full max-w-md shadow-xl mx-auto">
+            <div className="p-5 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-5">Add New Camera</h2>
               <form onSubmit={handleCreate} className="flex flex-col gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Camera name</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Camera name</label>
                   <input
                     className="input"
                     placeholder="e.g. Front Door"
@@ -201,7 +191,7 @@ export default function Dashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Description (optional)</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Description (optional)</label>
                   <input
                     className="input"
                     placeholder="e.g. Main entrance"
@@ -209,7 +199,7 @@ export default function Dashboard() {
                     onChange={(e) => setNewCam({ ...newCam, description: e.target.value })}
                   />
                 </div>
-                <div className="flex gap-3 mt-4">
+                <div className="flex gap-3 mt-2">
                   <button
                     type="button"
                     onClick={() => setShowAdd(false)}

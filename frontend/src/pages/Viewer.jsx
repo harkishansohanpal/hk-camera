@@ -357,39 +357,39 @@ export default function Viewer() {
             <div className="mx-2 mb-2 bg-black/70 backdrop-blur-md rounded-2xl p-2 flex items-center justify-around gap-1">
               <button
                 onClick={() => { const n = !torchOn; setTorchOn(n); sendCommand('TORCH', { on: n }); }}
-                className={`flex flex-col items-center gap-0.5 py-1.5 px-2 rounded-lg transition-colors ${torchOn ? 'text-yellow-400 bg-yellow-500/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                className={`flex flex-col items-center justify-center gap-0.5 w-9 h-9 sm:w-10 sm:h-11 rounded-lg transition-colors flex-shrink-0 ${torchOn ? 'text-yellow-400 bg-yellow-500/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
                 title={isAndroid ? 'Screen light' : 'Flashlight'}
               >
                 {torchOn ? <Zap size={16} /> : <ZapOff size={16} />}
-                <span className="text-[9px]">Torch</span>
+                <span className="text-[10px] sm:text-xs">Torch</span>
               </button>
               <button
                 onClick={() => { const n = !screenDim; setScreenDim(n); sendCommand('SCREEN_DIM', { on: n }); }}
-                className={`flex flex-col items-center gap-0.5 py-1.5 px-2 rounded-lg transition-colors ${screenDim ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                className={`flex flex-col items-center justify-center gap-0.5 w-9 h-9 sm:w-10 sm:h-11 rounded-lg transition-colors flex-shrink-0 ${screenDim ? 'text-blue-400 bg-blue-500/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
               >
                 <Moon size={16} />
-                <span className="text-[9px]">Screen</span>
+                <span className="text-[10px] sm:text-xs">Screen</span>
               </button>
               <button
                 onClick={() => { const n = !backgroundMode; setBackgroundMode(n); sendCommand('BACKGROUND', { on: n }); }}
-                className={`flex flex-col items-center gap-0.5 py-1.5 px-2 rounded-lg transition-colors ${backgroundMode ? 'text-green-400 bg-green-500/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                className={`flex flex-col items-center justify-center gap-0.5 w-9 h-9 sm:w-10 sm:h-11 rounded-lg transition-colors flex-shrink-0 ${backgroundMode ? 'text-green-400 bg-green-500/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
               >
                 <BatteryCharging size={16} />
-                <span className="text-[9px]">BG Mode</span>
+                <span className="text-[10px] sm:text-xs">BG Mode</span>
               </button>
               <button
                 onClick={() => setMotionEnabled((v) => !v)}
-                className={`flex flex-col items-center gap-0.5 py-1.5 px-2 rounded-lg transition-colors ${motionEnabled ? 'text-hk-400 bg-hk-500/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                className={`flex flex-col items-center justify-center gap-0.5 w-9 h-9 sm:w-10 sm:h-11 rounded-lg transition-colors flex-shrink-0 ${motionEnabled ? 'text-hk-400 bg-hk-500/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
               >
                 {motionEnabled ? <Eye size={16} /> : <EyeOff size={16} />}
-                <span className="text-[9px]">Motion</span>
+                <span className="text-[10px] sm:text-xs">Motion</span>
               </button>
               <button
                 onClick={() => setNightVisionMode((m) => m === 'off' ? 'enhanced' : m === 'enhanced' ? 'ir' : 'off')}
-                className={`flex flex-col items-center gap-0.5 py-1.5 px-2 rounded-lg transition-colors ${nightVisionMode !== 'off' ? 'text-green-400 bg-green-500/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                className={`flex flex-col items-center justify-center gap-0.5 w-9 h-9 sm:w-10 sm:h-11 rounded-lg transition-colors flex-shrink-0 ${nightVisionMode !== 'off' ? 'text-green-400 bg-green-500/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
               >
                 <Eye size={16} />
-                <span className="text-[9px]">{nightVisionMode === 'ir' ? 'IR' : nightVisionMode === 'enhanced' ? 'NV' : 'Night'}</span>
+                <span className="text-[10px] sm:text-xs">{nightVisionMode === 'ir' ? 'IR' : nightVisionMode === 'enhanced' ? 'NV' : 'Night'}</span>
               </button>
 
               {/* Camera controls */}
