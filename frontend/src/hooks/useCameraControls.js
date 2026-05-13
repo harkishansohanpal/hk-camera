@@ -56,14 +56,20 @@ export function useCameraControls({ streamRef, initialSettings }) {
       if (!streamRef?.current) return false;
 
       const track = streamRef.current.getVideoTracks()[0];
-      if (!track) return false;
+      if (!track) {
+        console.warn('[applyControl] No video track found');
+        return false;
+      }
 
       // Update local state
       setSettings((prev) => ({ ...prev, [key]: value }));
 
       try {
         const constraintKey = constraintMap[key];
-        if (!constraintKey) return false;
+        if (!constraintKey) {
+          console.warn('[applyControl] No constraint mapping for:', key);
+          return false;
+        }
 
         // Map UI values to API values
         let mappedValue = value;
@@ -73,12 +79,24 @@ export function useCameraControls({ streamRef, initialSettings }) {
         if (key === 'brightness') mappedValue = (value - 50) / 50; // -1 to 1
         if (key === 'contrast') mappedValue = (value - 50) / 50; // -1 to 1
 
+        console.log('[applyControl] Applying:', constraintKey, '=', mappedValue);
+
+        // Check what constraints the device supports
+        const caps = track.getCapabilities?.();
+        console.log('[applyControl] Device capabilities:', caps);
+        console.log('[applyControl] Device supports', constraintKey + '?', !!caps?.[constraintKey]);
+
         await track.applyConstraints({
           advanced: [{ [constraintKey]: mappedValue }],
         });
+
+        // Log the actual settings after applying
+        const settings = track.getSettings?.();
+        console.log('[applyControl] Track settings after apply:', settings);
+
         return true;
       } catch (err) {
-        console.warn(`applyConstraints failed for ${key}:`, err);
+        console.error(`[applyControl] Failed for ${key}:`, err.message);
         return false;
       }
     },

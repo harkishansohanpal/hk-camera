@@ -98,6 +98,7 @@ export default function Viewer() {
 
   // ── Camera control handlers (send to host camera)
   const handleCameraControlChange = useCallback((key, value) => {
+    console.log('[Viewer] Sending camera control:', key, '=', value);
     setCameraControlSettings((prev) => ({ ...prev, [key]: value }));
     sendCommand('CAMERA_CONTROL', { control: key, value });
   }, [sendCommand]);

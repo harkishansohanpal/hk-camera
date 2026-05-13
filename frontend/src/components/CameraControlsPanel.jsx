@@ -23,21 +23,22 @@ export default function CameraControlsPanel({
   ];
 
   return (
-    <div className="relative">
+    <div className="relative group">
       {/* Settings button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
+        className="inline-flex flex-col items-center gap-0.5 py-1.5 px-2 rounded-lg transition-colors text-slate-400 hover:text-white hover:bg-white/5"
         title="Camera settings"
       >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8v-2m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6-8v-2m0 2a2 2 0 100 4m0-4a2 2 0 110 4" />
         </svg>
+        <span className="text-[9px]">Camera</span>
       </button>
 
-      {/* Panel */}
+      {/* Panel - positioned above controls */}
       {isOpen && (
-        <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-black/95 backdrop-blur-sm rounded-lg p-4 w-80 max-w-[calc(100vw-2rem)] max-h-[50vh] shadow-xl border border-white/10 z-40 overflow-y-auto">
+        <div className="absolute bottom-full right-0 mb-2 bg-black/95 backdrop-blur-sm rounded-lg p-3 w-80 max-w-[calc(100vw-2rem)] max-h-[60vh] shadow-xl border border-white/10 z-50 overflow-y-auto">
           <div className="space-y-3">
             {/* Exposure */}
             <div>

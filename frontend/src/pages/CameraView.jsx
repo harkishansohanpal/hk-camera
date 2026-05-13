@@ -141,13 +141,17 @@ export default function CameraView() {
 
   // ── Remote command handler (from viewer) ────────────────────
   async function handleRemoteCommand(command, payload) {
+    console.log('[CameraView] Received remote command:', command, payload);
     if (command === 'CAMERA_CONTROL') {
       // Handle camera control changes from viewer
       const { control, value } = payload;
-      applyControl(control, value);
+      console.log('[CameraView] Applying camera control:', control, '=', value);
+      const result = await applyControl(control, value);
+      console.log('[CameraView] applyControl result:', result);
       // Debounce API update
       clearTimeout(updateTimeoutRef.current);
       updateTimeoutRef.current = setTimeout(() => {
+        console.log('[CameraView] Saving to API:', control, '=', value);
         cameraAPI.update(cameraId, { [control]: value }).catch((err) => {
           console.warn(`Failed to save ${control}:`, err.message);
         });
