@@ -29,6 +29,7 @@ async function getOrt() {
   if (!ortInstance) {
     ortInstance = await import('onnxruntime-web');
     ortInstance.env.wasm.wasmPaths = WASM_CDN;
+    ortInstance.env.wasm.numThreads = 1;
   }
   return ortInstance;
 }
@@ -43,7 +44,7 @@ async function loadModel() {
   modelLoadPromise = (async () => {
     const ort = await getOrt();
     modelSession = await ort.InferenceSession.create(MODEL_URL, {
-      executionProviders: ['webgl', 'wasm'],
+      executionProviders: ['wasm'],
       graphOptimizationLevel: 'all',
     });
     return modelSession;

@@ -37,9 +37,6 @@ jobs:
           VITE_API_URL: https://hk-camera-backend.fly.dev
           VITE_SOCKET_URL: https://hk-camera-backend.fly.dev
 
-      - name: Remove large WASM files (loaded from CDN)
-        run: rm -f dist/assets/ort-*.wasm
-
       - name: Deploy to Cloudflare Pages
         run: npx wrangler pages deploy dist --project-name=hk-camera --branch=master
         env:
