@@ -1,9 +1,8 @@
 import { useRef, useEffect, forwardRef } from 'react';
 import { Camera, CameraOff, RotateCcw, Mic, MicOff, Video, VideoOff } from 'lucide-react';
-import CameraControlsPanel from './CameraControlsPanel';
 
 const CameraStream = forwardRef(function CameraStream(
-  { stream, isBroadcasting, onToggle, onFlip, micOn, onMicToggle, isRecording, onRecordToggle, cameraCapabilities, cameraSettings, onCameraControlChange, onCameraControlReset, className = '' },
+  { stream, isBroadcasting, onToggle, onFlip, micOn, onMicToggle, isRecording, onRecordToggle, className = '' },
   ref
 ) {
   const internalRef = useRef(null);
@@ -69,15 +68,6 @@ const CameraStream = forwardRef(function CameraStream(
           >
             {isRecording ? <VideoOff size={16} /> : <Video size={16} />}
           </button>
-        )}
-
-        {cameraCapabilities && (
-          <CameraControlsPanel
-            capabilities={cameraCapabilities}
-            settings={cameraSettings}
-            onControlChange={onCameraControlChange}
-            onReset={onCameraControlReset}
-          />
         )}
 
         <button

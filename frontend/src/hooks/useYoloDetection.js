@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { YOLO_CLASSES, INTERESTING_CLASSES, INPUT_SIZE, preprocessFrame, parseDetections } from '../ml/detection';
 
 const SAMPLE_INTERVAL_MS = 500;
@@ -36,15 +36,17 @@ async function loadModel() {
   return modelLoadPromise;
 }
 
-
-
 export function useYoloDetection({ videoRef, confidence = 50, onDetection, onMotion, cooldownMs = 3000 }) {
   const [isDetecting, setIsDetecting] = useState(false);
   const [modelLoaded, setModelLoaded] = useState(false);
   const [loadingError, setLoadingError] = useState(null);
+  const [inferenceError, setInferenceError] = useState(null);
   const intervalRef = useRef(null);
   const lastAlertRef = useRef(0);
   const canvasRef = useRef(null);
+
+  const paramsRef = useRef({ confidence, onDetection, onMotion, cooldownMs });
+  useEffect(() => { paramsRef.current = { confidence, onDetection, onMotion, cooldownMs }; }, [confidence, onDetection, onMotion, cooldownMs]);
 
   const analyseFrame = useCallback(async () => {
     const video = videoRef.current;
@@ -53,36 +55,42 @@ export function useYoloDetection({ videoRef, confidence = 50, onDetection, onMot
     const session = modelSession;
     if (!session) return;
 
-    const imgWidth = video.videoWidth || 640;
-    const imgHeight = video.videoHeight || 480;
+    try {
+      const imgWidth = video.videoWidth || 640;
+      const imgHeight = video.videoHeight || 480;
 
-    const input = preprocessFrame(video);
-    const tensor = new (await getOrt()).Tensor('float32', input, [1, 3, INPUT_SIZE, INPUT_SIZE]);
+      const input = preprocessFrame(video);
+      const ort = await getOrt();
+      const tensor = new ort.Tensor('float32', input, [1, 3, INPUT_SIZE, INPUT_SIZE]);
 
-    const feeds = { images: tensor };
-    const results = await session.run(feeds);
-    const output = results.output0 || results[Object.keys(results)[0]];
+      const feeds = { images: tensor };
+      const results = await session.run(feeds);
+      const output = results.output0 || results[Object.keys(results)[0]];
 
-    const detections = parseDetections(output, confidence, imgWidth, imgHeight);
+      const { confidence: conf, onDetection: onDetect, onMotion: onMove, cooldownMs: coolMs } = paramsRef.current;
+      const detections = parseDetections(output, conf, imgWidth, imgHeight);
 
-    onDetection?.(detections);
+      onDetect?.(detections);
 
-    const interesting = detections.filter((d) => d.interesting);
-    if (interesting.length > 0) {
-      const now = Date.now();
-      if (now - lastAlertRef.current > cooldownMs) {
-        lastAlertRef.current = now;
+      const interesting = detections.filter((d) => d.interesting);
+      if (interesting.length > 0) {
+        const now = Date.now();
+        if (now - lastAlertRef.current > coolMs) {
+          lastAlertRef.current = now;
 
-        const thumbCanvas = document.createElement('canvas');
-        thumbCanvas.width = video.videoWidth || 640;
-        thumbCanvas.height = video.videoHeight || 480;
-        thumbCanvas.getContext('2d').drawImage(video, 0, 0);
-        const thumbnail = thumbCanvas.toDataURL('image/jpeg', 0.7);
+          const thumbCanvas = document.createElement('canvas');
+          thumbCanvas.width = video.videoWidth || 640;
+          thumbCanvas.height = video.videoHeight || 480;
+          thumbCanvas.getContext('2d').drawImage(video, 0, 0);
+          const thumbnail = thumbCanvas.toDataURL('image/jpeg', 0.7);
 
-        onMotion?.({ detections: interesting, thumbnail });
+          onMove?.({ detections: interesting, thumbnail });
+        }
       }
+    } catch (err) {
+      setInferenceError(err.message);
     }
-  }, [videoRef, confidence, onDetection, onMotion, cooldownMs]);
+  }, [videoRef]);
 
   const startDetection = useCallback(async () => {
     if (intervalRef.current) return;
@@ -95,6 +103,7 @@ export function useYoloDetection({ videoRef, confidence = 50, onDetection, onMot
       return;
     }
     lastAlertRef.current = 0;
+    setInferenceError(null);
     intervalRef.current = setInterval(analyseFrame, SAMPLE_INTERVAL_MS);
     setIsDetecting(true);
   }, [analyseFrame]);
@@ -105,5 +114,5 @@ export function useYoloDetection({ videoRef, confidence = 50, onDetection, onMot
     setIsDetecting(false);
   }, []);
 
-  return { startDetection, stopDetection, isDetecting, modelLoaded, loadingError };
+  return { startDetection, stopDetection, isDetecting, modelLoaded, loadingError, inferenceError };
 }

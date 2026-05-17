@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Settings2, Shield, Video, Brain } from 'lucide-react';
+import { ArrowLeft, Shield, Video, Brain } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { Torch } from '@capawesome/capacitor-torch';
 import { AdvancedCamera } from '../services/advancedCamera';
@@ -10,7 +10,6 @@ import { useWebRTC } from '../hooks/useWebRTC';
 import { useMotionDetection } from '../hooks/useMotionDetection';
 import { useYoloDetection } from '../hooks/useYoloDetection';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
-import { useCameraControls } from '../hooks/useCameraControls';
 import CameraStream from '../components/CameraStream';
 import toast from 'react-hot-toast';
 
@@ -174,43 +173,6 @@ export default function CameraView() {
   const startRecordingRef = useRef(startRecording);
   useEffect(() => { startRecordingRef.current = startRecording; }, [startRecording]);
 
-  const { capabilities: cameraCapabilities, settings: controlSettings, applyControl } = useCameraControls({
-    streamRef,
-    initialSettings: camera,
-  });
-
-  const updateTimeoutRef = useRef(null);
-  const handleControlChange = useCallback(
-    (key, value) => {
-      applyControl(key, value);
-      clearTimeout(updateTimeoutRef.current);
-      updateTimeoutRef.current = setTimeout(() => {
-        cameraAPI.update(cameraId, { [key]: value }).catch((err) => {
-          console.warn(`Failed to save ${key}:`, err.message);
-        });
-      }, 300);
-    },
-    [cameraId, applyControl]
-  );
-
-  const handleControlReset = useCallback(() => {
-    const defaults = {
-      exposure: 0,
-      focus: 50,
-      whiteBalance: 'auto',
-      iso: 100,
-      brightness: 50,
-      contrast: 50,
-    };
-    Object.entries(defaults).forEach(([key, value]) => {
-      applyControl(key, value);
-    });
-    clearTimeout(updateTimeoutRef.current);
-    updateTimeoutRef.current = setTimeout(() => {
-      cameraAPI.update(cameraId, defaults).catch(() => {});
-    }, 300);
-  }, [cameraId, applyControl]);
-
   const handleMotion = useCallback(({ thumbnail }) => {
     setMotionCount((n) => n + 1);
     alertAPI.motionAlert({ cameraId, thumbnailUrl: thumbnail }).catch(() => {});
@@ -355,10 +317,6 @@ export default function CameraView() {
         onMicToggle={() => setMicOn((v) => !v)}
         isRecording={isRecording}
         onRecordToggle={handleRecordToggle}
-        cameraCapabilities={cameraCapabilities}
-        cameraSettings={controlSettings}
-        onCameraControlChange={handleControlChange}
-        onCameraControlReset={handleControlReset}
         className="aspect-video w-full rounded-lg sm:rounded-xl overflow-hidden"
       />
 
@@ -428,7 +386,7 @@ export default function CameraView() {
 
         <div className="card">
           <div className="flex items-center gap-2 mb-2">
-            <Settings2 size={14} className="text-hk-400 sm:w-4 sm:h-4" />
+            <Video size={14} className="text-hk-400 sm:w-4 sm:h-4" />
             <span className="text-xs sm:text-sm font-medium text-slate-300">Settings</span>
           </div>
           <div className="flex flex-col gap-1.5 text-[11px] sm:text-xs text-slate-400">
