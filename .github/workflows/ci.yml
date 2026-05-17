@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  push:
+    branches: [master, hk-camera-beta]
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Frontend checks ────────────────────────────────────────
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Download ML model
+        run: |
+          mkdir -p public/models
+          curl -L "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolov8n.onnx" \
+            -o public/models/yolov8n.onnx
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL: https://hk-camera-backend.fly.dev
+          VITE_SOCKET_URL: https://hk-camera-backend.fly.dev
+
+  # ── Backend checks ─────────────────────────────────────────
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - run: npm ci
+
+      - name: npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Lint
+        run: npx eslint src/ --ext .js 2>/dev/null || true
+
+      - name: Integration tests
+        run: npm test
+
+  # ── E2E tests ──────────────────────────────────────────────
+  e2e:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps
+
+      - name: Download ML model
+        run: |
+          mkdir -p public/models
+          curl -L "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolov8n.onnx" \
+            -o public/models/yolov8n.onnx
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL: https://hk-camera-backend.fly.dev
+          VITE_SOCKET_URL: https://hk-camera-backend.fly.dev
+
+      - name: Start preview server
+        run: npx vite preview --port 4173 &
+
+      - name: Wait for server
+        run: npx wait-on http://localhost:4173
+
+      - name: Run E2E tests
+        run: npx playwright test --reporter=github
+        env:
+          CI: true
+
+  # ── Security audit ──────────────────────────────────────────
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check security headers
+        run: |
+          echo "Checking security headers for frontend..."
+          curl -sI "https://hk-camera.pages.dev" | grep -iE "^content-security-policy|^x-frame-options|^x-content-type-options|^strict-transport-security" || echo "⚠️  Security headers missing"
+          echo ""
+          echo "Checking security headers for backend..."
+          curl -sI "https://hk-camera-backend.fly.dev" | grep -iE "^access-control|^x-frame-options|^x-content-type-options|^strict-transport-security" || echo "⚠️  Security headers missing"

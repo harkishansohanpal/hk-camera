@@ -273,41 +273,32 @@ Use this with uptime monitoring tools (UptimeRobot, Pingdom, AWS CloudWatch).
 
 ## 11. CI/CD with GitHub Actions
 
-Create `.github/workflows/deploy.yml`:
+Two workflows in `.github/workflows/`:
 
-```yaml
-name: Deploy
+### CI Pipeline (`ci.yml`)
 
-on:
-  push:
-    branches: [main]
+Runs on every push to `master` and `hk-camera-beta`, and on PRs to `master`:
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+| Job | What it runs |
+|-----|-------------|
+| `frontend` | ESLint lint, npm audit, Vitest unit tests (35), Vite production build |
+| `backend` | npm audit, Prisma generate, ESLint lint, Jest integration tests (30) |
+| `e2e` | Playwright E2E tests (16) against preview server + production backend |
+| `security` | Checks HTTP security headers on Cloudflare Pages and Fly.io |
 
-      - name: Build and push images
-        run: |
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker build -t yourorg/hk-backend:${{ github.sha }} backend/
-          docker build -t yourorg/hk-frontend:${{ github.sha }} frontend/
-          docker push yourorg/hk-backend:${{ github.sha }}
-          docker push yourorg/hk-frontend:${{ github.sha }}
+### Deploy Pipeline (`deploy.yml`)
 
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: deploy
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /home/deploy/hk-camera
-            git pull origin main
-            docker compose pull
-            docker compose up -d --no-deps backend frontend
-            docker compose run --rm backend npx prisma migrate deploy
-```
+Runs only on pushes to `master`:
 
-Store secrets in your GitHub repository's Settings → Secrets.
+1. Builds frontend with `VITE_API_URL` + `VITE_SOCKET_URL` pointing to production
+2. Downloads YOLOv8n ML model from ultralytics assets
+3. Runs unit + integration tests
+4. Deploys frontend to Cloudflare Pages via `wrangler pages deploy`
+5. Deploys backend to Fly.io via `flyctl deploy`
+
+### Required Secrets
+
+| Secret | Used by | Value |
+|--------|---------|-------|
+| `CLOUDFLARE_API_TOKEN` | deploy.yml | Cloudflare API token with Pages write |
+| `FLY_API_TOKEN` | deploy.yml | Fly.io deploy token (`flyctl tokens create deploy -a hk-camera-backend`) |

@@ -115,6 +115,8 @@ process.on('SIGTERM', () => {
   });
 });
 
-bootstrap();
+if (process.env.NODE_ENV !== 'test') {
+  bootstrap();
+}
 
 module.exports = { app, server }; // for tests

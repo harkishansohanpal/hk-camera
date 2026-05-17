@@ -1,13 +1,13 @@
 # HK Camera
 
-> A production-grade home security camera platform. Turn any browser-equipped device into a live security camera with real-time WebRTC streaming, motion detection, two-way audio, and cloud recordings.
+> A production-grade home security camera platform. Turn any browser-equipped device into a live security camera with real-time WebRTC streaming, ML-based motion detection, two-way audio, and cloud recordings.
 
 ---
 
 ## Features
 
 - **Live streaming** – Peer-to-peer WebRTC video from any browser (no plugins)
-- **Motion detection** – Canvas pixel-diff algorithm with configurable sensitivity and cooldown
+- **Motion detection** – Canvas pixel-diff algorithm *or* YOLOv8-nano ML detection (ONNX Runtime Web), configurable per-camera
 - **Two-way audio** – Speak back through the camera device from the viewer
 - **Night vision** – Camera2 native Android low-light + canvas IR phosphor overlay modes
 - **Torch / flashlight** – Native torch control via WebRTC constraint and Capacitor plugin
@@ -17,6 +17,8 @@
 - **Alerts** – In-app, email (SMTP), and browser push notifications
 - **Multi-camera** – Manage multiple cameras per account
 - **JWT auth** – Short-lived access tokens with rotating refresh tokens
+- **Stripe billing** – Subscription plans, checkout, customer portal
+- **TURN server** – Coturn (self-hosted) or Cloudflare TURN with STUN fallback
 - **Mobile apps** – Native iOS and Android via Capacitor, installable as PWA
 - **User registration** – Self-service account creation
 
@@ -27,11 +29,13 @@
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 18, Vite, Tailwind CSS, TypeScript, Zustand, Socket.io client |
+| ML Detection | ONNX Runtime Web, YOLOv8-nano |
 | Backend | Node.js 20, Express, Socket.io |
 | Database | PostgreSQL + Prisma ORM |
 | Cache | Redis |
 | Real-time | WebRTC (P2P), Socket.io (signaling) |
 | Storage | AWS S3 or local disk |
+| Billing | Stripe |
 | Notifications | Nodemailer (SMTP) + web-push (VAPID) |
 | Mobile | Capacitor (Android + iOS), `@capawesome/capacitor-torch` |
 | Containers | Docker + Docker Compose |
@@ -67,11 +71,34 @@ Open http://localhost:5173 and log in with `demo@hkcamera.app` / `Demo123!`.
 
 ---
 
+## Testing
+
+| Suite | Framework | Count | Location |
+|-------|-----------|-------|----------|
+| Unit tests | Vitest | 35 | `frontend/src/**/*.test.js` |
+| Integration | Jest + Supertest | 30 | `backend/src/__tests__/` |
+| E2E | Playwright | 16 | `frontend/e2e/` |
+| **Total** | | **81** | |
+
+Run tests:
+
+```bash
+cd frontend && npm test          # unit tests
+cd backend  && npm test          # integration tests
+cd frontend && npm run test:e2e  # E2E (requires preview server)
+cd frontend && npm run test:e2e:ci  # E2E with CI mode
+```
+
+See [docs/TESTING.md](docs/TESTING.md) for full details.
+
+---
+
 ## Documentation
 
 | Doc | Description |
 |-----|-------------|
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, WebRTC flow, data models, auth |
+| [TESTING.md](docs/TESTING.md) | Test suite structure, CI integration, writing new tests |
 | [SETUP.md](docs/SETUP.md) | Step-by-step local dev setup for new developers |
 | [API.md](docs/API.md) | Full REST + WebSocket API reference |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker, Fly.io, Cloudflare, SSL, TURN, CI/CD |
@@ -84,47 +111,54 @@ Open http://localhost:5173 and log in with `demo@hkcamera.app` / `Demo123!`.
 hk-camera/
 ├── backend/
 │   ├── src/
+│   │   ├── __tests__/        # Integration tests (jest + supertest)
 │   │   ├── config/           # DB, logger, Redis, storage
-│   │   ├── controllers/      # auth, camera, recording, alert, user, turn
+│   │   ├── controllers/      # auth, camera, recording, alert, user, turn, subscription
 │   │   ├── middleware/        # auth, rate limiter, validator, error handler
 │   │   ├── prisma/           # schema.prisma, migrations, seed.js
-│   │   ├── routes/           # auth, cameras, recordings, alerts, users, turn
+│   │   ├── routes/           # auth, cameras, recordings, alerts, users, turn, subscriptions, webhook
 │   │   ├── services/         # notificationService.js (email + push)
 │   │   ├── socket/           # WebRTC signaling server
 │   │   └── index.js          # App entry point
 │   ├── fly.toml              # Fly.io deployment config
 │   ├── Dockerfile
+│   ├── jest.config.js
 │   └── package.json
 ├── frontend/
 │   ├── src/
 │   │   ├── components/       # CameraStream, ViewerStream, CameraControlsPanel, Layout, ProtectedRoute
 │   │   ├── contexts/         # AuthContext
-│   │   ├── hooks/            # useWebRTC, useMotionDetection, useMediaRecorder, useNightVision, useCameraControls
-│   │   ├── pages/            # Dashboard, CameraView, Viewer, Recordings, Alerts, Settings, Login, Register
+│   │   ├── hooks/            # useWebRTC, useMotionDetection, useYoloDetection, useMediaRecorder, ...
+│   │   ├── ml/               # Pure detection logic (parseDetections, preprocessFrame, constants)
+│   │   ├── pages/            # Landing, Pricing, Billing, Dashboard, CameraView, Viewer, ...
 │   │   ├── services/         # api.js (Axios + auto-refresh), advancedCamera.js
 │   │   ├── App.jsx
 │   │   ├── main.jsx
 │   │   └── index.css
+│   ├── e2e/                  # Playwright E2E tests
 │   ├── public/
 │   │   ├── _redirects        # Cloudflare Pages SPA fallback
+│   │   ├── models/           # YOLOv8n.onnx (downloaded during CI)
 │   │   ├── manifest.json     # PWA manifest
 │   │   └── icons/
-│   ├── capacitor.config.ts   # Capacitor mobile config
-│   ├── android/              # Native Android project
-│   ├── ios/                  # Native iOS project
+│   ├── capacitor.config.ts
+│   ├── playwright.config.js
 │   ├── nginx.conf
 │   ├── Dockerfile
 │   └── package.json
 ├── docs/
 │   ├── ARCHITECTURE.md
+│   ├── TESTING.md
 │   ├── SETUP.md
 │   ├── API.md
 │   └── DEPLOYMENT.md
 ├── nginx/
 │   └── nginx.conf
 ├── docker-compose.yml
-├── setup-oracle.sh           # Oracle Cloud provisioning script
-├── tunnel.sh                 # Tailscale Funnel script
+├── coturn/
+│   └── turnserver.conf       # Coturn TURN server config
+├── setup-oracle.sh
+├── tunnel.sh
 ├── .env.example
 └── README.md
 ```
@@ -144,7 +178,7 @@ hk-camera/
 
 - **Backend** — Fly.io (`hk-camera-backend`, config in `backend/fly.toml`)
 - **Frontend** — Cloudflare Pages (`_redirects` for SPA routing)
-- **Alternative** — `cloudflare/workers-autoconfig` branch has a unified Cloudflare Workers deployment
+- **CI/CD** — GitHub Actions: `ci.yml` (lint, test, build on every push), `deploy.yml` (auto-deploy on master)
 - **Self-hosted** — See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for Docker Compose + Oracle Cloud setup
 
 ---
