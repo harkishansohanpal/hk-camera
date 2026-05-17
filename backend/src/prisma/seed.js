@@ -3,14 +3,33 @@ const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
+const PLANS = [
+  { name: 'Free', description: 'Basic camera monitoring', price: 0, interval: 'MONTHLY', features: JSON.stringify(['1 camera', '1 day recording history', 'Pixel-diff detection', 'Email alerts']), stripePriceId: 'free_plan', sortOrder: 0, highlighted: false },
+  { name: 'Pro', description: 'For serious home security', price: 999, interval: 'MONTHLY', features: JSON.stringify(['Up to 5 cameras', '30 day recording history', 'ML object detection', 'Two-way audio', 'Email + push alerts', 'Cloud recordings']), stripePriceId: 'price_pro_monthly', sortOrder: 1, highlighted: true },
+  { name: 'Enterprise', description: 'For power users & small biz', price: 2999, interval: 'MONTHLY', features: JSON.stringify(['Unlimited cameras', '90 day recording history', 'ML object detection', 'Two-way audio', 'All alert types', 'Priority support', 'Custom integrations']), stripePriceId: 'price_enterprise_monthly', sortOrder: 2, highlighted: false },
+];
+
+async function seedPlans() {
+  for (const plan of PLANS) {
+    await prisma.plan.upsert({
+      where: { stripePriceId: plan.stripePriceId },
+      update: plan,
+      create: plan,
+    });
+  }
+  console.log('✅ Plans seeded');
+}
+
 async function main() {
+  console.log('🌱 Seeding database...');
+
+  // Plans are seeded in all environments (needed for pricing page)
+  await seedPlans();
+
   if (process.env.NODE_ENV === 'production') {
-    console.log('⚠️  Skipping seed — demo accounts are not created in production.');
-    console.log('   Create an admin account through the Register page or manually.');
+    console.log('⚠️  Skipping demo accounts — not created in production.');
     return;
   }
-
-  console.log('🌱 Seeding database...');
 
   // Admin user
   const adminHash = await bcrypt.hash('Admin123!', 12);
