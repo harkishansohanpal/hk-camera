@@ -13,7 +13,8 @@
     "db:studio": "prisma studio",
     "lint": "eslint src/ --ext .js",
     "test": "jest --runInBand --forceExit",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:regression": "jest --runInBand --forceExit --testPathPattern='regression|health|auth|cameras|turn'"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.540.0",
