@@ -32,6 +32,9 @@ jobs:
           curl -L "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolov8n.onnx" \
             -o public/models/yolov8n.onnx
 
+      - name: Run tests
+        run: npm test
+
       - run: npm run build
         env:
           VITE_API_URL: https://hk-camera-backend.fly.dev
