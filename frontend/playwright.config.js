@@ -24,7 +24,7 @@ export default defineConfig({
     ? {
         command: 'npx vite preview --port 4173',
         port: 4173,
-        reuseExistingServer: !process.env.FORCE_NEW_SERVER,
+        reuseExistingServer: true,
       }
     : undefined,
 });

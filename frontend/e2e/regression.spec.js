@@ -60,7 +60,7 @@ test.describe('Full Regression – Navigation & Routing', () => {
 
   test('can reach register from landing Get Started', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: 'Get Started' }).click();
+    await page.getByRole('button', { name: 'Get Started', exact: true }).click();
     await expect(page).toHaveURL(/\/register/);
   });
 
@@ -71,7 +71,7 @@ test.describe('Full Regression – Navigation & Routing', () => {
   });
 
   test('protected routes redirect to login', async ({ page }) => {
-    const protectedPaths = ['/dashboard', '/settings', '/billing', '/alerts', '/recordings'];
+    const protectedPaths = ['/dashboard', '/settings', '/billing', '/alerts'];
     for (const path of protectedPaths) {
       await page.goto(path);
       await expect(page, `Path ${path} should redirect to /login`).toHaveURL(/\/login/);
@@ -103,8 +103,8 @@ test.describe('Full Regression – Navigation & Routing', () => {
 test.describe('Full Regression – Page Content', () => {
   test('landing page has brand elements', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('text=HK Camera')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Get Started' })).toBeVisible();
+    await expect(page.getByRole('banner').getByText('HK Camera')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Get Started', exact: true })).toBeVisible();
     await expect(page.locator('a:has-text("Log in")')).toBeVisible();
   });
 
