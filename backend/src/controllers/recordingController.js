@@ -1,9 +1,20 @@
 const path = require('path');
 const fs = require('fs');
 const { prisma } = require('../config/database');
-const { uploadToS3 } = require('../config/storage');
+const { uploadToS3, getPresignedUrl } = require('../config/storage');
 const { sendRecordingCompleteAlert } = require('../services/notificationService');
 const logger = require('../config/logger');
+
+// ── Convert S3 URL to presigned URL ───────────────────────────
+function s3KeyFromUrl(s3Url) {
+  try { return new URL(s3Url).pathname.replace(/^\//, ''); } catch { return null; }
+}
+
+async function signS3Url(s3Url) {
+  const key = s3KeyFromUrl(s3Url);
+  if (!key) return s3Url;
+  try { return await getPresignedUrl(key); } catch { return s3Url; }
+}
 
 // ── GET /api/cameras/:cameraId/recordings ─────────────────────
 async function listRecordings(req, res, next) {
@@ -16,7 +27,7 @@ async function listRecordings(req, res, next) {
       ...(trigger && { trigger }),
     };
 
-    const [recordings, total] = await Promise.all([
+    const [raw, total] = await Promise.all([
       prisma.recording.findMany({
         where,
         skip,
@@ -26,9 +37,14 @@ async function listRecordings(req, res, next) {
       prisma.recording.count({ where }),
     ]);
 
+    const data = await Promise.all(raw.map(async (r) => ({
+      ...r,
+      url: process.env.STORAGE_STRATEGY === 's3' ? await signS3Url(r.url) : r.url,
+    })));
+
     res.json({
       success: true,
-      data: recordings,
+      data,
       pagination: { page: Number(page), limit: Number(limit), total, pages: Math.ceil(total / Number(limit)) },
     });
   } catch (err) { next(err); }
@@ -46,7 +62,7 @@ async function listAllRecordings(req, res, next) {
       ...(cameraId && { cameraId }),
     };
 
-    const [recordings, total] = await Promise.all([
+    const [raw, total] = await Promise.all([
       prisma.recording.findMany({
         where,
         include: { camera: { select: { id: true, name: true } } },
@@ -57,9 +73,14 @@ async function listAllRecordings(req, res, next) {
       prisma.recording.count({ where }),
     ]);
 
+    const data = await Promise.all(raw.map(async (r) => ({
+      ...r,
+      url: process.env.STORAGE_STRATEGY === 's3' ? await signS3Url(r.url) : r.url,
+    })));
+
     res.json({
       success: true,
-      data: recordings,
+      data,
       pagination: { page: Number(page), limit: Number(limit), total, pages: Math.ceil(total / Number(limit)) },
     });
   } catch (err) { next(err); }
@@ -179,6 +200,9 @@ async function getRecording(req, res, next) {
     if (!recording) return res.status(404).json({ success: false, message: 'Recording not found' });
     if (recording.camera.userId !== req.user.id && req.user.role !== 'ADMIN') {
       return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+    if (process.env.STORAGE_STRATEGY === 's3') {
+      recording.url = await signS3Url(recording.url);
     }
     res.json({ success: true, data: recording });
   } catch (err) { next(err); }
