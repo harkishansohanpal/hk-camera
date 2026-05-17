@@ -126,8 +126,8 @@ export default function Settings() {
                   checked={notifs[key]}
                   onChange={(e) => setNotifs((n) => ({ ...n, [key]: e.target.checked }))}
                 />
-                <div className={`w-10 h-6 rounded-full transition-colors cursor-pointer ${notifs[key] ? 'bg-hk-500' : 'bg-slate-600'}`}>
-                  <span className={`block w-4 h-4 bg-white rounded-full mt-1 transition-transform ${notifs[key] ? 'translate-x-5' : 'translate-x-1'}`} />
+                <div className={`flex items-center w-10 h-6 rounded-full transition-colors cursor-pointer px-0.5 ${notifs[key] ? 'bg-hk-500' : 'bg-slate-600'}`}>
+                  <span className={`block w-5 h-5 bg-white rounded-full transition-transform ${notifs[key] ? 'translate-x-4' : 'translate-x-0'}`} />
                 </div>
               </div>
             </label>
