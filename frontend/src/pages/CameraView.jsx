@@ -211,6 +211,12 @@ export default function CameraView() {
     return () => { wl?.release().catch(() => {}); wakeLockRef.current = null; };
   }, [isBroadcasting]);
 
+  function shouldDetect(cam) {
+    if (!cam) return false;
+    if (cam.detectionMode === 'ML') return true;
+    return cam.motionDetect;
+  }
+
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
@@ -218,7 +224,7 @@ export default function CameraView() {
         stopDetection();
       } else {
         wasBackgroundRef.current = false;
-        if (cameraRef.current?.motionDetect) startDetection();
+        if (shouldDetect(cameraRef.current)) startDetection();
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -252,7 +258,7 @@ export default function CameraView() {
       const localStream = await getLocalStream();
       setStream(localStream);
       await startBroadcast(localStream);
-      if (camera?.motionDetect) startDetection();
+      if (shouldDetect(camera)) startDetection();
       toast.success('Broadcasting started');
     } catch (err) {
       toast.error('Could not access camera: ' + err.message);
@@ -358,7 +364,7 @@ export default function CameraView() {
                 const mode = 'ML';
                 setCamera((c) => ({ ...c, detectionMode: mode }));
                 await cameraAPI.update(cameraId, { detectionMode: mode });
-                if (isBroadcasting) { stopPixelDiff(); if (camera?.motionDetect) startMlDetection(); }
+                if (isBroadcasting) { stopPixelDiff(); startMlDetection(); }
               }}
               className={`flex-1 px-2 py-1 text-[10px] sm:text-xs rounded font-medium transition-colors flex items-center justify-center gap-1 ${
                 isMlMode
