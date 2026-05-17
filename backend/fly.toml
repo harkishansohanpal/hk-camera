@@ -21,6 +21,6 @@ primary_region = "iad"
 [env]
   NODE_ENV = "production"
   PORT = "5000"
-  STORAGE_STRATEGY = "local"
+  STORAGE_STRATEGY = "s3"
   LOCAL_UPLOAD_DIR = "/app/uploads"
   LOCAL_RECORDING_DIR = "/app/recordings"
