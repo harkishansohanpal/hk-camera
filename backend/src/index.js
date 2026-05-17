@@ -21,6 +21,8 @@ const alertRoutes      = require('./routes/alerts');
 const recordingRoutes  = require('./routes/recordings');
 const userRoutes       = require('./routes/users');
 const turnRoutes       = require('./routes/turn');
+const subscriptionRoutes = require('./routes/subscriptions');
+const webhookRoutes    = require('./routes/webhook');
 
 // ── Express app ───────────────────────────────────────────────
 const app = express();
@@ -48,6 +50,10 @@ app.use(cors({
     : true, // reflect any origin in development (tunnels, mobile testing, etc.)
   credentials: true,
 }));
+
+// Stripe webhook must be before JSON body parser (needs raw body)
+app.use('/api/webhook', webhookRoutes);
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
@@ -69,6 +75,7 @@ app.use('/api/alerts',       alertRoutes);
 app.use('/api/recordings',   recordingRoutes);
 app.use('/api/users',        userRoutes);
 app.use('/api/turn-credentials', turnRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 // ── 404 + global error handler ────────────────────────────────
 app.use(notFound);

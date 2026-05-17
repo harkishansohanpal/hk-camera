@@ -11,29 +11,34 @@ import Viewer     from './pages/Viewer';
 import Recordings from './pages/Recordings';
 import Settings   from './pages/Settings';
 import Alerts     from './pages/Alerts';
+import Landing    from './pages/Landing';
+import Pricing    from './pages/Pricing';
+import Billing    from './pages/Billing';
 
 export default function App() {
   return (
     <AuthProvider>
       <Routes>
         {/* Public */}
+        <Route path="/"         element={<Landing />} />
+        <Route path="/pricing"  element={<Pricing />} />
         <Route path="/login"    element={<Login />} />
         <Route path="/register" element={<Register />} />
 
         {/* Protected */}
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
-            <Route path="/"                   element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard"          element={<Dashboard />} />
             <Route path="/cameras/:cameraId"  element={<CameraView />} />
             <Route path="/viewer/:streamKey"  element={<Viewer />} />
             <Route path="/recordings"         element={<Recordings />} />
             <Route path="/alerts"             element={<Alerts />} />
             <Route path="/settings"           element={<Settings />} />
+            <Route path="/billing"            element={<Billing />} />
           </Route>
         </Route>
 
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
   );

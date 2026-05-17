@@ -124,4 +124,13 @@ export const userAPI = {
   deleteAccount:  ()     => api.delete('/users/me'),
 };
 
+// ── Subscriptions (Stripe) ────────────────────────────────────
+export const subscriptionAPI = {
+  listPlans:       ()   => api.get('/subscriptions/plans'),
+  getMine:         ()   => api.get('/subscriptions/mine'),
+  createCheckout:  (priceId) => api.post('/subscriptions/checkout', { priceId }),
+  createPortal:    ()   => api.post('/subscriptions/portal'),
+  cancel:          ()   => api.post('/subscriptions/cancel'),
+};
+
 export default api;

@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Settings2, Shield, Video } from 'lucide-react';
+import { ArrowLeft, Settings2, Shield, Video, Brain } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { Torch } from '@capawesome/capacitor-torch';
 import { AdvancedCamera } from '../services/advancedCamera';
@@ -8,6 +8,7 @@ import { cameraAPI, alertAPI } from '../services/api';
 import { prefetchIceServers } from '../hooks/useWebRTC';
 import { useWebRTC } from '../hooks/useWebRTC';
 import { useMotionDetection } from '../hooks/useMotionDetection';
+import { useYoloDetection } from '../hooks/useYoloDetection';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
 import { useCameraControls } from '../hooks/useCameraControls';
 import CameraStream from '../components/CameraStream';
@@ -218,11 +219,25 @@ export default function CameraView() {
     }
   }, [cameraId]);
 
-  const { startDetection, stopDetection, isDetecting } = useMotionDetection({
+  const detectionMode = camera?.detectionMode || 'PIXEL_DIFF';
+  const isMlMode = detectionMode === 'ML';
+
+  const { startDetection: startPixelDiff, stopDetection: stopPixelDiff, isDetecting: isPixelDetecting } = useMotionDetection({
     videoRef,
     sensitivity: camera?.sensitivity ?? 30,
     onMotion: handleMotion,
   });
+
+  const { startDetection: startMlDetection, stopDetection: stopMlDetection, isDetecting: isMlDetecting, modelLoaded, loadingError: mlError } = useYoloDetection({
+    videoRef,
+    confidence: camera?.mlConfidence ?? 50,
+    onDetection: (dets) => {},
+    onMotion: (payload) => handleMotion(payload),
+  });
+
+  const isDetecting = isMlMode ? isMlDetecting : isPixelDetecting;
+  const startDetection = isMlMode ? startMlDetection : startPixelDiff;
+  const stopDetection = isMlMode ? stopMlDetection : stopPixelDiff;
 
   useEffect(() => { prefetchIceServers().catch(() => {}); }, []);
 
@@ -373,6 +388,42 @@ export default function CameraView() {
           <div className={`mt-1 text-[10px] sm:text-xs font-medium ${isDetecting ? 'text-green-400' : 'text-slate-500'}`}>
             {isDetecting ? '● Active' : '○ Inactive'}
           </div>
+          <div className="mt-2 flex gap-1.5">
+            <button
+              onClick={async () => {
+                const mode = 'PIXEL_DIFF';
+                setCamera((c) => ({ ...c, detectionMode: mode }));
+                await cameraAPI.update(cameraId, { detectionMode: mode });
+                if (isBroadcasting) { stopMlDetection(); if (camera?.motionDetect) startPixelDiff(); }
+              }}
+              className={`flex-1 px-2 py-1 text-[10px] sm:text-xs rounded font-medium transition-colors ${
+                !isMlMode
+                  ? 'bg-hk-500/20 text-hk-400'
+                  : 'bg-slate-700 text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              Pixel-Diff
+            </button>
+            <button
+              onClick={async () => {
+                const mode = 'ML';
+                setCamera((c) => ({ ...c, detectionMode: mode }));
+                await cameraAPI.update(cameraId, { detectionMode: mode });
+                if (isBroadcasting) { stopPixelDiff(); if (camera?.motionDetect) startMlDetection(); }
+              }}
+              className={`flex-1 px-2 py-1 text-[10px] sm:text-xs rounded font-medium transition-colors flex items-center justify-center gap-1 ${
+                isMlMode
+                  ? 'bg-hk-500/20 text-hk-400'
+                  : 'bg-slate-700 text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              <Brain size={10} />
+              ML (YOLO)
+            </button>
+          </div>
+          {isMlMode && mlError && (
+            <p className="mt-1 text-[10px] text-red-400">ML model error: {mlError}</p>
+          )}
         </div>
 
         <div className="card">

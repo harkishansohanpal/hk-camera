@@ -1,7 +1,7 @@
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import {
-  Camera, LayoutDashboard, Video, Bell, Settings,
+  Camera, LayoutDashboard, Video, Bell, Settings, CreditCard,
   LogOut, Menu, X,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { to: '/dashboard',  label: 'Dashboard',  Icon: LayoutDashboard },
   { to: '/recordings', label: 'Recordings', Icon: Video },
   { to: '/alerts',     label: 'Alerts',     Icon: Bell },
+  { to: '/billing',    label: 'Billing',    Icon: CreditCard },
   { to: '/settings',   label: 'Settings',   Icon: Settings },
 ];
 

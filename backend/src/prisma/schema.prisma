@@ -19,6 +19,8 @@ model User {
   pushSubscription String?        // JSON string of PushSubscription
   emailAlerts      Boolean        @default(true)
   pushAlerts       Boolean        @default(true)
+  stripeCustomerId String?        @unique
+  subscription     Subscription?
   refreshTokens    RefreshToken[]
   cameras          Camera[]
   alerts           Alert[]
@@ -43,29 +45,36 @@ model RefreshToken {
 
 // ── Camera ────────────────────────────────────────────────────
 model Camera {
-  id             String      @id @default(uuid())
+  id             String         @id @default(uuid())
   name           String
   description    String?
-  streamKey      String      @unique @default(uuid())
-  isOnline       Boolean     @default(false)
-  motionDetect   Boolean     @default(true)
-  sensitivity    Int         @default(30)   // 1-100
-  nightVision    Boolean     @default(false)
-  twoWayAudio    Boolean     @default(true)
-  recordOnMotion Boolean     @default(false)
-  exposure       Int         @default(0)      // EV compensation: -3 to 3
-  focus          Int         @default(50)     // Manual focus: 0-100
-  whiteBalance   String      @default("auto") // auto, daylight, cloudy, tungsten, fluorescent
-  iso            Int         @default(100)    // 100-3200
-  brightness     Int         @default(50)     // 0-100
-  contrast       Int         @default(50)     // 0-100
+  streamKey      String         @unique @default(uuid())
+  isOnline       Boolean        @default(false)
+  motionDetect   Boolean        @default(true)
+  sensitivity    Int            @default(30)   // 1-100 (pixel-diff)
+  detectionMode  DetectionMode  @default(PIXEL_DIFF)
+  mlConfidence   Int            @default(50)   // 0-100 (ML confidence threshold)
+  nightVision    Boolean        @default(false)
+  twoWayAudio    Boolean        @default(true)
+  recordOnMotion Boolean        @default(false)
+  exposure       Int            @default(0)      // EV compensation: -3 to 3
+  focus          Int            @default(50)     // Manual focus: 0-100
+  whiteBalance   String         @default("auto") // auto, daylight, cloudy, tungsten, fluorescent
+  iso            Int            @default(100)    // 100-3200
+  brightness     Int            @default(50)     // 0-100
+  contrast       Int            @default(50)     // 0-100
   userId         String
-  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   recordings     Recording[]
   alerts         Alert[]
   lastSeen       DateTime?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+enum DetectionMode {
+  PIXEL_DIFF
+  ML
 }
 
 // ── Recording ─────────────────────────────────────────────────
@@ -107,4 +116,54 @@ enum AlertType {
   CAMERA_OFFLINE
   CAMERA_ONLINE
   RECORDING_COMPLETE
+}
+
+// ── Plan (Stripe) ─────────────────────────────────────────────
+model Plan {
+  id            String         @id @default(uuid())
+  name          String
+  description   String?
+  price         Int            // cents
+  currency      String         @default("usd")
+  interval      PlanInterval   @default(MONTHLY)
+  features      String         // JSON array
+  highlighted   Boolean        @default(false)
+  stripePriceId String         @unique
+  active        Boolean        @default(true)
+  sortOrder     Int            @default(0)
+  subscriptions Subscription[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+enum PlanInterval {
+  MONTHLY
+  YEARLY
+}
+
+// ── Subscription (Stripe) ─────────────────────────────────────
+model Subscription {
+  id                   String             @id @default(uuid())
+  userId               String             @unique
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId               String
+  plan                 Plan               @relation(fields: [planId], references: [id])
+  stripeSubscriptionId String             @unique
+  stripeCustomerId     String
+  status               SubscriptionStatus @default(TRIALING)
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  trialEndsAt          DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
 }

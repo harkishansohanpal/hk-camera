@@ -53,6 +53,13 @@ services:
       CLIENT_URL: http://localhost:3000
       JWT_SECRET: hk_jwt_secret_make_this_longer_and_more_random_123456789
       SESSION_SECRET: hk_session_secret_make_this_longer_and_more_random_123456789
+      # Stripe
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      # Coturn
+      COTURN_REALM: ${COTURN_REALM:-localhost}
+      COTURN_SECRET: ${COTURN_SECRET:-change_me_in_production}
+      COTURN_SERVER: coturn
     env_file:
       - ./backend/.env
     ports:
@@ -75,6 +82,25 @@ services:
       - backend
     ports:
       - '3000:80'
+
+  # ── Coturn TURN Server ───────────────────────────────────────
+  coturn:
+    image: coturn/coturn:latest
+    container_name: hk_coturn
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - '3478:3478/udp'
+      - '3478:3478/tcp'
+      - '5349:5349/udp'
+      - '5349:5349/tcp'
+    environment:
+      COTURN_SECRET: ${COTURN_SECRET:-change_me_in_production}
+      COTURN_REALM: ${COTURN_REALM:-localhost}
+      COTURN_EXTERNAL_IP: ${COTURN_EXTERNAL_IP:-}
+    volumes:
+      - ./coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
 
   # ── Nginx Reverse Proxy ──────────────────────────────────────
   nginx:

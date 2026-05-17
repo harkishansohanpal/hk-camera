@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { userAPI } from '../services/api';
-import { User, Lock, Bell, Trash2 } from 'lucide-react';
+import { User, Lock, Bell, Trash2, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -137,6 +137,16 @@ export default function Settings() {
           ))}
           <button onClick={saveNotifications} className="btn-primary self-start mt-1 text-sm">Save notifications</button>
         </div>
+      </div>
+
+      {/* Billing */}
+      <div className="card">
+        <div className="flex items-center gap-2 mb-2 sm:mb-3">
+          <CreditCard size={16} className="text-hk-400" />
+          <h2 className="text-sm sm:text-base font-semibold text-white">Billing</h2>
+        </div>
+        <p className="text-slate-400 text-xs sm:text-sm mb-3 sm:mb-4">Manage your subscription and payment methods.</p>
+        <button onClick={() => navigate('/billing')} className="btn-primary text-sm">View billing</button>
       </div>
 
       {/* Danger zone */}
