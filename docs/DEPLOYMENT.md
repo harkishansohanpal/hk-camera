@@ -282,8 +282,9 @@ Runs on every push to `master` and `hk-camera-beta`, and on PRs to `master`:
 | Job | What it runs |
 |-----|-------------|
 | `frontend` | ESLint lint, npm audit, Vitest unit tests (35), Vite production build |
-| `backend` | npm audit, Prisma generate, ESLint lint, Jest integration tests (30) |
-| `e2e` | Playwright E2E tests (16) against preview server + production backend |
+| `backend` | npm audit, Prisma generate, ESLint lint, Jest integration + regression tests (57) |
+| `e2e` | Playwright E2E tests (16) + regression tests (20) against preview server + production backend |
+| `smoke` | Fast Playwright smoke tests (4) against preview server |
 | `security` | Checks HTTP security headers on Cloudflare Pages and Fly.io |
 
 ### Deploy Pipeline (`deploy.yml`)
@@ -294,7 +295,9 @@ Runs only on pushes to `master`:
 2. Downloads YOLOv8n ML model from ultralytics assets
 3. Runs unit + integration tests
 4. Deploys frontend to Cloudflare Pages via `wrangler pages deploy`
-5. Deploys backend to Fly.io via `flyctl deploy`
+5. Runs frontend regression tests against deployed production pages
+6. Deploys backend to Fly.io via `flyctl deploy`
+7. Runs smoke tests against production URLs (frontend + backend)
 
 ### Required Secrets
 

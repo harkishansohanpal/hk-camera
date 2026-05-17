@@ -2,7 +2,7 @@
 
 ## Overview
 
-81 tests across three layers: frontend unit (Vitest), backend integration (Jest + Supertest), and E2E (Playwright).
+**87 tests** across four layers: frontend unit (Vitest), backend integration (Jest + Supertest), E2E (Playwright), plus dedicated smoke and regression suites.
 
 ---
 
@@ -20,6 +20,44 @@
 cd frontend && npm test
 ```
 
+### Smoke Tests (4)
+
+Quick production health checks that verify critical pages load with 200 status and correct content. Run against the preview server in CI and against production URLs post-deploy.
+
+| File | Tests | What it covers |
+|------|-------|----------------|
+| `e2e/smoke.spec.js` | 4 | Landing, pricing, login, register page loads + 404 redirect |
+
+```bash
+cd frontend && npm run test:smoke
+```
+
+### Regression Tests
+
+#### Frontend Regression (20)
+
+Full user flow E2E covering navigation, auth edge cases, page content, and error boundaries.
+
+| File | Tests | What it covers |
+|------|-------|----------------|
+| `e2e/regression.spec.js` | 20 | Auth validation (5), navigation & routing (7), page content (5), error boundaries (3) |
+
+```bash
+cd frontend && npm run test:regression
+```
+
+#### Backend Regression (30)
+
+Comprehensive API tests covering all endpoints with various scenarios and edge cases.
+
+| File | Tests | What it covers |
+|------|-------|----------------|
+| `src/__tests__/regression.test.js` | 30 | Health & system (2), authentication (14), camera CRUD (9), TURN credentials (2), subscription plans (3) |
+
+```bash
+cd backend && npm run test:regression
+```
+
 ### Backend Integration Tests (30)
 
 | File | Tests | What it covers |
@@ -35,7 +73,7 @@ All external services (PostgreSQL, Redis, Stripe, S3, Socket.IO) are mocked. Tes
 cd backend && npm test
 ```
 
-### E2E Tests (16)
+### E2E Tests (16 + 20 regression)
 
 | File | Tests | What it covers |
 |------|-------|----------------|
@@ -47,8 +85,10 @@ cd backend && npm test
 E2E tests run against the production build (`vite preview`) and hit the live Fly.io backend.
 
 ```bash
-cd frontend && npm run test:e2e          # requires preview server
+cd frontend && npm run test:e2e          # all E2E tests (requires preview server)
 cd frontend && npm run test:e2e:ci       # CI mode (auto-starts preview)
+cd frontend && npm run test:smoke        # smoke tests only
+cd frontend && npm run test:regression   # regression tests only
 ```
 
 ---
@@ -59,8 +99,11 @@ Every push runs the full test suite via `.github/workflows/ci.yml`:
 
 1. **Frontend job** — lint, npm audit, unit tests, build
 2. **Backend job** — npm audit, Prisma generate, integration tests
-3. **E2E job** — build, preview server, Playwright tests
-4. **Security job** — HTTP security headers scan
+3. **E2E job** — build, preview server, Playwright E2E + regression tests
+4. **Smoke job** — build, preview server, smoke tests
+5. **Security job** — HTTP security headers scan
+
+The deploy pipeline (`.github/workflows/deploy.yml`) additionally runs regression tests after frontend deploy and smoke tests against production URLs after both frontend + backend deploy.
 
 ---
 
