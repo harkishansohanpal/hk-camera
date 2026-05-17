@@ -1,5 +1,5 @@
 const logger = require('../config/logger');
-const { getPrisma } = require('../config/database');
+const { prisma } = require('../config/database');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -14,8 +14,6 @@ async function handleWebhook(req, res) {
     logger.error('Stripe webhook signature verification failed', { error: err.message });
     return res.status(400).json({ success: false, message: 'Invalid signature' });
   }
-
-  const prisma = getPrisma();
 
   try {
     switch (event.type) {

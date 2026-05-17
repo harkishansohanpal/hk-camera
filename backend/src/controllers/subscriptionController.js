@@ -1,9 +1,8 @@
 const logger = require('../config/logger');
-const { getPrisma } = require('../config/database');
+const { prisma } = require('../config/database');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 async function listPlans(req, res) {
-  const prisma = getPrisma();
   const plans = await prisma.plan.findMany({
     where: { active: true },
     orderBy: { sortOrder: 'asc' },
@@ -12,7 +11,7 @@ async function listPlans(req, res) {
 }
 
 async function getMySubscription(req, res) {
-  const prisma = getPrisma();
+  const prisma = prisma;
   const sub = await prisma.subscription.findUnique({
     where: { userId: req.user.id },
     include: { plan: true },
@@ -21,7 +20,7 @@ async function getMySubscription(req, res) {
 }
 
 async function createCheckoutSession(req, res) {
-  const prisma = getPrisma();
+  const prisma = prisma;
   const { priceId } = req.body;
   if (!priceId) return res.status(400).json({ success: false, message: 'priceId is required' });
 
@@ -56,7 +55,7 @@ async function createCheckoutSession(req, res) {
 }
 
 async function createPortalSession(req, res) {
-  const prisma = getPrisma();
+  const prisma = prisma;
   const user = await prisma.user.findUnique({ where: { id: req.user.id } });
   if (!user.stripeCustomerId) {
     return res.status(400).json({ success: false, message: 'No billing customer found' });
@@ -71,7 +70,7 @@ async function createPortalSession(req, res) {
 }
 
 async function cancelSubscription(req, res) {
-  const prisma = getPrisma();
+  const prisma = prisma;
   const sub = await prisma.subscription.findUnique({ where: { userId: req.user.id } });
   if (!sub) return res.status(404).json({ success: false, message: 'No active subscription' });
 
@@ -89,7 +88,7 @@ async function seedPlans(req, res) {
     return res.status(403).json({ success: false, message: 'Only available in development' });
   }
 
-  const prisma = getPrisma();
+  const prisma = prisma;
   const plans = [
     { name: 'Free', description: 'Basic camera monitoring', price: 0, interval: 'MONTHLY', features: JSON.stringify(['1 camera', '1 day recording history', 'Pixel-diff detection', 'Email alerts']), stripePriceId: 'free_plan', sortOrder: 0, highlighted: false },
     { name: 'Pro', description: 'For serious home security', price: 999, interval: 'MONTHLY', features: JSON.stringify(['Up to 5 cameras', '30 day recording history', 'ML object detection', 'Two-way audio', 'Email + push alerts', 'Cloud recordings']), stripePriceId: 'price_pro_monthly', sortOrder: 1, highlighted: true },
