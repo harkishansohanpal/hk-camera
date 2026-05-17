@@ -124,12 +124,9 @@ export default function Settings() {
                 <input
                   type="checkbox" className="sr-only"
                   checked={notifs[key]}
-                  onChange={(e) => setNotifs({ ...notifs, [key]: e.target.checked })}
+                  onChange={(e) => setNotifs((n) => ({ ...n, [key]: e.target.checked }))}
                 />
-                <div
-                  onClick={() => setNotifs((n) => ({ ...n, [key]: !n[key] }))}
-                  className={`w-10 h-6 rounded-full transition-colors cursor-pointer ${notifs[key] ? 'bg-hk-500' : 'bg-slate-600'}`}
-                >
+                <div className={`w-10 h-6 rounded-full transition-colors cursor-pointer ${notifs[key] ? 'bg-hk-500' : 'bg-slate-600'}`}>
                   <span className={`block w-4 h-4 bg-white rounded-full mt-1 transition-transform ${notifs[key] ? 'translate-x-5' : 'translate-x-1'}`} />
                 </div>
               </div>
