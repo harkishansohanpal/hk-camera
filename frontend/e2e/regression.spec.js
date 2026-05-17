@@ -1,9 +1,5 @@
 import { test, expect } from '@playwright/test';
 
-test.beforeEach(async ({ page }) => {
-  await page.evaluate(() => localStorage.clear());
-});
-
 test.describe('Full Regression – Authentication Flow', () => {
   test('register form validates required fields', async ({ page }) => {
     await page.goto('/register');
@@ -90,14 +86,17 @@ test.describe('Full Regression – Navigation & Routing', () => {
     });
     await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/login/);
+    await page.evaluate(() => localStorage.clear());
   });
 
   test('malformed token does not crash app', async ({ page }) => {
+    await page.goto('/login');
     await page.evaluate(() => {
       localStorage.setItem('accessToken', 'not-a-valid-jwt');
     });
     await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/login/);
+    await page.evaluate(() => localStorage.clear());
   });
 });
 
