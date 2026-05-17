@@ -3,6 +3,7 @@ import { YOLO_CLASSES, INTERESTING_CLASSES, INPUT_SIZE, preprocessFrame, parseDe
 
 const SAMPLE_INTERVAL_MS = 500;
 const MODEL_URL = '/models/yolov8n.onnx';
+const LOG_PREFIX = '[YOLO]';
 
 let ortInstance = null;
 
@@ -25,11 +26,14 @@ async function loadModel() {
   if (modelLoadPromise) return modelLoadPromise;
 
   modelLoadPromise = (async () => {
+    console.log(`${LOG_PREFIX} Loading model from ${MODEL_URL}...`);
     const ort = await getOrt();
+    console.log(`${LOG_PREFIX} ONNX Runtime loaded, creating session...`);
     modelSession = await ort.InferenceSession.create(MODEL_URL, {
       executionProviders: ['wasm'],
       graphOptimizationLevel: 'all',
     });
+    console.log(`${LOG_PREFIX} Model loaded successfully`);
     return modelSession;
   })();
 
@@ -70,6 +74,9 @@ export function useYoloDetection({ videoRef, confidence = 50, onDetection, onMot
       const { confidence: conf, onDetection: onDetect, onMotion: onMove, cooldownMs: coolMs } = paramsRef.current;
       const detections = parseDetections(output, conf, imgWidth, imgHeight);
 
+      if (detections.length > 0) {
+        console.log(`${LOG_PREFIX} Frame: ${detections.length} detections (interesting: ${detections.filter(d => d.interesting).length})`);
+      }
       onDetect?.(detections);
 
       const interesting = detections.filter((d) => d.interesting);
@@ -84,21 +91,26 @@ export function useYoloDetection({ videoRef, confidence = 50, onDetection, onMot
           thumbCanvas.getContext('2d').drawImage(video, 0, 0);
           const thumbnail = thumbCanvas.toDataURL('image/jpeg', 0.7);
 
+          console.log(`${LOG_PREFIX} Motion alert:`, interesting.map(d => `${d.class} (${(d.confidence*100).toFixed(0)}%)`).join(', '));
           onMove?.({ detections: interesting, thumbnail });
         }
       }
     } catch (err) {
+      console.error(`${LOG_PREFIX} Inference error:`, err.message);
       setInferenceError(err.message);
     }
   }, [videoRef]);
 
   const startDetection = useCallback(async () => {
     if (intervalRef.current) return;
+    console.log(`${LOG_PREFIX} Starting detection...`);
     try {
       await loadModel();
       setModelLoaded(true);
       setLoadingError(null);
+      console.log(`${LOG_PREFIX} Model ready, starting analysis interval`);
     } catch (err) {
+      console.error(`${LOG_PREFIX} Model load failed:`, err.message);
       setLoadingError(err.message);
       return;
     }

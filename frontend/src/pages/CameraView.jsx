@@ -181,7 +181,7 @@ export default function CameraView() {
     onMotion: handleMotion,
   });
 
-  const { startDetection: startMlDetection, stopDetection: stopMlDetection, isDetecting: isMlDetecting, modelLoaded, loadingError: mlError } = useYoloDetection({
+  const { startDetection: startMlDetection, stopDetection: stopMlDetection, isDetecting: isMlDetecting, modelLoaded, loadingError: mlError, inferenceError: mlInferenceError } = useYoloDetection({
     videoRef,
     confidence: camera?.mlConfidence ?? 50,
     onDetection: (dets) => {},
@@ -376,8 +376,13 @@ export default function CameraView() {
               ML (YOLO)
             </button>
           </div>
-          {isMlMode && mlError && (
-            <p className="mt-1 text-[10px] text-red-400">ML model error: {mlError}</p>
+          {isMlMode && (
+            <div className="mt-1 text-[10px]">
+              {!modelLoaded && !mlError && isMlDetecting && <p className="text-yellow-400">Loading ML model…</p>}
+              {modelLoaded && <p className="text-green-400">ML model ready</p>}
+              {mlError && <p className="text-red-400">ML model error: {mlError}</p>}
+              {mlInferenceError && <p className="text-red-400">ML inference error: {mlInferenceError}</p>}
+            </div>
           )}
         </div>
 
