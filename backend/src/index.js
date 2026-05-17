@@ -40,6 +40,9 @@ const io = new Server(server, {
   transports: ['websocket', 'polling'],
 });
 
+// ── Trust proxy (Fly.io / Cloudflare) ─────────────────────────
+app.set('trust proxy', 1);
+
 // ── Core middleware ───────────────────────────────────────────
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }, // needed for video recordings
