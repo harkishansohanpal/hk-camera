@@ -9,10 +9,16 @@
 - **Live streaming** – Peer-to-peer WebRTC video from any browser (no plugins)
 - **Motion detection** – Canvas pixel-diff algorithm with configurable sensitivity and cooldown
 - **Two-way audio** – Speak back through the camera device from the viewer
+- **Night vision** – Camera2 native Android low-light + canvas IR phosphor overlay modes
+- **Torch / flashlight** – Native torch control via WebRTC constraint and Capacitor plugin
+- **Granular camera controls** – Exposure, focus, white balance, ISO, brightness, contrast
+- **Remote camera control** – Control host camera settings (torch, focus, zoom, etc.) from the viewer
 - **Cloud recordings** – Auto-record on motion; store locally or on AWS S3
 - **Alerts** – In-app, email (SMTP), and browser push notifications
 - **Multi-camera** – Manage multiple cameras per account
 - **JWT auth** – Short-lived access tokens with rotating refresh tokens
+- **Mobile apps** – Native iOS and Android via Capacitor, installable as PWA
+- **User registration** – Self-service account creation
 
 ---
 
@@ -20,15 +26,17 @@
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 18, Vite, Tailwind CSS, Socket.io client |
+| Frontend | React 18, Vite, Tailwind CSS, TypeScript, Zustand, Socket.io client |
 | Backend | Node.js 20, Express, Socket.io |
 | Database | PostgreSQL + Prisma ORM |
 | Cache | Redis |
 | Real-time | WebRTC (P2P), Socket.io (signaling) |
 | Storage | AWS S3 or local disk |
 | Notifications | Nodemailer (SMTP) + web-push (VAPID) |
+| Mobile | Capacitor (Android + iOS), `@capawesome/capacitor-torch` |
 | Containers | Docker + Docker Compose |
 | Proxy | Nginx |
+| Deploy (prod) | Fly.io (backend) + Cloudflare Pages (frontend) |
 
 ---
 
@@ -55,6 +63,8 @@ cd frontend && npm run dev   # port 5173
 
 Open http://localhost:5173 and log in with `demo@hkcamera.app` / `Demo123!`.
 
+> **Mobile:** Run `npx cap sync` then `npx cap open ios` / `npx cap open android` to build native apps.
+
 ---
 
 ## Documentation
@@ -64,7 +74,7 @@ Open http://localhost:5173 and log in with `demo@hkcamera.app` / `Demo123!`.
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, WebRTC flow, data models, auth |
 | [SETUP.md](docs/SETUP.md) | Step-by-step local dev setup for new developers |
 | [API.md](docs/API.md) | Full REST + WebSocket API reference |
-| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker, SSL, TURN server, CI/CD, AWS scaling |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker, Fly.io, Cloudflare, SSL, TURN, CI/CD |
 
 ---
 
@@ -74,24 +84,35 @@ Open http://localhost:5173 and log in with `demo@hkcamera.app` / `Demo123!`.
 hk-camera/
 ├── backend/
 │   ├── src/
-│   │   ├── config/          # DB, logger, Redis, storage
-│   │   ├── controllers/     # Route handlers
-│   │   ├── middleware/       # Auth, rate limiter, validator, error handler
-│   │   ├── prisma/          # Schema + seed
-│   │   ├── routes/          # Express routers
-│   │   ├── services/        # Notifications, storage
-│   │   ├── socket/          # WebRTC signaling server
-│   │   └── index.js         # App entry point
+│   │   ├── config/           # DB, logger, Redis, storage
+│   │   ├── controllers/      # auth, camera, recording, alert, user, turn
+│   │   ├── middleware/        # auth, rate limiter, validator, error handler
+│   │   ├── prisma/           # schema.prisma, migrations, seed.js
+│   │   ├── routes/           # auth, cameras, recordings, alerts, users, turn
+│   │   ├── services/         # notificationService.js (email + push)
+│   │   ├── socket/           # WebRTC signaling server
+│   │   └── index.js          # App entry point
+│   ├── fly.toml              # Fly.io deployment config
 │   ├── Dockerfile
 │   └── package.json
 ├── frontend/
 │   ├── src/
-│   │   ├── components/      # CameraStream, ViewerStream, Layout, …
-│   │   ├── contexts/        # AuthContext
-│   │   ├── hooks/           # useWebRTC, useMotionDetection, useMediaRecorder
-│   │   ├── pages/           # Dashboard, CameraView, Viewer, Recordings, Alerts, Settings
-│   │   ├── services/        # api.js (Axios + auto-refresh)
-│   │   └── App.jsx
+│   │   ├── components/       # CameraStream, ViewerStream, CameraControlsPanel, Layout, ProtectedRoute
+│   │   ├── contexts/         # AuthContext
+│   │   ├── hooks/            # useWebRTC, useMotionDetection, useMediaRecorder, useNightVision, useCameraControls
+│   │   ├── pages/            # Dashboard, CameraView, Viewer, Recordings, Alerts, Settings, Login, Register
+│   │   ├── services/         # api.js (Axios + auto-refresh), advancedCamera.js
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
+│   ├── public/
+│   │   ├── _redirects        # Cloudflare Pages SPA fallback
+│   │   ├── manifest.json     # PWA manifest
+│   │   └── icons/
+│   ├── capacitor.config.ts   # Capacitor mobile config
+│   ├── android/              # Native Android project
+│   ├── ios/                  # Native iOS project
+│   ├── nginx.conf
 │   ├── Dockerfile
 │   └── package.json
 ├── docs/
@@ -102,6 +123,9 @@ hk-camera/
 ├── nginx/
 │   └── nginx.conf
 ├── docker-compose.yml
+├── setup-oracle.sh           # Oracle Cloud provisioning script
+├── tunnel.sh                 # Tailscale Funnel script
+├── .env.example
 └── README.md
 ```
 
@@ -113,6 +137,15 @@ hk-camera/
 |------|-------|----------|
 | Admin | admin@hkcamera.app | Admin123! |
 | Demo user | demo@hkcamera.app | Demo123! |
+
+---
+
+## Deployment
+
+- **Backend** — Fly.io (`hk-camera-backend`, config in `backend/fly.toml`)
+- **Frontend** — Cloudflare Pages (`_redirects` for SPA routing)
+- **Alternative** — `cloudflare/workers-autoconfig` branch has a unified Cloudflare Workers deployment
+- **Self-hosted** — See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for Docker Compose + Oracle Cloud setup
 
 ---
 
