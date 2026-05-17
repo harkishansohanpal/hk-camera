@@ -115,6 +115,7 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 docker compose build
 
 # Run database migrations and seed (first deploy only)
+# Note: In production, seed skips demo accounts for security.
 docker compose run --rm backend sh -c "npx prisma migrate deploy && node src/prisma/seed.js"
 
 # Start all services

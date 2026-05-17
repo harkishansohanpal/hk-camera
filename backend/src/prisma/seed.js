@@ -4,6 +4,12 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
+  if (process.env.NODE_ENV === 'production') {
+    console.log('⚠️  Skipping seed — demo accounts are not created in production.');
+    console.log('   Create an admin account through the Register page or manually.');
+    return;
+  }
+
   console.log('🌱 Seeding database...');
 
   // Admin user
