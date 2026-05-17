@@ -19,13 +19,16 @@ const INTERESTING_CLASSES = new Set([
   'horse', 'sheep', 'cow', 'bear', 'bird',
 ]);
 
-const MODEL_URL = 'https://storage.googleapis.com/alfred-camera-public/yolov8n.onnx';
+const MODEL_URL = '/models/yolov8n.onnx';
 
 let ortInstance = null;
+
+const WASM_CDN = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/';
 
 async function getOrt() {
   if (!ortInstance) {
     ortInstance = await import('onnxruntime-web');
+    ortInstance.env.wasm.wasmPaths = WASM_CDN;
   }
   return ortInstance;
 }

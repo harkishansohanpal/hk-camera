@@ -5,6 +5,9 @@ node_modules/
 
 # Build outputs
 dist/
+
+# ML model (downloaded during CI)
+frontend/public/models/
 build/
 .next/
 
