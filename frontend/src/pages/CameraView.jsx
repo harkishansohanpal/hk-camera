@@ -87,16 +87,7 @@ export default function CameraView() {
   }
 
   async function handleRemoteCommand(command, payload) {
-    if (command === 'CAMERA_CONTROL') {
-      const { control, value } = payload;
-      const result = await applyControl(control, value);
-      clearTimeout(updateTimeoutRef.current);
-      updateTimeoutRef.current = setTimeout(() => {
-        cameraAPI.update(cameraId, { [control]: value }).catch((err) => {
-          console.warn(`Failed to save ${control}:`, err.message);
-        });
-      }, 300);
-    } else if (command === 'TORCH') {
+    if (command === 'TORCH') {
       if (Capacitor.isNativePlatform()) {
         try {
           const { available } = await Torch.isAvailable();
