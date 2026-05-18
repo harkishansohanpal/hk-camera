@@ -56,10 +56,10 @@ export default function Landing() {
               Start Free <ChevronRight size={20} />
             </button>
             <button
-              onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => navigate('/pricing')}
               className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium px-8 py-3.5 rounded-xl text-lg transition-all border border-slate-700 flex items-center justify-center gap-2"
             >
-              See Products
+              View Plans
             </button>
           </div>
         </div>
@@ -165,24 +165,6 @@ export default function Landing() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ── Pricing preview ────────────────────────────────── */}
-      <section className="py-24 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Simple <span className="text-hk-400">pricing</span>
-          </h2>
-          <p className="text-slate-400 text-lg mb-10 max-w-xl mx-auto">
-            Start free, upgrade when you need more. All plans include core security features.
-          </p>
-          <button
-            onClick={() => navigate('/pricing')}
-            className="bg-hk-500 hover:bg-hk-600 text-white font-semibold px-8 py-3.5 rounded-xl text-lg transition-all inline-flex items-center gap-2 shadow-lg shadow-hk-500/25 hover:shadow-hk-500/40"
-          >
-            View Plans <ChevronRight size={20} />
-          </button>
         </div>
       </section>
 
