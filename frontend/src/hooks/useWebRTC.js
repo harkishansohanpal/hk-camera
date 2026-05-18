@@ -477,6 +477,14 @@ export function useWebRTC({ role, streamKey, onCommand }) {
     socketRef.current?.emit('viewer:command', { command, payload });
   }, []);
 
+  const rejoinViewer = useCallback(() => {
+    const socket = socketRef.current;
+    if (socket?.connected) {
+      console.log('[WebRTC] Re-emitting viewer:join to re-check camera status');
+      socket.emit('viewer:join', { streamKey });
+    }
+  }, [streamKey]);
+
   useEffect(() => () => {
     socketRef.current?.disconnect();
     cleanup();
@@ -491,5 +499,6 @@ export function useWebRTC({ role, streamKey, onCommand }) {
     startBroadcast,
     stopBroadcast,
     sendCommand,
+    rejoinViewer,
   };
 }

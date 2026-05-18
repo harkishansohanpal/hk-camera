@@ -51,7 +51,7 @@ export default function Viewer() {
   const retryCountRef  = useRef(0);
   const isRetryingRef  = useRef(false);
 
-  const { remoteStream, status, cameraId, connectViewer, disconnectViewer, sendCommand } = useWebRTC({
+  const { remoteStream, status, cameraId, connectViewer, disconnectViewer, sendCommand, rejoinViewer } = useWebRTC({
     role: 'viewer',
     streamKey,
   });
@@ -178,6 +178,15 @@ export default function Viewer() {
     }, CONNECT_TIMEOUT_MS);
     return () => clearTimeout(t);
   }, [status, handleRetry]);
+
+  // ── While 'waiting', periodically re-check camera online status
+  useEffect(() => {
+    if (status !== 'waiting') return;
+    const interval = setInterval(() => {
+      rejoinViewer();
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [status, rejoinViewer]);
 
   // ── Start/stop motion detection
   useEffect(() => {
