@@ -29,8 +29,8 @@ jobs:
       - name: Download ML model
         run: |
           mkdir -p public/models
-          curl -L "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolov8n.onnx" \
-            -o public/models/yolov8n.onnx
+          curl -L "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolov8s.onnx" \
+            -o public/models/yolov8s.onnx
 
       - name: Run tests
         run: npm test

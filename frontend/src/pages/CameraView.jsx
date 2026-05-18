@@ -258,7 +258,6 @@ export default function CameraView() {
 
   function shouldDetect(cam) {
     if (!cam) return false;
-    if (cam.detectionMode === 'ML') return true;
     return cam.motionDetect;
   }
 
@@ -414,7 +413,7 @@ export default function CameraView() {
                 const mode = 'ML';
                 setCamera((c) => ({ ...c, detectionMode: mode }));
                 await cameraAPI.update(cameraId, { detectionMode: mode });
-                if (isBroadcasting) { stopPixelDiff(); startMlDetection(); }
+                if (isBroadcasting) { stopPixelDiff(); if (camera?.motionDetect) startMlDetection(); }
               }}
               className={`flex-1 px-2 py-1 text-[10px] sm:text-xs rounded font-medium transition-colors flex items-center justify-center gap-1 ${
                 isMlMode

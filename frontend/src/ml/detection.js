@@ -12,8 +12,8 @@ export const YOLO_CLASSES = [
 ];
 
 export const INTERESTING_CLASSES = new Set([
-  'person', 'bicycle', 'car', 'motorcycle', 'bus', 'truck', 'dog', 'cat',
-  'horse', 'sheep', 'cow', 'bear', 'bird',
+  'person', 'car', 'dog', 'cat', 'bird',
+  'horse', 'sheep', 'cow', 'bear',
 ]);
 
 export const INPUT_SIZE = 640;
