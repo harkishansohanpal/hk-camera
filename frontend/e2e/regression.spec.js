@@ -66,7 +66,7 @@ test.describe('Full Regression – Navigation & Routing', () => {
 
   test('can reach login from landing Log in link', async ({ page }) => {
     await page.goto('/');
-    await page.locator('a:has-text("Log in")').click();
+    await page.getByRole('banner').getByRole('link', { name: 'Log in' }).click();
     await expect(page).toHaveURL(/\/login/);
   });
 
@@ -105,7 +105,7 @@ test.describe('Full Regression – Page Content', () => {
     await page.goto('/');
     await expect(page.getByRole('banner').getByText('HK Camera')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Get Started', exact: true })).toBeVisible();
-    await expect(page.locator('a:has-text("Log in")')).toBeVisible();
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Log in' })).toBeVisible();
   });
 
   test('landing page headline mentions smart security', async ({ page }) => {
