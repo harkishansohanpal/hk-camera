@@ -5,12 +5,14 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Maximize2, Volume2, VolumeX, RotateCcw, Zap, ZapOff, Moon, BatteryCharging, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Maximize2, Volume2, VolumeX, RotateCcw, Zap, ZapOff, Moon, BatteryCharging, Eye, EyeOff, Scan } from 'lucide-react';
 import { useWebRTC, prefetchIceServers } from '../hooks/useWebRTC';
 import { useMotionDetection } from '../hooks/useMotionDetection';
+import { useYoloDetection } from '../hooks/useYoloDetection';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
 import CameraControlsPanel from '../components/CameraControlsPanel';
 import ViewerStream from '../components/ViewerStream';
+import DetectionOverlay from '../components/DetectionOverlay';
 
 // Backoff delays (seconds) for successive reconnect attempts
 const RETRY_DELAYS = [3, 5, 10, 30, 60];
@@ -32,6 +34,9 @@ export default function Viewer() {
   const [screenDim, setScreenDim]           = useState(false);
   const [backgroundMode, setBackgroundMode] = useState(false);
   const [nightVisionMode, setNightVisionMode] = useState('off');
+  const [showDetections, setShowDetections] = useState(false);
+  const showDetectionsRef = useRef(false);
+  const [detections, setDetections] = useState([]);
 
   // Camera controls (for remote control on host camera)
   const [cameraControlSettings, setCameraControlSettings] = useState({
@@ -79,6 +84,24 @@ export default function Viewer() {
         startRecording(remoteStream);
       }
     }, [remoteStream, recorderIsRecording, cameraId, startRecording])
+  });
+
+  // ── ML detection (YOLO) – runs independently for bounding boxes
+  const { startDetection: startMl, stopDetection: stopMl, modelLoaded, loadingError: mlLoadingError, inferenceError: mlInferenceError } = useYoloDetection({
+    videoRef,
+    confidence: 50,
+    onDetection: (dets) => {
+      if (showDetectionsRef.current) {
+        setDetections(dets);
+      }
+    },
+    onMotion: ({ detections: interesting }) => {
+      console.log('[Viewer] ML motion:', interesting.map(d => `${d.class} ${(d.confidence*100).toFixed(0)}%`).join(', '));
+      if (remoteStream && !recorderIsRecording && cameraId) {
+        setIsRecording(true);
+        startRecording(remoteStream);
+      }
+    },
   });
 
   // ── Retry helpers
@@ -197,6 +220,17 @@ export default function Viewer() {
     }
     return () => stopDetection();
   }, [status, remoteStream, motionEnabled, startDetection, stopDetection]);
+
+  // ── Start/stop ML detection (runs while connected for bounding boxes)
+  useEffect(() => {
+    if (status === 'connected' && remoteStream) {
+      startMl();
+    } else {
+      stopMl();
+      setDetections([]);
+    }
+    return () => stopMl();
+  }, [status, remoteStream, startMl, stopMl]);
 
   // ── Auto-stop recording after 30 s
   useEffect(() => {
@@ -332,6 +366,31 @@ export default function Viewer() {
           nightVision={nightVisionMode}
         />
 
+        {/* ── ML detection bounding boxes ────────────────────── */}
+        {showDetections && (
+          <DetectionOverlay
+            detections={detections}
+            videoRef={videoRef}
+            visible={showDetections}
+          />
+        )}
+
+        {/* ── ML model status ─────────────────────────────────── */}
+        {(mlLoadingError || mlInferenceError) && showDetections && (
+          <div className="absolute bottom-2 left-2 right-2 z-30 flex flex-col gap-1">
+            {mlLoadingError && (
+              <div className="bg-red-500/80 text-white text-[11px] px-2 py-1 rounded">
+                ML model error: {mlLoadingError}
+              </div>
+            )}
+            {mlInferenceError && (
+              <div className="bg-red-500/80 text-white text-[11px] px-2 py-1 rounded">
+                ML inference error: {mlInferenceError}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── Reconnect overlay ──────────────────────────────── */}
         {isBad && (
           <div
@@ -392,6 +451,16 @@ export default function Viewer() {
               >
                 {motionEnabled ? <Eye size={16} /> : <EyeOff size={16} />}
                 <span className="text-[10px] sm:text-xs">Motion</span>
+              </button>
+              <button
+                onClick={() => { showDetectionsRef.current = !showDetections; setShowDetections((v) => !v); }}
+                className={`flex flex-col items-center justify-center gap-0.5 w-9 h-9 sm:w-10 sm:h-11 rounded-lg transition-colors flex-shrink-0 ${showDetections ? 'text-hk-400 bg-hk-500/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                title="Show ML detections"
+              >
+                <Scan size={16} />
+                <span className="text-[10px] sm:text-xs">
+                  {modelLoaded ? 'Detect' : 'ML…'}
+                </span>
               </button>
               <button
                 onClick={() => setNightVisionMode((m) => m === 'off' ? 'enhanced' : m === 'enhanced' ? 'ir' : 'off')}
