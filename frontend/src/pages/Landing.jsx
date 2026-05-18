@@ -23,6 +23,12 @@ export default function Landing() {
           <div className="flex items-center gap-3">
             <Link to="/login" className="text-sm text-slate-300 hover:text-white px-3 py-2 transition-colors">Log in</Link>
             <button
+              onClick={() => navigate('/pricing')}
+              className="text-sm text-slate-400 hover:text-white px-3 py-2 transition-colors"
+            >
+              Pricing
+            </button>
+            <button
               onClick={() => navigate('/register')}
               className="bg-hk-500 hover:bg-hk-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
             >
