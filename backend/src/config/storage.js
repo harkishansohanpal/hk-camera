@@ -37,6 +37,7 @@ async function uploadToS3(key, body, contentType) {
       Key: key,
       Body: body,
       ContentType: contentType,
+      ServerSideEncryption: 'AES256',
     })
   );
   return `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;

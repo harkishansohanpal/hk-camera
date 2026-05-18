@@ -20,6 +20,10 @@ if (process.env.NODE_ENV === 'development') {
 async function connectDatabase() {
   await prisma.$connect();
   logger.info('✅ Database connected');
+  const url = process.env.DATABASE_URL || '';
+  if (!url.includes('sslmode=require') && !url.includes('sslmode=verify-full')) {
+    logger.warn('⚠️  DATABASE_URL does not enforce SSL (missing sslmode=require). Add it in production: ?sslmode=require');
+  }
 }
 
 module.exports = { prisma, connectDatabase };

@@ -110,6 +110,38 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── Security ────────────────────────────────────────── */}
+      <section id="security" className="py-20 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+              Enterprise-grade <span className="text-hk-400">security</span>
+            </h2>
+            <p className="text-slate-400 max-w-2xl mx-auto">
+              Your video feeds and data are protected with modern encryption and security practices.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {[
+              { Icon: Shield, title: 'End-to-End Encryption', desc: 'Video streams use SRTP (Secure Real-time Transport Protocol) via WebRTC with DTLS-SRTP key exchange. All communications are encrypted in transit.' },
+              { Icon: Shield, title: 'TURN Relay Encryption', desc: 'When peer-to-peer fails, media is relayed through authenticated TURN servers with HMAC-SHA1 time-limited credentials. Cloudflare or self-hosted Coturn.' },
+              { Icon: Shield, title: 'Encrypted at Rest', desc: 'Recordings stored in S3 are encrypted with AES-256 server-side encryption. Database connections enforce TLS in production.' },
+              { Icon: Shield, title: 'JWT with Refresh Rotation', desc: 'Short-lived access tokens (15 min) with rotating refresh tokens. Compromised tokens are automatically invalidated on rotation.' },
+              { Icon: Shield, title: 'Rate Limiting & Validation', desc: 'API-wide (300 req/15min) and auth-specific (20 req/15min) rate limiting. Input validation on all endpoints with express-validator.' },
+              { Icon: Shield, title: 'Security Headers & Audit', desc: 'Helmet.js security headers (CSP, HSTS, X-Frame-Options), CORS origin restriction, Stripe webhook signature verification, and automated npm audit in CI.' },
+            ].map(({ Icon, title, desc }) => (
+              <div key={title} className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+                <div className="w-11 h-11 bg-hk-500/20 rounded-lg flex items-center justify-center mb-4">
+                  <Icon size={22} className="text-hk-400" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Pricing preview ────────────────────────────────── */}
       <section className="py-20 px-4 sm:px-6 bg-slate-800/50">
         <div className="max-w-7xl mx-auto text-center">

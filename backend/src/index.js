@@ -46,6 +46,20 @@ app.set('trust proxy', 1);
 // ── Core middleware ───────────────────────────────────────────
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }, // needed for video recordings
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc:  ["'self'"],
+      styleSrc:   ["'self'", "'unsafe-inline'"],
+      imgSrc:     ["'self'", 'data:', 'blob:'],
+      mediaSrc:   ["'self'", 'blob:', 'mediastream:'],
+      connectSrc: ["'self'", 'wss:', 'https:'],
+      workerSrc:  ["'self'", 'blob:'],
+      frameSrc:   ["'none'"],
+      objectSrc:  ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
 }));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
@@ -59,7 +73,22 @@ app.use('/api/webhook', webhookRoutes);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+// ── Log sanitisation: strip sensitive headers from HTTP logs
+const SENSITIVE_HEADERS = /authorization|cookie|set-cookie|x-auth-token/i;
+function sanitiseHeaders(headers) {
+  const sanitised = { ...headers };
+  for (const key of Object.keys(sanitised)) {
+    if (SENSITIVE_HEADERS.test(key)) sanitised[key] = '[REDACTED]';
+  }
+  return sanitised;
+}
+
+morgan.token('sanitised-headers', (req) => JSON.stringify(sanitiseHeaders(req.headers)));
+
+app.use(morgan(process.env.NODE_ENV === 'production'
+  ? ':remote-addr :method :url :status :res[content-length] - :response-time ms'
+  : 'dev'
+));
 
 // ── Static file serving ───────────────────────────────────────
 app.use('/uploads',    express.static(path.resolve(process.env.LOCAL_UPLOAD_DIR    || './uploads')));
@@ -79,6 +108,12 @@ app.use('/api/recordings',   recordingRoutes);
 app.use('/api/users',        userRoutes);
 app.use('/api/turn-credentials', turnRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+
+// ── Admin routes (require ADMIN role) ─────────────────────────
+const { authenticate, requireAdmin } = require('./middleware/auth');
+app.use('/api/admin', authenticate, requireAdmin);
+// Mount admin sub-routes here as needed:
+// app.use('/api/admin/users', adminUserRoutes);
 
 // ── 404 + global error handler ────────────────────────────────
 app.use(notFound);
