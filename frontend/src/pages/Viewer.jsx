@@ -5,7 +5,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Maximize2, Volume2, VolumeX, RotateCcw, Zap, ZapOff, Moon, BatteryCharging, Eye, EyeOff, Scan } from 'lucide-react';
+import { ArrowLeft, Maximize2, Volume2, VolumeX, RotateCcw, Zap, ZapOff, Moon, BatteryCharging, Eye, EyeOff, Scan, Circle } from 'lucide-react';
 import { useWebRTC, prefetchIceServers } from '../hooks/useWebRTC';
 import { useMotionDetection } from '../hooks/useMotionDetection';
 import { useYoloDetection } from '../hooks/useYoloDetection';
@@ -31,6 +31,7 @@ export default function Viewer() {
   const [recordingDuration, setRecordingDuration] = useState(0);
 
   const [motionEnabled, setMotionEnabled]   = useState(false);
+  const [recordOnMotion, setRecordOnMotion] = useState(false);
   const [torchOn, setTorchOn]               = useState(false);
   const [screenDim, setScreenDim]           = useState(false);
   const [backgroundMode, setBackgroundMode] = useState(false);
@@ -82,11 +83,11 @@ export default function Viewer() {
     cooldownMs: 5000,
     onMotion: useCallback(({ changeRatio }) => {
       console.log(`Motion detected! ${changeRatio.toFixed(1)}% change`);
-      if (remoteStream && !recorderIsRecording && cameraId) {
+      if (remoteStream && !recorderIsRecording && cameraId && recordOnMotion) {
         setIsRecording(true);
         startRecording(remoteStream);
       }
-    }, [remoteStream, recorderIsRecording, cameraId, startRecording])
+    }, [remoteStream, recorderIsRecording, cameraId, startRecording, recordOnMotion])
   });
 
   // ── ML detection (YOLO) – runs independently for bounding boxes
@@ -100,7 +101,7 @@ export default function Viewer() {
     },
     onMotion: ({ detections: interesting }) => {
       console.log('[Viewer] ML motion:', interesting.map(d => `${d.class} ${(d.confidence*100).toFixed(0)}%`).join(', '));
-      if (remoteStream && !recorderIsRecording && cameraId) {
+      if (remoteStream && !recorderIsRecording && cameraId && recordOnMotion) {
         setIsRecording(true);
         startRecording(remoteStream);
       }
@@ -460,6 +461,13 @@ export default function Viewer() {
               >
                 {motionEnabled ? <Eye size={16} /> : <EyeOff size={16} />}
                 <span className="text-[10px] sm:text-xs">Motion</span>
+              </button>
+              <button
+                onClick={() => setRecordOnMotion((v) => !v)}
+                className={`flex flex-col items-center justify-center gap-0.5 w-9 h-9 sm:w-10 sm:h-11 rounded-lg transition-colors flex-shrink-0 ${recordOnMotion ? 'text-red-400 bg-red-500/10' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+              >
+                <Circle size={16} className={recordOnMotion ? 'fill-red-400' : ''} />
+                <span className="text-[10px] sm:text-xs">Record</span>
               </button>
               <button
                 onClick={() => { showDetectionsRef.current = !showDetections; setShowDetections((v) => !v); }}
