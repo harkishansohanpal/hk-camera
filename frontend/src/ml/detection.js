@@ -40,8 +40,9 @@ export function preprocessFrame(video) {
 }
 
 export function parseDetections(output, confidenceThreshold, imgWidth, imgHeight) {
-  const [rows, cols] = [output[0].dims[2], output[0].dims[1]];
-  const data = output[0].data;
+  const tensor = output.dims ? output : output[0];
+  const [rows, cols] = [tensor.dims[2], tensor.dims[1]];
+  const data = tensor.data;
   const scaleX = imgWidth / INPUT_SIZE;
   const scaleY = imgHeight / INPUT_SIZE;
   const detections = [];
