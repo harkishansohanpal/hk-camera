@@ -9,13 +9,13 @@ test.describe('Landing Page', () => {
 
   test('has working navigation links', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('a:has-text("Log in")')).toBeVisible();
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Log in' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Get Started', exact: true })).toBeVisible();
   });
 
   test('login link navigates to /login', async ({ page }) => {
     await page.goto('/');
-    await page.click('a:has-text("Log in")');
+    await page.getByRole('banner').getByRole('link', { name: 'Log in' }).click();
     await expect(page).toHaveURL(/\/login/);
   });
 
