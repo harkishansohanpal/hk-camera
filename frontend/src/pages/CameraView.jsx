@@ -36,6 +36,8 @@ export default function CameraView() {
   const nvCanvasRef = useRef(null);
   const nvListenerRef = useRef(null);
   const nvFrameRef = useRef(null);
+  const recCanvasRef = useRef(null);
+  const recRafRef = useRef(null);
 
   async function startCamera2NightVision(broadcastStream) {
     if (!Capacitor.isNativePlatform() || !AdvancedCamera) return;
@@ -164,11 +166,63 @@ export default function CameraView() {
   const startRecordingRef = useRef(startRecording);
   useEffect(() => { startRecordingRef.current = startRecording; }, [startRecording]);
 
+  // ── Oriented recording stream (fixes mobile rotation) ──────
+  function getOrientedStream() {
+    const video = videoRef.current;
+    const originalStream = streamRef.current;
+    if (!video || !originalStream || !video.videoWidth) return null;
+
+    const isPortrait = window.innerHeight > window.innerWidth;
+    const w = isPortrait ? video.videoHeight : video.videoWidth;
+    const h = isPortrait ? video.videoWidth : video.videoHeight;
+
+    if (!recCanvasRef.current) recCanvasRef.current = document.createElement('canvas');
+    recCanvasRef.current.width = w;
+    recCanvasRef.current.height = h;
+
+    const ctx = recCanvasRef.current.getContext('2d');
+
+    function draw() {
+      if (isPortrait) {
+        ctx.save();
+        ctx.translate(w / 2, h / 2);
+        ctx.rotate(-90 * Math.PI / 180);
+        ctx.drawImage(video, -h / 2, -w / 2, h, w);
+        ctx.restore();
+      } else {
+        ctx.drawImage(video, 0, 0, w, h);
+      }
+      recRafRef.current = requestAnimationFrame(draw);
+    }
+    recRafRef.current = requestAnimationFrame(draw);
+
+    const canvasStream = recCanvasRef.current.captureStream(30);
+    const vidTrack = canvasStream.getVideoTracks()[0];
+    const audTrack = originalStream.getAudioTracks()[0];
+    const newStream = new MediaStream();
+    if (vidTrack) newStream.addTrack(vidTrack);
+    if (audTrack) newStream.addTrack(audTrack);
+    return newStream;
+  }
+
+  function stopOrientedStream() {
+    if (recRafRef.current) {
+      cancelAnimationFrame(recRafRef.current);
+      recRafRef.current = null;
+    }
+  }
+
+  // Clean up canvas stream when recording stops
+  useEffect(() => {
+    if (!isRecording) stopOrientedStream();
+  }, [isRecording]);
+
   const handleMotion = useCallback(({ thumbnail }) => {
     setMotionCount((n) => n + 1);
     alertAPI.motionAlert({ cameraId, thumbnailUrl: thumbnail }).catch(() => {});
     if (cameraRef.current?.recordOnMotion && streamRef.current) {
-      startRecordingRef.current(streamRef.current, 'MOTION');
+      const recStream = getOrientedStream();
+      if (recStream) startRecordingRef.current(recStream, 'MOTION');
     }
   }, [cameraId]);
 
@@ -280,8 +334,13 @@ export default function CameraView() {
   }
 
   async function handleRecordToggle() {
-    if (isRecording) { stopRecording(); }
-    else if (stream) { startRecording(stream); }
+    if (isRecording) {
+      stopOrientedStream();
+      stopRecording();
+    } else if (stream) {
+      const recStream = getOrientedStream();
+      if (recStream) startRecording(recStream);
+    }
   }
 
   return (

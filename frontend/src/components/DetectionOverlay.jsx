@@ -43,15 +43,19 @@ function draw(canvas, detections, video, container) {
     canvas.width = cw * dpr;
     canvas.height = ch * dpr;
   }
+
+  ctx.save();
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, cw, ch);
 
-  if (!detections || detections.length === 0) return;
+  if (!detections || detections.length === 0 || !video.videoWidth) {
+    ctx.restore();
+    return;
+  }
 
   const sx = display.w / video.videoWidth;
   const sy = display.h / video.videoHeight;
 
-  // Clip to the video display area (avoids drawing into letterbox)
   ctx.beginPath();
   ctx.rect(display.ox, display.oy, display.w, display.h);
   ctx.clip();
@@ -80,6 +84,8 @@ function draw(canvas, detections, video, container) {
     ctx.fillStyle = '#000';
     ctx.fillText(label, rx + 5, labelY - 6);
   }
+
+  ctx.restore();
 }
 
 export default function DetectionOverlay({ detections, videoRef, visible = true }) {
@@ -97,14 +103,13 @@ export default function DetectionOverlay({ detections, videoRef, visible = true 
     const container = containerRef.current;
     if (!canvas || !container) return;
 
-    const video = videoRef.current;
-    if (!video) return;
-
     function tick() {
       if (!visibleRef.current) {
         const ctx = canvas.getContext('2d');
+        ctx.save();
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
       } else {
         draw(canvas, detsRef.current, videoRef.current, container);
       }
