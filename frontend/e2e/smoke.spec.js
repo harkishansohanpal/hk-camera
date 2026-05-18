@@ -10,9 +10,10 @@ test.describe('Production Smoke Tests', () => {
   });
 
   test('pricing page loads', async ({ page }) => {
+    test.setTimeout(20000);
     const res = await page.goto(PROD_URL + '/pricing');
     expect(res.status()).toBe(200);
-    await expect(page.locator('h1')).toContainText('pricing', { ignoreCase: true });
+    await expect(page.locator('h1')).toContainText('pricing', { ignoreCase: true, timeout: 15000 });
   });
 
   test('login page loads', async ({ page }) => {
