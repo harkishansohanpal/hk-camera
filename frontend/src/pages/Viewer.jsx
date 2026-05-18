@@ -10,6 +10,7 @@ import { useWebRTC, prefetchIceServers } from '../hooks/useWebRTC';
 import { useMotionDetection } from '../hooks/useMotionDetection';
 import { useYoloDetection } from '../hooks/useYoloDetection';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
+import { useWakeLock } from '../hooks/useWakeLock';
 import CameraControlsPanel from '../components/CameraControlsPanel';
 import ViewerStream from '../components/ViewerStream';
 import DetectionOverlay from '../components/DetectionOverlay';
@@ -55,6 +56,8 @@ export default function Viewer() {
   const [retryCountdown, setRetryCountdown] = useState(null);
   const retryCountRef  = useRef(0);
   const isRetryingRef  = useRef(false);
+
+  const { acquire: acquireWL, release: releaseWL } = useWakeLock();
 
   const { remoteStream, status, cameraId, connectViewer, disconnectViewer, sendCommand, rejoinViewer } = useWebRTC({
     role: 'viewer',
@@ -259,6 +262,12 @@ export default function Viewer() {
     video.muted = muted;
     if (!muted && video.paused) video.play().catch(() => {});
   }, [muted]);
+
+  // ── Keep screen awake while watching
+  useEffect(() => {
+    if (status === 'connected') acquireWL();
+    else releaseWL();
+  }, [status, acquireWL, releaseWL]);
 
   function handleFullscreen() {
     const videoEl = videoRef.current;

@@ -10,6 +10,7 @@ import { useWebRTC } from '../hooks/useWebRTC';
 import { useMotionDetection } from '../hooks/useMotionDetection';
 import { useYoloDetection } from '../hooks/useYoloDetection';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
+import { useWakeLock } from '../hooks/useWakeLock';
 import CameraStream from '../components/CameraStream';
 import toast from 'react-hot-toast';
 
@@ -25,7 +26,7 @@ export default function CameraView() {
   const [screenDimmed, setScreenDimmed] = useState(false);
   const [backgroundMode, setBackgroundMode] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
-  const wakeLockRef = useRef(null);
+  const { acquire: acquireWL, release: releaseWL } = useWakeLock();
   const isAndroid = /Android/.test(navigator.userAgent);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -114,14 +115,6 @@ export default function CameraView() {
       setScreenDimmed(payload.on);
     } else if (command === 'BACKGROUND') {
       setBackgroundMode(payload.on);
-      if (payload.on) {
-        wakeLockRef.current?.release().catch(() => {});
-        wakeLockRef.current = null;
-      } else {
-        navigator.wakeLock?.request('screen')
-          .then((wl) => { wakeLockRef.current = wl; })
-          .catch(() => {});
-      }
     } else if (command === 'NIGHT_VISION') {
       if (payload.on) {
         if (Capacitor.isNativePlatform() && AdvancedCamera) {
@@ -259,11 +252,9 @@ export default function CameraView() {
   }, []);
 
   useEffect(() => {
-    if (!isBroadcasting) return;
-    let wl = null;
-    navigator.wakeLock?.request('screen').then((lock) => { wl = lock; wakeLockRef.current = lock; }).catch(() => {});
-    return () => { wl?.release().catch(() => {}); wakeLockRef.current = null; };
-  }, [isBroadcasting]);
+    if (isBroadcasting && !backgroundMode) acquireWL();
+    else releaseWL();
+  }, [isBroadcasting, backgroundMode, acquireWL, releaseWL]);
 
   function shouldDetect(cam) {
     if (!cam) return false;
