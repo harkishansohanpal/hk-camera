@@ -50,12 +50,12 @@ describe('WASM CDN version sync', () => {
 describe('ML model', () => {
 
   it('model file exists in public directory', () => {
-    const modelPath = resolve(ROOT, 'public/models/yolov8n.onnx');
+    const modelPath = resolve(ROOT, 'public/models/yolo11s.onnx');
     expect(existsSync(modelPath)).toBe(true);
   });
 
   it('model file is at least 10 MB (valid ONNX)', () => {
-    const modelPath = resolve(ROOT, 'public/models/yolov8n.onnx');
+    const modelPath = resolve(ROOT, 'public/models/yolo11s.onnx');
     const stats = readFileSync(modelPath);
     // YOLOv8n ONNX is ~12MB. Using 10MB as a lower bound ensures the file
     // isn't a placeholder or corrupted download.
