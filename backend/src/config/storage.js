@@ -20,13 +20,15 @@ const localStorage = (destDir) =>
     },
   });
 
-// ── S3 client ─────────────────────────────────────────────────
+// ── S3 client (Cloudflare R2) ─────────────────────────────────
 const s3 = new S3Client({
-  region: process.env.AWS_REGION || 'us-east-1',
+  region: 'auto',
+  endpoint: process.env.R2_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
   },
+  requestChecksumCalculation: 'WHEN_REQUIRED',
 });
 
 // ── Upload a buffer / stream to S3 ───────────────────────────
@@ -37,10 +39,9 @@ async function uploadToS3(key, body, contentType) {
       Key: key,
       Body: body,
       ContentType: contentType,
-      ServerSideEncryption: 'AES256',
     })
   );
-  return `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+  return `https://${process.env.S3_BUCKET}.${process.env.R2_ENDPOINT.replace(/^https?:\/\//, '')}/${key}`;
 }
 
 // ── Delete from S3 ────────────────────────────────────────────

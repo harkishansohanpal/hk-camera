@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { YOLO_CLASSES, INTERESTING_CLASSES, INPUT_SIZE, preprocessFrame, parseDetections } from '../ml/detection';
 
 const SAMPLE_INTERVAL_MS = 500;
-const MODEL_URL = '/models/yolov8s.onnx';
+const MODEL_URL = '/models/yolo11s.onnx';
 const LOG_PREFIX = '[YOLO]';
 
 let ortInstance = null;
