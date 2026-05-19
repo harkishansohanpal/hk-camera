@@ -39,6 +39,31 @@ export function preprocessFrame(video) {
   return input;
 }
 
+function computeIoU(a, b) {
+  const ax = a.box.x, ay = a.box.y, aw = a.box.w, ah = a.box.h;
+  const bx = b.box.x, by = b.box.y, bw = b.box.w, bh = b.box.h;
+  const x1 = Math.max(ax, bx), y1 = Math.max(ay, by);
+  const x2 = Math.min(ax + aw, bx + bw), y2 = Math.min(ay + ah, by + bh);
+  const inter = Math.max(0, x2 - x1) * Math.max(0, y2 - y1);
+  const union = aw * ah + bw * bh - inter;
+  return inter / union;
+}
+
+function nonMaxSuppression(detections, iouThreshold) {
+  const sorted = [...detections].sort((a, b) => b.confidence - a.confidence);
+  const keep = [];
+  while (sorted.length) {
+    const best = sorted.shift();
+    keep.push(best);
+    for (let i = sorted.length - 1; i >= 0; i--) {
+      if (sorted[i].classId === best.classId && computeIoU(best, sorted[i]) > iouThreshold) {
+        sorted.splice(i, 1);
+      }
+    }
+  }
+  return keep;
+}
+
 export function parseDetections(output, confidenceThreshold, imgWidth, imgHeight) {
   const tensor = output.dims ? output : output[0];
   const [rows, cols] = [tensor.dims[2], tensor.dims[1]];
@@ -71,5 +96,5 @@ export function parseDetections(output, confidenceThreshold, imgWidth, imgHeight
     });
   }
 
-  return detections;
+  return nonMaxSuppression(detections, 0.4);
 }

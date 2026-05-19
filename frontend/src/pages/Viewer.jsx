@@ -93,7 +93,7 @@ export default function Viewer() {
   // ── ML detection (YOLO) – runs independently for bounding boxes
   const { startDetection: startMl, stopDetection: stopMl, modelLoaded, loadingError: mlLoadingError, inferenceError: mlInferenceError } = useYoloDetection({
     videoRef,
-    confidence: 50,
+    confidence: 65,
     onDetection: (dets) => {
       if (showDetectionsRef.current) {
         setDetections(dets.filter(d => d.interesting));

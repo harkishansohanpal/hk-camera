@@ -230,7 +230,7 @@ export default function CameraView() {
 
   const { startDetection: startMlDetection, stopDetection: stopMlDetection, isDetecting: isMlDetecting, modelLoaded, loadingError: mlError, inferenceError: mlInferenceError } = useYoloDetection({
     videoRef,
-    confidence: camera?.mlConfidence ?? 50,
+    confidence: camera?.mlConfidence ?? 65,
     onDetection: (dets) => {},
     onMotion: (payload) => handleMotion(payload),
   });
