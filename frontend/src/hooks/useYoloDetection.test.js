@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -49,17 +49,13 @@ describe('WASM CDN version sync', () => {
 
 describe('ML model', () => {
 
-  it('model file exists in public directory', () => {
-    const modelPath = resolve(ROOT, 'public/models/yolo11s.onnx');
-    expect(existsSync(modelPath)).toBe(true);
-  });
-
-  it('model file is at least 10 MB (valid ONNX)', () => {
-    const modelPath = resolve(ROOT, 'public/models/yolo11s.onnx');
-    const stats = readFileSync(modelPath);
-    // YOLOv8n ONNX is ~12MB. Using 10MB as a lower bound ensures the file
-    // isn't a placeholder or corrupted download.
-    expect(stats.length).toBeGreaterThan(10 * 1024 * 1024);
+  it('uses Hugging Face CDN URL for model', () => {
+    const hookSource = readFileSync(
+      resolve(__dirname, 'useYoloDetection.js'),
+      'utf-8',
+    );
+    expect(hookSource).toContain('huggingface.co');
+    expect(hookSource).toContain('yolo11s_640.onnx');
   });
 
 });

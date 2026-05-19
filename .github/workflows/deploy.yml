@@ -26,12 +26,6 @@ jobs:
 
       - run: npm ci
 
-      - name: Download ML model
-        run: |
-          mkdir -p public/models
-          curl -L "https://huggingface.co/giangndm/yolo11-onnx/resolve/main/yolo11s_640.onnx" \
-            -o public/models/yolo11s.onnx
-
       - name: Run tests
         run: npm test
 

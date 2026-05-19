@@ -34,12 +34,6 @@ jobs:
         run: npm audit --audit-level=high
         continue-on-error: true
 
-      - name: Download ML model
-        run: |
-          mkdir -p public/models
-          curl -L "https://huggingface.co/giangndm/yolo11-onnx/resolve/main/yolo11s_640.onnx" \
-            -o public/models/yolo11s.onnx
-
       - name: Unit tests
         run: npm test
 
@@ -96,12 +90,6 @@ jobs:
 
       - name: Install Playwright
         run: npx playwright install --with-deps chromium chromium-headless-shell
-
-      - name: Download ML model
-        run: |
-          mkdir -p public/models
-          curl -L "https://huggingface.co/giangndm/yolo11-onnx/resolve/main/yolo11s_640.onnx" \
-            -o public/models/yolo11s.onnx
 
       - name: Build
         run: npm run build
