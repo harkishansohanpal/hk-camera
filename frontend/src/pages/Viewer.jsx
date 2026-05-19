@@ -96,7 +96,7 @@ export default function Viewer() {
     confidence: 50,
     onDetection: (dets) => {
       if (showDetectionsRef.current) {
-        setDetections(dets);
+        setDetections(dets.filter(d => d.interesting));
       }
     },
     onMotion: ({ detections: interesting }) => {
