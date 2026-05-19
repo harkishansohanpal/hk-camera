@@ -52,3 +52,13 @@ coverage/
 
 # Capacitor
 frontend/android/
+frontend/ios/
+
+# Test artifacts
+frontend/test-results/
+
+# Scratch / temp files
+a.md
+*.md
+image.png
+*.png

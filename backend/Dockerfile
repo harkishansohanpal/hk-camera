@@ -11,12 +11,25 @@ FROM deps AS prisma
 COPY src/prisma ./src/prisma
 RUN npx prisma generate
 
+# ── Download ML model (yolo11m) ───────────────────────────────
+FROM base AS model-dl
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /app/models && \
+    curl -fsSL -o /app/models/yolo11m.onnx \
+    https://huggingface.co/deepghs/yolos/resolve/main/yolo11m/model.onnx
+
 # ── Production image ──────────────────────────────────────────
 FROM base AS runner
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
+
 ENV NODE_ENV=production
 
 COPY --from=prisma /app/node_modules ./node_modules
 COPY --from=prisma /app/src/prisma  ./src/prisma
+COPY --from=model-dl /app/models ./models
 COPY src ./src
 
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh

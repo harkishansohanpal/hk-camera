@@ -5,7 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
   withCredentials: true,
-  timeout: 5000,
+  timeout: 15000,
   headers: {
     'ngrok-skip-browser-warning': 'true',
   },
@@ -122,6 +122,11 @@ export const userAPI = {
   updateProfile:  (data) => api.patch('/users/me', data),
   changePassword: (data) => api.patch('/users/me/password', data),
   deleteAccount:  ()     => api.delete('/users/me'),
+};
+
+// ── ML Detection ─────────────────────────────────────────────
+export const detectAPI = {
+  detect: (data) => api.post('/detect', data),
 };
 
 // ── Subscriptions (Stripe) ────────────────────────────────────

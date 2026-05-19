@@ -21,4 +21,13 @@ const authLimiter = rateLimit({
   message: { success: false, message: 'Too many authentication attempts, please try again later.' },
 });
 
-module.exports = { apiLimiter, authLimiter };
+/** Higher limit for ML detection (every 500ms per camera = ~1800/15min per camera) */
+const detectLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many detection requests.' },
+});
+
+module.exports = { apiLimiter, authLimiter, detectLimiter };
