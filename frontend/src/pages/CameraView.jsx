@@ -302,7 +302,6 @@ export default function CameraView() {
       const localStream = await getLocalStream();
       setStream(localStream);
       await startBroadcast(localStream);
-      if (shouldDetect(camera)) startDetection();
       toast.success('Broadcasting started');
     } catch (err) {
       toast.error('Could not access camera: ' + err.message);
