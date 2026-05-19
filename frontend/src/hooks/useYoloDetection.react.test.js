@@ -42,6 +42,7 @@ async function importHook() {
 }
 
 describe('useYoloDetection - backend API', () => {
+  const INTERVAL_MS = 3000;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -64,9 +65,7 @@ describe('useYoloDetection - backend API', () => {
     const videoRef = { current: makeVideoElement() };
     const { result } = renderHook(() => useYoloDetection({ videoRef }));
 
-    await act(async () => {
-      await result.current.startDetection();
-    });
+    await act(async () => { await result.current.startDetection(); });
 
     expect(result.current.isDetecting).toBe(true);
     expect(result.current.modelLoaded).toBe(true);
@@ -78,13 +77,8 @@ describe('useYoloDetection - backend API', () => {
     const videoRef = { current: makeVideoElement() };
     const { result } = renderHook(() => useYoloDetection({ videoRef }));
 
-    await act(async () => {
-      await result.current.startDetection();
-    });
-
-    await act(async () => {
-      vi.advanceTimersByTime(500);
-    });
+    await act(async () => { await result.current.startDetection(); });
+    await act(async () => { vi.advanceTimersByTime(INTERVAL_MS); });
 
     expect(mockDetect).toHaveBeenCalledTimes(1);
   });
@@ -96,13 +90,8 @@ describe('useYoloDetection - backend API', () => {
     const videoRef = { current: video };
     const { result } = renderHook(() => useYoloDetection({ videoRef }));
 
-    await act(async () => {
-      await result.current.startDetection();
-    });
-
-    await act(async () => {
-      vi.advanceTimersByTime(500);
-    });
+    await act(async () => { await result.current.startDetection(); });
+    await act(async () => { vi.advanceTimersByTime(INTERVAL_MS); });
 
     expect(mockDetect).not.toHaveBeenCalled();
   });
@@ -112,18 +101,13 @@ describe('useYoloDetection - backend API', () => {
     const videoRef = { current: makeVideoElement() };
     const { result } = renderHook(() => useYoloDetection({ videoRef }));
 
-    await act(async () => {
-      await result.current.startDetection();
-    });
-
+    await act(async () => { await result.current.startDetection(); });
     expect(result.current.isDetecting).toBe(true);
     act(() => { result.current.stopDetection(); });
-
     expect(result.current.isDetecting).toBe(false);
 
     mockDetect.mockClear();
-    await act(async () => { vi.advanceTimersByTime(2000); });
-
+    await act(async () => { vi.advanceTimersByTime(INTERVAL_MS + 1000); });
     expect(mockDetect).not.toHaveBeenCalled();
   });
 
@@ -135,7 +119,7 @@ describe('useYoloDetection - backend API', () => {
     await act(async () => { await result.current.startDetection(); });
     await act(async () => { await result.current.startDetection(); });
 
-    await act(async () => { vi.advanceTimersByTime(500); });
+    await act(async () => { vi.advanceTimersByTime(INTERVAL_MS); });
     expect(mockDetect).toHaveBeenCalledTimes(1);
   });
 
@@ -158,7 +142,7 @@ describe('useYoloDetection - backend API', () => {
     const { result } = renderHook(() => useYoloDetection({ videoRef, onDetection }));
 
     await act(async () => { await result.current.startDetection(); });
-    await act(async () => { vi.advanceTimersByTime(500); });
+    await act(async () => { vi.advanceTimersByTime(INTERVAL_MS); });
 
     expect(onDetection).toHaveBeenCalledWith([
       expect.objectContaining({ class: 'person', confidence: 0.95 }),
@@ -185,13 +169,13 @@ describe('useYoloDetection - backend API', () => {
 
     await act(async () => { await result.current.startDetection(); });
 
-    await act(async () => { vi.advanceTimersByTime(500); });
+    await act(async () => { vi.advanceTimersByTime(INTERVAL_MS); });
     expect(onMotion).toHaveBeenCalledTimes(1);
 
-    await act(async () => { vi.advanceTimersByTime(500); });
+    await act(async () => { vi.advanceTimersByTime(INTERVAL_MS); });
     expect(onMotion).toHaveBeenCalledTimes(1);
 
-    await act(async () => { vi.advanceTimersByTime(3000); });
+    await act(async () => { vi.advanceTimersByTime(INTERVAL_MS); });
     expect(onMotion).toHaveBeenCalledTimes(2);
   });
 
@@ -214,7 +198,7 @@ describe('useYoloDetection - backend API', () => {
     const { result } = renderHook(() => useYoloDetection({ videoRef, onMotion }));
 
     await act(async () => { await result.current.startDetection(); });
-    await act(async () => { vi.advanceTimersByTime(1500); });
+    await act(async () => { vi.advanceTimersByTime(INTERVAL_MS); });
 
     expect(onMotion).not.toHaveBeenCalled();
   });
@@ -227,7 +211,7 @@ describe('useYoloDetection - backend API', () => {
     const { result } = renderHook(() => useYoloDetection({ videoRef }));
 
     await act(async () => { await result.current.startDetection(); });
-    await act(async () => { vi.advanceTimersByTime(500); });
+    await act(async () => { vi.advanceTimersByTime(INTERVAL_MS); });
 
     expect(result.current.inferenceError).toBe('Network error');
   });
@@ -241,11 +225,11 @@ describe('useYoloDetection - backend API', () => {
     const { result } = renderHook(() => useYoloDetection({ videoRef }));
 
     await act(async () => { await result.current.startDetection(); });
-    await act(async () => { vi.advanceTimersByTime(500); });
+    await act(async () => { vi.advanceTimersByTime(INTERVAL_MS); });
     expect(mockDetect).toHaveBeenCalledTimes(1);
 
     mockDetect.mockClear();
-    await act(async () => { vi.advanceTimersByTime(500); });
+    await act(async () => { vi.advanceTimersByTime(INTERVAL_MS); });
     expect(mockDetect).not.toHaveBeenCalled();
 
     await act(async () => { resolveDetect({ data: { data: { detections: [], count: 0, interestingCount: 0 } } }); });

@@ -14,9 +14,10 @@ import { useWakeLock } from '../hooks/useWakeLock';
 import CameraControlsPanel from '../components/CameraControlsPanel';
 import ViewerStream from '../components/ViewerStream';
 import DetectionOverlay from '../components/DetectionOverlay';
+import api from '../services/api';
 
 // Backoff delays (seconds) for successive reconnect attempts
-const RETRY_DELAYS = [3, 5, 10, 30, 60];
+const RETRY_DELAYS = [1, 2, 5, 15, 30, 60];
 // Abort and retry if stuck in 'connecting' for this long
 const CONNECT_TIMEOUT_MS = 15000;
 
@@ -269,6 +270,15 @@ export default function Viewer() {
     if (status === 'connected') acquireWL();
     else releaseWL();
   }, [status, acquireWL, releaseWL]);
+
+  // ── Keepalive: ping backend every 60s to prevent Fly.io VM from stopping
+  useEffect(() => {
+    if (status !== 'connected') return;
+    const interval = setInterval(() => {
+      api.get('/health').catch(() => {});
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [status]);
 
   function handleFullscreen() {
     const videoEl = videoRef.current;

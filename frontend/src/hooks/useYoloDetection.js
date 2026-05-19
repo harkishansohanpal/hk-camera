@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { detectAPI } from '../services/api';
 
-const SAMPLE_INTERVAL_MS = 500;
+const SAMPLE_INTERVAL_MS = 3000;
 const LOG_PREFIX = '[YOLO]';
 
 export function useYoloDetection({ videoRef, confidence = 50, onDetection, onMotion, cooldownMs = 3000 }) {
@@ -23,7 +23,7 @@ export function useYoloDetection({ videoRef, confidence = 50, onDetection, onMot
     canvas.width = w;
     canvas.height = h;
     canvas.getContext('2d').drawImage(video, 0, 0, w, h);
-    return canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+    return canvas.toDataURL('image/jpeg', 0.35).split(',')[1];
   }, []);
 
   const analyseFrame = useCallback(async () => {
@@ -63,7 +63,7 @@ export function useYoloDetection({ videoRef, confidence = 50, onDetection, onMot
           thumbCanvas.width = imgWidth;
           thumbCanvas.height = imgHeight;
           thumbCanvas.getContext('2d').drawImage(video, 0, 0);
-          const thumbnail = thumbCanvas.toDataURL('image/jpeg', 0.7);
+          const thumbnail = thumbCanvas.toDataURL('image/jpeg', 0.35);
 
           console.log(`${LOG_PREFIX} Motion alert:`, interesting.map(d => `${d.class} (${(d.confidence * 100).toFixed(0)}%)`).join(', '));
           onMove?.({ detections: interesting, thumbnail });
