@@ -55,7 +55,7 @@ describe('ML model', () => {
       'utf-8',
     );
     expect(hookSource).toContain('huggingface.co');
-    expect(hookSource).toContain('yolo11s_640.onnx');
+    expect(hookSource).toContain('deepghs/yolos');
   });
 
 });

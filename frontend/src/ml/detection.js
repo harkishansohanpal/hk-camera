@@ -11,10 +11,18 @@ export const YOLO_CLASSES = [
   'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush',
 ];
 
-export const INTERESTING_CLASSES = new Set([
-  'person', 'car', 'dog', 'cat', 'bird',
-  'horse', 'sheep', 'cow', 'bear',
+const ANIMAL_CLASSES = new Set([
+  'bird', 'cat', 'dog', 'horse', 'sheep', 'cow', 'elephant',
+  'bear', 'zebra', 'giraffe',
 ]);
+
+export const INTERESTING_CLASSES = new Set([
+  'person', 'car',
+  ...ANIMAL_CLASSES,
+]);
+
+const DISPLAY_NAME = {};
+for (const a of ANIMAL_CLASSES) DISPLAY_NAME[a] = 'animal';
 
 export const INPUT_SIZE = 640;
 
@@ -66,7 +74,10 @@ function nonMaxSuppression(detections, iouThreshold) {
 
 export function parseDetections(output, confidenceThreshold, imgWidth, imgHeight) {
   const tensor = output.dims ? output : output[0];
-  const [rows, cols] = [tensor.dims[2], tensor.dims[1]];
+  let [d0, d1, d2] = tensor.dims;
+  // Handle transposed output [1, 8400, 84] → [1, 84, 8400]
+  if (d1 === 8400 && d2 === 84) [d1, d2] = [d2, d1];
+  const cols = d1, rows = d2;
   const data = tensor.data;
   const scaleX = imgWidth / INPUT_SIZE;
   const scaleY = imgHeight / INPUT_SIZE;
@@ -86,13 +97,14 @@ export function parseDetections(output, confidenceThreshold, imgWidth, imgHeight
     const y = (data[offset + 1] - data[offset + 3] / 2) * scaleY;
     const w = data[offset + 2] * scaleX;
     const h = data[offset + 3] * scaleY;
+    const className = YOLO_CLASSES[classId] || 'unknown';
 
     detections.push({
-      class: YOLO_CLASSES[classId] || 'unknown',
+      class: DISPLAY_NAME[className] || className,
       classId,
       confidence: maxScore,
       box: { x, y, w, h },
-      interesting: INTERESTING_CLASSES.has(YOLO_CLASSES[classId]),
+      interesting: INTERESTING_CLASSES.has(className),
     });
   }
 

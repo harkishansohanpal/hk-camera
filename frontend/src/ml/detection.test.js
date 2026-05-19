@@ -90,7 +90,7 @@ describe('parseDetections', () => {
     const cases = [
       { classId: 0, expected: 'person', interesting: true },
       { classId: 2, expected: 'car', interesting: true },
-      { classId: 16, expected: 'dog', interesting: true },
+      { classId: 16, expected: 'animal', interesting: true },
       { classId: 56, expected: 'chair', interesting: false },
       { classId: 73, expected: 'book', interesting: false },
     ];
