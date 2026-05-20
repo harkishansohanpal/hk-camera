@@ -26,13 +26,13 @@ export default function Dashboard() {
 
   useEffect(() => { loadCameras(); }, []);
 
-  // Auto-show tour for first-time users once cameras have loaded
+  // Auto-show tour on every login unless dismissed
   useEffect(() => {
-    if (!loading && !tour.completed && !tour.active) {
+    if (!loading && !tour.dismissed && !tour.active) {
       const timer = setTimeout(() => tour.start(), 500);
       return () => clearTimeout(timer);
     }
-  }, [loading, tour.completed, tour.active, tour.start]);
+  }, [loading, tour.dismissed, tour.active, tour.start]);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -72,7 +72,7 @@ export default function Dashboard() {
   return (
     <div className="page-container">
       {/* Tour trigger */}
-      {tour.completed && (
+      {tour.dismissed && (
         <button
           onClick={() => { tour.reset(); tour.start(); }}
           className="fixed bottom-4 right-4 z-50 flex items-center gap-1.5 px-3 py-2 bg-slate-700/80 hover:bg-slate-600 text-slate-300 rounded-xl text-[11px] transition-colors backdrop-blur-sm border border-slate-600/50"
@@ -200,7 +200,7 @@ export default function Dashboard() {
 
       {/* ── Guided Tour ──────────────────────────────────────── */}
       {tour.active && (
-        <GuidedTour onFinish={tour.finish} />
+        <GuidedTour onFinish={tour.finish} onDismiss={tour.dismissForever} />
       )}
 
       {showAdd && (

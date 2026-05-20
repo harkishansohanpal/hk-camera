@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, ChevronRight, ChevronLeft, SkipForward } from 'lucide-react';
 
-const TOUR_KEY = 'hk-camera-tour-completed';
+const DISMISSED_KEY = 'hk-camera-tour-dismissed';
 
 const DEFAULT_STEPS = [
   {
@@ -54,134 +54,139 @@ const DEFAULT_STEPS = [
   },
 ];
 
-function getStepTarget(step) {
+function getTargetEl(step) {
   if (step.position === 'center') return null;
-  if (step.target === 'tour-welcome' || step.target === 'tour-end') return null;
   return document.querySelector(`[data-tour="${step.target}"]`);
 }
 
-function getTooltipPosition(targetEl, preferred) {
-  if (!targetEl) return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
+function computePosition(targetEl, preferred, tooltipWidth, tooltipHeight) {
+  if (!targetEl) {
+    return { top: window.innerHeight / 2, left: window.innerWidth / 2 };
+  }
 
-  const rect = targetEl.getBoundingClientRect();
+  const tr = targetEl.getBoundingClientRect();
   const gap = 12;
+  const pad = 16;
+  const { innerWidth, innerHeight } = window;
+
+  let top, left;
 
   switch (preferred) {
     case 'top':
-      return {
-        top: rect.top - gap,
-        left: rect.left + rect.width / 2,
-        transform: 'translate(-50%, -100%)',
-      };
+      top = tr.top - gap - tooltipHeight;
+      left = tr.left + tr.width / 2 - tooltipWidth / 2;
+      if (top < pad) {
+        top = tr.bottom + gap;
+        left = tr.left + tr.width / 2 - tooltipWidth / 2;
+      }
+      break;
     case 'bottom':
-      return {
-        top: rect.bottom + gap,
-        left: rect.left + rect.width / 2,
-        transform: 'translate(-50%, 0)',
-      };
+      top = tr.bottom + gap;
+      left = tr.left + tr.width / 2 - tooltipWidth / 2;
+      if (top + tooltipHeight > innerHeight - pad) {
+        top = tr.top - gap - tooltipHeight;
+        left = tr.left + tr.width / 2 - tooltipWidth / 2;
+      }
+      break;
     case 'left':
-      return {
-        top: rect.top + rect.height / 2,
-        left: rect.left - gap,
-        transform: 'translate(-100%, -50%)',
-      };
+      top = tr.top + tr.height / 2 - tooltipHeight / 2;
+      left = tr.left - gap - tooltipWidth;
+      if (left < pad) {
+        top = tr.top + tr.height / 2 - tooltipHeight / 2;
+        left = tr.right + gap;
+      }
+      break;
     case 'right':
-      return {
-        top: rect.top + rect.height / 2,
-        left: rect.right + gap,
-        transform: 'translate(0, -50%)',
-      };
+      top = tr.top + tr.height / 2 - tooltipHeight / 2;
+      left = tr.right + gap;
+      if (left + tooltipWidth > innerWidth - pad) {
+        top = tr.top + tr.height / 2 - tooltipHeight / 2;
+        left = tr.left - gap - tooltipWidth;
+      }
+      break;
     default:
-      return {
-        top: rect.bottom + gap,
-        left: rect.left + rect.width / 2,
-        transform: 'translate(-50%, 0)',
-      };
+      top = tr.bottom + gap;
+      left = tr.left + tr.width / 2 - tooltipWidth / 2;
   }
+
+  top = Math.max(pad, Math.min(top, innerHeight - tooltipHeight - pad));
+  left = Math.max(pad, Math.min(left, innerWidth - tooltipWidth - pad));
+
+  return { top, left };
 }
 
 export function useTour() {
   const [active, setActive] = useState(false);
-  const [completed, setCompleted] = useState(() => localStorage.getItem(TOUR_KEY) === 'true');
+  const [dismissed, setDismissed] = useState(() => localStorage.getItem(DISMISSED_KEY) === 'true');
 
   const start = useCallback(() => setActive(true), []);
-  const finish = useCallback(() => {
-    setActive(false);
-    setCompleted(true);
-    localStorage.setItem(TOUR_KEY, 'true');
+  const finish = useCallback(() => setActive(false), []);
+
+  const dismissForever = useCallback(() => {
+    setDismissed(true);
+    localStorage.setItem(DISMISSED_KEY, 'true');
   }, []);
 
   const reset = useCallback(() => {
-    localStorage.removeItem(TOUR_KEY);
-    setCompleted(false);
+    localStorage.removeItem(DISMISSED_KEY);
+    setDismissed(false);
   }, []);
 
-  return { active, completed, start, finish, reset, setActive };
+  return { active, dismissed, start, finish, reset, dismissForever };
 }
 
-export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish }) {
+export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss }) {
   const [stepIndex, setStepIndex] = useState(0);
-  const [tooltipStyle, setTooltipStyle] = useState({});
-  const [spotlightStyle, setSpotlightStyle] = useState({});
+  const [pos, setPos] = useState({ top: '50%', left: '50%' });
+  const [spotlight, setSpotlight] = useState(null);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const tooltipRef = useRef(null);
 
   const step = steps[stepIndex];
   const isFirst = stepIndex === 0;
   const isLast = stepIndex === steps.length - 1;
 
-  const updatePosition = useCallback(() => {
-    const targetEl = getStepTarget(step);
-    if (targetEl) {
-      const rect = targetEl.getBoundingClientRect();
-      setSpotlightStyle({
-        top: rect.top - 4,
-        left: rect.left - 4,
-        width: rect.width + 8,
-        height: rect.height + 8,
-      });
-      setTooltipPosition(getTooltipPosition(targetEl, step.position));
+  const reposition = useCallback(() => {
+    const el = getTargetEl(step);
+    if (el) {
+      const r = el.getBoundingClientRect();
+      setSpotlight({ top: r.top - 4, left: r.left - 4, width: r.width + 8, height: r.height + 8 });
     } else {
-      setSpotlightStyle({ display: 'none' });
-      setTooltipStyle({ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' });
+      setSpotlight(null);
     }
+
+    // Wait a tick for tooltip DOM to be available
+    requestAnimationFrame(() => {
+      if (!tooltipRef.current) {
+        setPos({ top: '50%', left: '50%' });
+        return;
+      }
+      const t = tooltipRef.current;
+      const tw = t.offsetWidth;
+      const th = t.offsetHeight;
+      if (tw === 0 || th === 0) {
+        setPos({ top: '50%', left: '50%' });
+        return;
+      }
+      const p = computePosition(el, step.position, tw, th);
+      setPos({ top: p.top, left: p.left });
+    });
   }, [step, stepIndex]);
 
-  function setTooltipPosition(pos) {
-    setTooltipStyle(pos);
-  }
-
   useEffect(() => {
-    updatePosition();
-    const handleResize = () => updatePosition();
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', handleResize, true);
+    reposition();
+    const handler = () => reposition();
+    window.addEventListener('resize', handler);
+    window.addEventListener('scroll', handler, true);
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleResize, true);
+      window.removeEventListener('resize', handler);
+      window.removeEventListener('scroll', handler, true);
     };
-  }, [updatePosition]);
-
-  useEffect(() => {
-    if (!tooltipRef.current) return;
-    const rect = tooltipRef.current.getBoundingClientRect();
-    const maxX = window.innerWidth - rect.width - 16;
-    const maxY = window.innerHeight - rect.height - 16;
-    let { top, left } = tooltipStyle;
-
-    if (typeof top === 'number' && top < 16) top = 16;
-    if (typeof left === 'number' && left < 16) left = 16;
-    if (typeof left === 'number' && left > maxX) left = maxX;
-    if (typeof top === 'number' && top > maxY) top = maxY;
-
-    setTooltipStyle((prev) => ({
-      ...prev,
-      top: typeof top === 'number' ? top + 'px' : top,
-      left: typeof left === 'number' ? left + 'px' : left,
-    }));
-  }, [stepIndex]);
+  }, [reposition]);
 
   function handleNext() {
     if (isLast) {
+      if (dontShowAgain) onDismiss?.();
       onFinish?.();
     } else {
       setStepIndex((i) => i + 1);
@@ -193,6 +198,7 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish }) {
   }
 
   function handleSkip() {
+    if (dontShowAgain) onDismiss?.();
     onFinish?.();
   }
 
@@ -202,11 +208,14 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish }) {
       <div className="absolute inset-0 bg-black/50" style={{ pointerEvents: 'auto' }} onClick={handleSkip} />
 
       {/* Spotlight cutout */}
-      {spotlightStyle.display !== 'none' && (
+      {spotlight && (
         <div
           className="absolute rounded-lg pointer-events-none"
           style={{
-            ...spotlightStyle,
+            top: spotlight.top,
+            left: spotlight.left,
+            width: spotlight.width,
+            height: spotlight.height,
             boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)',
             transition: 'top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease',
           }}
@@ -217,7 +226,7 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish }) {
       <div
         ref={tooltipRef}
         className="absolute z-10 bg-slate-800 border border-slate-600 rounded-2xl shadow-2xl p-5 w-72 sm:w-80"
-        style={{ ...tooltipStyle, pointerEvents: 'auto', transition: 'top 0.3s ease, left 0.3s ease' }}
+        style={{ top: pos.top, left: pos.left, pointerEvents: 'auto', transition: 'top 0.3s ease, left 0.3s ease' }}
       >
         {/* Progress dots */}
         <div className="flex items-center justify-between mb-3">
@@ -240,9 +249,21 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish }) {
           </button>
         </div>
 
-        {/* Content */}
         <h3 className="text-sm font-semibold text-white mb-1.5">{step.title}</h3>
-        <p className="text-xs text-slate-300 leading-relaxed mb-4">{step.content}</p>
+        <p className="text-xs text-slate-300 leading-relaxed mb-3">{step.content}</p>
+
+        {/* "Don't show again" checkbox */}
+        <label className="flex items-center gap-2 mb-4 cursor-pointer group">
+          <input
+            type="checkbox"
+            checked={dontShowAgain}
+            onChange={(e) => setDontShowAgain(e.target.checked)}
+            className="w-3.5 h-3.5 rounded border-slate-500 bg-slate-700 text-hk-500 focus:ring-hk-500/30 focus:ring-offset-0 cursor-pointer"
+          />
+          <span className="text-[11px] text-slate-400 group-hover:text-slate-300 transition-colors select-none">
+            Don't show this on startup from next time
+          </span>
+        </label>
 
         {/* Actions */}
         <div className="flex items-center justify-between">
