@@ -17,72 +17,48 @@ async function seedPlans() {
       create: plan,
     });
   }
-  console.log('✅ Plans seeded');
 }
 
 async function main() {
   console.log('🌱 Seeding database...');
-
-  // Plans are seeded in all environments (needed for pricing page)
   await seedPlans();
 
-  if (process.env.NODE_ENV === 'production') {
-    console.log('⚠️  Skipping demo accounts — not created in production.');
-    return;
+  // Admin — only create if explicitly configured via env
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@hkcamera.app';
+  if (process.env.ADMIN_PASSWORD) {
+    const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);
+    await prisma.user.upsert({
+      where: { email: adminEmail },
+      update: { passwordHash: hash },
+      create: { email: adminEmail, passwordHash: hash, name: 'Admin User', role: 'ADMIN' },
+    });
+    console.log(`✅ Admin  → ${adminEmail}`);
+  } else {
+    console.log(`⏭️  Skipping admin — set ADMIN_PASSWORD to create`);
   }
 
-  // Admin user
-  const adminHash = await bcrypt.hash('Admin123!', 12);
-  const admin = await prisma.user.upsert({
-    where: { email: 'admin@hkcamera.app' },
-    update: {},
-    create: {
-      email: 'admin@hkcamera.app',
-      passwordHash: adminHash,
-      name: 'Admin User',
-      role: 'ADMIN',
-    },
-  });
-
-  // Demo user
-  const demoHash = await bcrypt.hash('Demo123!', 12);
-  const demo = await prisma.user.upsert({
-    where: { email: 'demo@hkcamera.app' },
-    update: {},
-    create: {
-      email: 'demo@hkcamera.app',
-      passwordHash: demoHash,
-      name: 'Demo User',
-      role: 'USER',
-    },
-  });
-
-  // Demo cameras
-  await prisma.camera.createMany({
-    skipDuplicates: true,
-    data: [
-      {
-        id: 'cam-front-door',
-        name: 'Front Door',
-        description: 'Main entrance camera',
-        userId: demo.id,
-        motionDetect: true,
-        sensitivity: 40,
-      },
-      {
-        id: 'cam-backyard',
-        name: 'Backyard',
-        description: 'Rear garden camera',
-        userId: demo.id,
-        motionDetect: true,
-        sensitivity: 30,
-      },
-    ],
-  });
+  // Demo — only create if SEED_DEMO=true and DEMO_PASSWORD is set
+  if (process.env.SEED_DEMO === 'true' && process.env.DEMO_PASSWORD) {
+    const demoEmail = process.env.DEMO_EMAIL || 'demo@hkcamera.app';
+    const hash = await bcrypt.hash(process.env.DEMO_PASSWORD, 12);
+    const demo = await prisma.user.upsert({
+      where: { email: demoEmail },
+      update: { passwordHash: hash },
+      create: { email: demoEmail, passwordHash: hash, name: 'Demo User', role: 'USER', isDemo: true },
+    });
+    await prisma.camera.createMany({
+      skipDuplicates: true,
+      data: [
+        { id: 'cam-front-door', name: 'Front Door', description: 'Main entrance camera', userId: demo.id, motionDetect: true, sensitivity: 40 },
+        { id: 'cam-backyard', name: 'Backyard', description: 'Rear garden camera', userId: demo.id, motionDetect: true, sensitivity: 30 },
+      ],
+    });
+    console.log(`✅ Demo   → ${demoEmail}`);
+  } else {
+    console.log(`⏭️  Skipping demo — set SEED_DEMO=true and DEMO_PASSWORD to create`);
+  }
 
   console.log('✅ Seed complete');
-  console.log(`   Admin → admin@hkcamera.app / Admin123!`);
-  console.log(`   Demo  → demo@hkcamera.app  / Demo123!`);
 }
 
 main()

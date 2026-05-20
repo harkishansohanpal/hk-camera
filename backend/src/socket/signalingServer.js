@@ -24,6 +24,8 @@ let io = null;
 const viewers = new Map();
 // Map of streamKey → camera socket ID
 const cameras = new Map();
+// Map of streamKey → { viewerSocketId → joinedAt }
+const viewerSessions = new Map();
 
 function initSignalingServer(socketIO) {
   io = socketIO;
@@ -70,6 +72,8 @@ function initSignalingServer(socketIO) {
 
       socket.join(`camera:${key}`);
 
+      logger.info('Signaling', 'Camera connected', { cameraId: socket.cameraId, streamKey: key });
+
       // Update DB online status
       prisma.camera.update({ where: { id: socket.cameraId }, data: { isOnline: true, lastSeen: new Date() } })
         .catch(() => {});
@@ -78,10 +82,13 @@ function initSignalingServer(socketIO) {
       io.to(`camera:${key}`).emit('camera:online', { cameraId: socket.cameraId });
 
       socket.on('disconnect', () => {
-        cameras.delete(key);
-        prisma.camera.update({ where: { id: socket.cameraId }, data: { isOnline: false } }).catch(() => {});
-        io.to(`camera:${key}`).emit('camera:offline', { cameraId: socket.cameraId });
-        logger.debug('Camera disconnected', { cameraId: socket.cameraId });
+        // Only delete if this socket is still the registered camera (handles stale reconnect races)
+        if (cameras.get(key) === socket.id) {
+          cameras.delete(key);
+          prisma.camera.update({ where: { id: socket.cameraId }, data: { isOnline: false } }).catch(() => {});
+          io.to(`camera:${key}`).emit('camera:offline', { cameraId: socket.cameraId });
+          logger.info('Signaling', 'Camera disconnected', { cameraId: socket.cameraId, streamKey: key });
+        }
       });
 
       // Forward answer to the specific viewer
@@ -132,12 +139,10 @@ function initSignalingServer(socketIO) {
         if (!viewers.has(streamKey)) viewers.set(streamKey, new Set());
         viewers.get(streamKey).add(socket.id);
 
-        logger.debug('Viewer joined camera room', {
-          viewerSocketId: socket.id,
-          cameraId: camera.id,
-          cameraIsOnline: camera.isOnline,
-          cameraInMemory: cameras.has(streamKey),
-        });
+        // Track session start
+        if (!viewerSessions.has(streamKey)) viewerSessions.set(streamKey, new Map());
+        viewerSessions.get(streamKey).set(socket.id, Date.now());
+        logger.info('Signaling', 'Viewer joined', { streamKey, viewerSocketId: socket.id, viewerCount: viewers.get(streamKey)?.size });
 
         // Use in-memory map as source of truth (DB update is async/fire-and-forget)
         const cameraIsOnline = cameras.has(streamKey);
@@ -182,13 +187,21 @@ function initSignalingServer(socketIO) {
       socket.on('disconnect', () => {
         if (socket.streamKey) {
           viewers.get(socket.streamKey)?.delete(socket.id);
+          // Log session duration
+          const sessions = viewerSessions.get(socket.streamKey);
+          const joinedAt = sessions?.get(socket.id);
+          const sessionDurationSec = joinedAt ? Math.round((Date.now() - joinedAt) / 1000) : null;
+          sessions?.delete(socket.id);
+          if (sessionDurationSec !== null) {
+            logger.info('Signaling', 'Viewer left', { streamKey: socket.streamKey, viewerSocketId: socket.id, sessionDurationSec });
+          }
           // Inform camera the viewer left
           const cameraSocketId = cameras.get(socket.streamKey);
           if (cameraSocketId) {
             io.to(cameraSocketId).emit('viewer:left', { viewerSocketId: socket.id });
           }
         }
-        logger.debug('Viewer disconnected', { socketId: socket.id });
+        logger.debug('Signaling', 'Viewer disconnected', { socketId: socket.id });
       });
     }
   });
@@ -201,4 +214,12 @@ function getIO() {
   return io;
 }
 
-module.exports = { initSignalingServer, getIO };
+function isCameraOnline(streamKey) {
+  return cameras.has(streamKey);
+}
+
+function hasCameraViewers(streamKey) {
+  return viewers.get(streamKey)?.size > 0 ?? false;
+}
+
+module.exports = { initSignalingServer, getIO, isCameraOnline, hasCameraViewers };

@@ -14,6 +14,10 @@ import Alerts     from './pages/Alerts';
 import Landing    from './pages/Landing';
 import Pricing    from './pages/Pricing';
 import Billing    from './pages/Billing';
+import AdminRoute    from './components/AdminRoute';
+import AdminLayout   from './pages/admin/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminLogAnalyzer from './pages/admin/AdminLogAnalyzer';
 
 export default function App() {
   return (
@@ -35,6 +39,15 @@ export default function App() {
             <Route path="/alerts"             element={<Alerts />} />
             <Route path="/settings"           element={<Settings />} />
             <Route path="/billing"            element={<Billing />} />
+          </Route>
+        </Route>
+
+        {/* Admin (requires ADMIN role) */}
+        <Route element={<AdminRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin"             element={<AdminDashboard />} />
+            <Route path="/admin/logs"        element={<AdminDashboard />} />
+            <Route path="/admin/analyze"     element={<AdminLogAnalyzer />} />
           </Route>
         </Route>
 

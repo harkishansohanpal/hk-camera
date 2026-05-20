@@ -65,7 +65,7 @@ cd backend  && npm run dev   # port 5000
 cd frontend && npm run dev   # port 5173
 ```
 
-Open http://localhost:5173 and log in with `demo@hkcamera.app` / `Demo123!`.
+Open http://localhost:5173 and log in. The seed script prints credentials to the terminal — set `ADMIN_PASSWORD` / `DEMO_PASSWORD` in `backend/.env` to use custom passwords, or leave them blank for randomly generated ones.
 
 > **Mobile:** Run `npx cap sync` then `npx cap open ios` / `npx cap open android` to build native apps.
 
@@ -167,10 +167,14 @@ hk-camera/
 
 ## Demo credentials
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@hkcamera.app | Admin123! |
-| Demo user | demo@hkcamera.app | Demo123! |
+Credentials are **never stored in the repo**. Set them via environment variables:
+
+| Variable | Default Email | Purpose |
+|----------|---------------|---------|
+| `ADMIN_PASSWORD` | `admin@hkcamera.app` | Admin user (set in `backend/.env`) |
+| `DEMO_PASSWORD` | `demo@hkcamera.app` | Demo user (set `SEED_DEMO=true` in `backend/.env`) |
+
+If a password env var is empty, the seed script generates a random 16-character password and prints it to the terminal.
 
 ---
 

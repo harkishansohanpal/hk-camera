@@ -104,16 +104,19 @@ npm run db:generate
 # Apply migrations to create all tables
 npm run db:migrate:dev
 
-# Seed demo data (creates admin + demo user + 2 sample cameras)
+# Seed database (creates plans + optional admin + demo accounts)
+# Set ADMIN_PASSWORD / DEMO_PASSWORD in backend/.env for custom passwords,
+# or leave blank for randomly generated ones (printed to terminal).
 npm run db:seed
 ```
 
-After seeding you'll see:
+After seeding you'll see output like:
 ```
 ✅ Seed complete
-   Admin → admin@hkcamera.app / Admin123!
-   Demo  → demo@hkcamera.app  / Demo123!
+   Admin → admin@hkcamera.app / <random-password>
+   Demo  → demo@hkcamera.app  / <random-password>
 ```
+Save the printed passwords — they won't be stored anywhere else.
 
 ---
 
@@ -138,7 +141,7 @@ cd frontend && npm run dev
 ## 7. Test the app end-to-end
 
 1. Open http://localhost:5173 in your browser.
-2. Log in with `demo@hkcamera.app` / `Demo123!`.
+2. Log in with `demo@hkcamera.app` (password was printed during seeding).
 3. Click a camera on the Dashboard.
 4. Click **Start Broadcasting** – grant camera/microphone permissions when prompted.
 5. Open a second browser tab to http://localhost:5173/viewer/`<streamKey>`.

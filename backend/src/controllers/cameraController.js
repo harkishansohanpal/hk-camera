@@ -1,5 +1,5 @@
 const { prisma } = require('../config/database');
-const { getIO } = require('../socket/signalingServer');
+const { getIO, isCameraOnline } = require('../socket/signalingServer');
 const logger = require('../config/logger');
 
 // ── GET /api/cameras ──────────────────────────────────────────
@@ -10,7 +10,8 @@ async function listCameras(req, res, next) {
       include: { _count: { select: { recordings: true, alerts: true } } },
       orderBy: { createdAt: 'desc' },
     });
-    res.json({ success: true, data: cameras });
+    const patched = cameras.map(c => ({ ...c, isOnline: isCameraOnline(c.streamKey) }));
+    res.json({ success: true, data: patched });
   } catch (err) { next(err); }
 }
 
@@ -38,7 +39,8 @@ async function getCamera(req, res, next) {
       },
     });
     if (!camera) return res.status(404).json({ success: false, message: 'Camera not found' });
-    res.json({ success: true, data: camera });
+    const patched = { ...camera, isOnline: isCameraOnline(camera.streamKey) };
+    res.json({ success: true, data: patched });
   } catch (err) { next(err); }
 }
 
@@ -93,10 +95,8 @@ async function heartbeat(req, res, next) {
   try {
     await prisma.camera.update({
       where: { id: req.params.cameraId },
-      data: { isOnline: true, lastSeen: new Date() },
+      data: { lastSeen: new Date() },
     });
-    // Notify connected viewers
-    getIO().to(req.params.cameraId).emit('camera:status', { cameraId: req.params.cameraId, online: true });
     res.json({ success: true });
   } catch (err) { next(err); }
 }

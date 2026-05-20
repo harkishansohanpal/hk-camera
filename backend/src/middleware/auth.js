@@ -19,7 +19,7 @@ async function authenticate(req, res, next) {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
-      select: { id: true, email: true, name: true, role: true },
+      select: { id: true, email: true, name: true, role: true, isDemo: true },
     });
 
     if (!user) return res.status(401).json({ success: false, message: 'User not found' });
@@ -61,4 +61,14 @@ async function ownCamera(req, res, next) {
   next();
 }
 
-module.exports = { authenticate, requireAdmin, ownCamera };
+/**
+ * Blocks demo users from mutating routes (403).
+ */
+function requireNotDemo(req, res, next) {
+  if (req.user?.isDemo) {
+    return res.status(403).json({ success: false, message: 'Demo accounts are read-only' });
+  }
+  next();
+}
+
+module.exports = { authenticate, requireAdmin, ownCamera, requireNotDemo };

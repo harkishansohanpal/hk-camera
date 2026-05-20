@@ -61,5 +61,12 @@ frontend/test-results/
 a.md
 *.md
 !docs/*.md
+
+# Editor / IDE
+.claude/settings.local.json
+.specstory/
+
+# Local scratch files
+frontend/test_backyard.mjs
 image.png
 *.png

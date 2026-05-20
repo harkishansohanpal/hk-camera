@@ -71,6 +71,12 @@ const mockPrisma = {
     deleteMany: jest.fn(),
     findMany: jest.fn(),
   },
+  log: {
+    createMany: jest.fn(),
+    findMany: jest.fn(),
+    count: jest.fn(),
+    groupBy: jest.fn(),
+  },
   $disconnect: jest.fn(),
   $on: jest.fn(),
 };
@@ -106,6 +112,8 @@ const mockIO = {
 jest.mock('../socket/signalingServer', () => ({
   initSignalingServer: jest.fn(),
   getIO: jest.fn(() => mockIO),
+  isCameraOnline: jest.fn(() => false),
+  hasCameraViewers: jest.fn(() => false),
 }));
 
 jest.mock('bcryptjs', () => ({

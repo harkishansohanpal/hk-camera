@@ -5,12 +5,13 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Maximize2, Volume2, VolumeX, RotateCcw, Zap, ZapOff, Moon, BatteryCharging, Eye, EyeOff, Scan, Circle } from 'lucide-react';
+import { ArrowLeft, Maximize2, Volume2, VolumeX, RotateCcw, Zap, ZapOff, Moon, BatteryCharging, Eye, EyeOff, Scan, Circle, Activity } from 'lucide-react';
 import { useWebRTC, prefetchIceServers } from '../hooks/useWebRTC';
 import { useMotionDetection } from '../hooks/useMotionDetection';
 import { useYoloDetection } from '../hooks/useYoloDetection';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
 import { useWakeLock } from '../hooks/useWakeLock';
+import { logger } from '../lib/logger';
 import CameraControlsPanel from '../components/CameraControlsPanel';
 import ViewerStream from '../components/ViewerStream';
 import DetectionOverlay from '../components/DetectionOverlay';
@@ -61,7 +62,7 @@ export default function Viewer() {
 
   const { acquire: acquireWL, release: releaseWL } = useWakeLock();
 
-  const { remoteStream, status, cameraId, connectViewer, disconnectViewer, sendCommand, rejoinViewer } = useWebRTC({
+  const { remoteStream, status, cameraId, connectViewer, disconnectViewer, sendCommand, rejoinViewer, connectionMetrics } = useWebRTC({
     role: 'viewer',
     streamKey,
   });
@@ -71,7 +72,7 @@ export default function Viewer() {
     cameraId,
     trigger: 'MOTION',
     onRecordingReady: useCallback((recording) => {
-      console.log('Recording saved:', recording);
+      logger.info('Viewer', 'Recording saved', { recording: recording?.id });
       setIsRecording(false);
       setRecordingDuration(0);
     }, [])
@@ -83,7 +84,7 @@ export default function Viewer() {
     sensitivity: 15,
     cooldownMs: 5000,
     onMotion: useCallback(({ changeRatio }) => {
-      console.log(`Motion detected! ${changeRatio.toFixed(1)}% change`);
+      logger.info('Viewer', 'Pixel-diff motion detected', { changeRatio: changeRatio.toFixed(1) });
       if (remoteStream && !recorderIsRecording && cameraId && recordOnMotion) {
         setIsRecording(true);
         startRecording(remoteStream);
@@ -101,7 +102,7 @@ export default function Viewer() {
       }
     },
     onMotion: ({ detections: interesting }) => {
-      console.log('[Viewer] ML motion:', interesting.map(d => `${d.class} ${(d.confidence*100).toFixed(0)}%`).join(', '));
+      logger.info('Viewer', 'ML motion detected', { items: interesting.map(d => `${d.class}@${(d.confidence*100).toFixed(0)}%`) });
       if (remoteStream && !recorderIsRecording && cameraId && recordOnMotion) {
         setIsRecording(true);
         startRecording(remoteStream);
@@ -126,7 +127,7 @@ export default function Viewer() {
 
   // ── Camera control handlers (send to host camera)
   const handleCameraControlChange = useCallback((key, value) => {
-    console.log('[Viewer] Sending camera control:', key, '=', value);
+    logger.info('Viewer', 'Sending camera control', { key, value });
     setCameraControlSettings((prev) => ({ ...prev, [key]: value }));
     sendCommand('CAMERA_CONTROL', { control: key, value });
   }, [sendCommand]);
@@ -148,16 +149,16 @@ export default function Viewer() {
 
   // ── Prefetch TURN credentials and connect
   useEffect(() => {
-    console.log('[Viewer] Prefetching TURN credentials');
+    logger.info('Viewer', 'Prefetching TURN credentials');
     let isMounted = true;
 
     prefetchIceServers()
       .catch((err) => {
-        console.warn('[Viewer] Prefetch failed, will fallback to STUN:', err);
+        logger.warn('Viewer', 'Prefetch failed, will fallback to STUN', { error: err.message });
       })
       .finally(() => {
         if (isMounted) {
-          console.log('[Viewer] Credentials ready, connecting');
+          logger.info('Viewer', 'Credentials ready, connecting');
           connectViewer();
         }
       });
@@ -178,7 +179,9 @@ export default function Viewer() {
 
     if (isRetryingRef.current) return;
 
+    const attempt = retryCountRef.current + 1;
     const delay = RETRY_DELAYS[Math.min(retryCountRef.current, RETRY_DELAYS.length - 1)];
+    logger.warn('Viewer', 'Scheduling retry', { attempt, delaySec: delay, status });
     setRetryCountdown(delay);
 
     const tick = setInterval(() => {
@@ -188,6 +191,7 @@ export default function Viewer() {
     const timer = setTimeout(() => {
       clearInterval(tick);
       retryCountRef.current += 1;
+      logger.info('Viewer', 'Executing retry', { attempt });
       handleRetry();
     }, delay * 1000);
 
@@ -201,7 +205,7 @@ export default function Viewer() {
   useEffect(() => {
     if (status !== 'connecting') return;
     const t = setTimeout(() => {
-      console.warn(`[Viewer] ⏱️ Connection timed out – retrying`);
+      logger.warn('Viewer', 'Connection timed out, retrying');
       handleRetry();
     }, CONNECT_TIMEOUT_MS);
     return () => clearTimeout(t);
@@ -301,6 +305,11 @@ export default function Viewer() {
     }
   }
 
+  // ── Log status transitions
+  useEffect(() => {
+    logger.info('Viewer', 'Status transition', { status, rtt: connectionMetrics?.rtt });
+  }, [status]);
+
   const isBad = status === 'error' || status === 'disconnected';
 
   return (
@@ -353,6 +362,11 @@ export default function Viewer() {
             >
               {status === 'connected' ? 'LIVE' : status}
             </span>
+            {status === 'connected' && connectionMetrics?.rtt != null && (
+              <span className="text-[10px] text-slate-500 ml-1 font-mono">
+                {connectionMetrics.rtt}ms
+              </span>
+            )}
           </div>
         </div>
 

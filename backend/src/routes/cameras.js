@@ -5,7 +5,7 @@ const {
   deleteCamera, getStreamKey, rotateStreamKey, heartbeat,
 } = require('../controllers/cameraController');
 const { listRecordings, createRecording } = require('../controllers/recordingController');
-const { authenticate, ownCamera } = require('../middleware/auth');
+const { authenticate, ownCamera, requireNotDemo } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const { uploadRecording } = require('../config/storage');
 
@@ -15,6 +15,7 @@ router.use(authenticate);
 router.route('/')
   .get(listCameras)
   .post(
+    requireNotDemo,
     [
       body('name').trim().notEmpty(),
       body('sensitivity').optional().isInt({ min: 1, max: 100 }),
@@ -25,11 +26,11 @@ router.route('/')
 
 router.route('/:cameraId')
   .get(ownCamera, getCamera)
-  .patch(ownCamera, updateCamera)
-  .delete(ownCamera, deleteCamera);
+  .patch(ownCamera, requireNotDemo, updateCamera)
+  .delete(ownCamera, requireNotDemo, deleteCamera);
 
 router.get('/:cameraId/stream-key', ownCamera, getStreamKey);
-router.post('/:cameraId/stream-key/rotate', ownCamera, rotateStreamKey);
+router.post('/:cameraId/stream-key/rotate', ownCamera, requireNotDemo, rotateStreamKey);
 router.post('/:cameraId/heartbeat', ownCamera, heartbeat);
 
 // Recordings sub-resource

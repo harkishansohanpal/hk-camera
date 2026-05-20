@@ -16,6 +16,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import { turnAPI } from '../services/api';
+import { logger } from '../lib/logger';
+import { useConnectionStats } from './useConnectionStats';
 
 const FINAL_SOCKET_URL = import.meta.env.VITE_SOCKET_URL || '';
 
@@ -41,7 +43,7 @@ export async function prefetchIceServers(timeoutMs = 5000) {
       _cacheExpiry = now + (data.data.ttl ?? 86400) * 1000;
       return _cachedIce;
     } catch (err) {
-      console.warn('Could not fetch TURN credentials – falling back to STUN only', err);
+      logger.warn('WebRTC', 'Could not fetch TURN credentials – falling back to STUN only', { error: err.message });
       return FALLBACK_ICE;
     } finally {
       _fetchPromise = null;
@@ -77,8 +79,8 @@ async function optimizeCodecs(pc) {
     if (videoSender.setParameters) {
       await videoSender.setParameters(params).catch(() => {});
     }
-  } catch (err) {
-    console.warn('Could not optimize codecs:', err);
+    } catch (err) {
+    logger.warn('WebRTC', 'Could not optimize codecs', { error: err.message });
   }
 }
 
@@ -97,6 +99,7 @@ export function useWebRTC({ role, streamKey, onCommand }) {
   const offerInFlightRef  = useRef(false);
   const pendingCandidates = useRef([]);         // viewer-side ICE buffer
   const onCommandRef      = useRef(onCommand);
+  const connectStartRef   = useRef(0);          // timestamp when connectViewer started
   useEffect(() => { onCommandRef.current = onCommand; }, [onCommand]);
 
   // ── Partial cleanup (close peer connection but keep socket) ────
@@ -144,8 +147,8 @@ export function useWebRTC({ role, streamKey, onCommand }) {
   //  VIEWER side
   // ──────────────────────────────────────────────────────────
   const connectViewer = useCallback(async () => {
-    console.log('[WebRTC] connectViewer called');
-    const connectStartTime = Date.now();
+    connectStartRef.current = Date.now();
+    logger.info('WebRTC', 'connectViewer called', { streamKey });
     setStatus('connecting');
     offerInFlightRef.current = false;
     pendingCandidates.current = [];
@@ -158,48 +161,49 @@ export function useWebRTC({ role, streamKey, onCommand }) {
     closePeerConnection();
 
     const token = localStorage.getItem('accessToken');
-    console.log('[WebRTC] Creating socket connection');
+    logger.debug('WebRTC', 'Creating socket connection');
     const socket = io(FINAL_SOCKET_URL, {
       auth: { token },
       transports: ['websocket'],
       reconnection: false, // Viewer.jsx manages reconnect with backoff
     });
     socketRef.current = socket;
-    console.log(`[WebRTC] Socket created (took ${Date.now() - connectStartTime}ms)`);
+    logger.debug('WebRTC', 'Socket created', { tookMs: Date.now() - connectStartTime });
 
     // Use a flag to prevent handler execution after disconnect
     let isActive = true;
 
     const handleConnect = () => {
       if (isActive) {
-        console.log('[WebRTC] Socket connected, emitting viewer:join');
+        logger.info('WebRTC', 'Socket connected, emitting viewer:join', { streamKey });
         socket.emit('viewer:join', { streamKey });
       }
     };
 
     const handleCameraStatus = async ({ online, cameraId: id }) => {
       if (!isActive) return;
-      console.log('[WebRTC] Received camera:status', { online, cameraId: id });
+      logger.info('WebRTC', 'Received camera:status', { online, cameraId: id });
       setCameraId(id);
       if (!online) {
+        logger.info('WebRTC', 'Camera offline, waiting');
         setStatus('waiting');
       } else {
-        console.log('[WebRTC] Camera online, initiating offer');
+        logger.info('WebRTC', 'Camera online, initiating offer');
         await initiateOffer(socket, isActive);
       }
     };
 
     const handleCameraOnline = async () => {
       if (!isActive) return;
-      // Guard against duplicate offers—camera:status already handles the online transition
       if (!offerInFlightRef.current) {
+        logger.debug('WebRTC', 'camera:online received, initiating offer');
         await initiateOffer(socket, isActive);
       }
     };
 
     const handleCameraOffline = () => {
       if (isActive) {
-        // Close peer connection but keep socket alive to receive camera:online later
+        logger.info('WebRTC', 'Camera went offline');
         closePeerConnection();
         setStatus('waiting');
       }
@@ -207,20 +211,18 @@ export function useWebRTC({ role, streamKey, onCommand }) {
 
     const handleCameraAnswer = async ({ answer }) => {
       if (!isActive) return;
-      console.log('[WebRTC] Received camera:answer');
+      logger.info('WebRTC', 'Received camera:answer');
       const pc = pcRef.current;
       if (!pc) return;
       try {
         await pc.setRemoteDescription(new RTCSessionDescription(answer));
-        console.log('[WebRTC] Remote description set');
-        // Drain any ICE candidates that arrived before the answer
+        logger.debug('WebRTC', 'Remote description set');
         for (const c of pendingCandidates.current) {
           try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch {}
         }
         pendingCandidates.current = [];
       } catch (err) {
-        console.error('Failed to set remote description:', err);
-        // Reset flag to allow retry
+        logger.error('WebRTC', 'Failed to set remote description', { error: err.message });
         offerInFlightRef.current = false;
       }
     };
@@ -239,20 +241,20 @@ export function useWebRTC({ role, streamKey, onCommand }) {
     const handleError = ({ message }) => {
       if (isActive) {
         setStatus('error');
-        console.error('WebRTC signaling error:', message);
+        logger.error('WebRTC', 'Signaling error', { message });
       }
     };
 
     const handleConnectError = (err) => {
       if (isActive) {
         setStatus('error');
-        console.error('Socket connect error:', err.message);
+        logger.error('WebRTC', 'Socket connect error', { error: err.message });
       }
     };
 
     const handleDisconnect = () => {
       if (isActive) {
-        // Unexpected drop (tunnel restart, network blip) — let Viewer.jsx auto-retry
+        logger.warn('WebRTC', 'Socket disconnected unexpectedly', { streamKey });
         setStatus('disconnected');
         closePeerConnection();
       }
@@ -288,8 +290,8 @@ export function useWebRTC({ role, streamKey, onCommand }) {
     if (offerInFlightRef.current) return;
     if (!isActive) return;
 
-    console.log('[WebRTC] initiateOffer called');
     const offerStartTime = Date.now();
+    logger.info('WebRTC', 'initiateOffer called');
     offerInFlightRef.current = true;
 
     try {
@@ -299,13 +301,12 @@ export function useWebRTC({ role, streamKey, onCommand }) {
       }
       pendingCandidates.current = [];
 
-      console.log('[WebRTC] fetchIceServers starting');
+      logger.debug('WebRTC', 'fetchIceServers starting');
       const iceStart = Date.now();
       const iceServers = await fetchIceServers();
-      console.log(`[WebRTC] fetchIceServers completed in ${Date.now() - iceStart}ms`);
+      logger.debug('WebRTC', 'fetchIceServers completed', { tookMs: Date.now() - iceStart });
 
       const pc = createPeerConnection(iceServers, (candidate) => {
-        // Check if still active before sending
         if (socket.connected) {
           socket.emit('ice:candidate', { candidate });
         }
@@ -313,8 +314,6 @@ export function useWebRTC({ role, streamKey, onCommand }) {
       pcRef.current = pc;
 
       pc.ontrack = (e) => {
-        // e.streams[0] is the camera's MediaStream; fall back to wrapping the
-        // track in a new stream in case the browser omits the streams array.
         const stream = e.streams?.[0] ?? new MediaStream([e.track]);
         setRemoteStream(stream);
       };
@@ -325,9 +324,10 @@ export function useWebRTC({ role, streamKey, onCommand }) {
       pc.onconnectionstatechange = () => {
         if (!isActive) return;
         const s = pc.connectionState;
-        console.log('[WebRTC] PC connection state:', s);
+        logger.info('WebRTC', 'PC connection state change', { state: s });
         if (s === 'connected') {
-          console.log('[WebRTC] ✅ Peer connection established!');
+          const elapsed = Date.now() - connectStartRef.current;
+          logger.info('WebRTC', 'Peer connection established', { tookMs: elapsed });
           setStatus('connected');
           offerInFlightRef.current = false;
         }
@@ -341,25 +341,23 @@ export function useWebRTC({ role, streamKey, onCommand }) {
         }
       };
 
-      console.log('[WebRTC] Creating offer');
+      logger.debug('WebRTC', 'Creating offer');
       const offerStart = Date.now();
       const offer = await pc.createOffer();
-      console.log(`[WebRTC] Offer created in ${Date.now() - offerStart}ms`);
+      logger.debug('WebRTC', 'Offer created', { tookMs: Date.now() - offerStart });
 
       await pc.setLocalDescription(offer);
-      console.log('[WebRTC] Local description set');
 
-      // Check socket is still connected before sending
       if (!socket.connected) {
         throw new Error('Socket disconnected before sending offer');
       }
 
-      console.log('[WebRTC] Emitting viewer:offer');
+      logger.info('WebRTC', 'Emitting viewer:offer');
       socket.emit('viewer:offer', { offer });
-      console.log(`[WebRTC] Total initiateOffer time: ${Date.now() - offerStartTime}ms`);
+      logger.info('WebRTC', 'Total initiateOffer time', { tookMs: Date.now() - offerStartTime });
     } catch (err) {
-      console.error('Failed to initiate offer:', err);
-      offerInFlightRef.current = false;  // Reset flag on error
+      logger.error('WebRTC', 'Failed to initiate offer', { error: err.message });
+      offerInFlightRef.current = false;
       setStatus('error');
     }
   }
@@ -382,8 +380,14 @@ export function useWebRTC({ role, streamKey, onCommand }) {
     });
     socketRef.current = socket;
 
-    socket.on('connect', () => setStatus('connected'));
-    socket.on('connect_error', (err) => { setStatus('error'); console.error(err); });
+    socket.on('connect', () => {
+      logger.info('WebRTC', 'Camera socket connected', { streamKey });
+      setStatus('connected');
+    });
+    socket.on('connect_error', (err) => {
+      logger.error('WebRTC', 'Camera socket connect error', { error: err.message });
+      setStatus('error');
+    });
 
     socket.on('viewer:offer', async ({ viewerSocketId, offer }) => {
       try {
@@ -431,8 +435,7 @@ export function useWebRTC({ role, streamKey, onCommand }) {
           socket.emit('camera:answer', { viewerSocketId, answer });
         }
       } catch (err) {
-        console.error('Failed to handle viewer offer:', err);
-        // Clean up this viewer's connection on error
+        logger.error('WebRTC', 'Failed to handle viewer offer', { viewerSocketId, error: err.message });
         if (viewerPCsRef.current.has(viewerSocketId)) {
           viewerPCsRef.current.get(viewerSocketId).pc.close();
           viewerPCsRef.current.delete(viewerSocketId);
@@ -480,7 +483,7 @@ export function useWebRTC({ role, streamKey, onCommand }) {
   const rejoinViewer = useCallback(() => {
     const socket = socketRef.current;
     if (socket?.connected) {
-      console.log('[WebRTC] Re-emitting viewer:join to re-check camera status');
+      logger.info('WebRTC', 'Re-emitting viewer:join to re-check camera status');
       socket.emit('viewer:join', { streamKey });
     }
   }, [streamKey]);

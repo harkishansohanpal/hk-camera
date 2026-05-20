@@ -11,6 +11,7 @@ import { useMotionDetection } from '../hooks/useMotionDetection';
 import { useYoloDetection } from '../hooks/useYoloDetection';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
 import { useWakeLock } from '../hooks/useWakeLock';
+import { logger } from '../lib/logger';
 import CameraStream from '../components/CameraStream';
 import toast from 'react-hot-toast';
 
@@ -212,12 +213,13 @@ export default function CameraView() {
 
   const handleMotion = useCallback(({ thumbnail }) => {
     setMotionCount((n) => n + 1);
+    logger.info('CameraView', 'Motion detected', { cameraId, totalEvents: motionCount + 1 });
     alertAPI.motionAlert({ cameraId, thumbnailUrl: thumbnail }).catch(() => {});
     if (cameraRef.current?.recordOnMotion && streamRef.current) {
       const recStream = getOrientedStream();
       if (recStream) startRecordingRef.current(recStream, 'MOTION');
     }
-  }, [cameraId]);
+  }, [cameraId, motionCount]);
 
   const detectionMode = camera?.detectionMode || 'PIXEL_DIFF';
   const isMlMode = detectionMode === 'ML';
@@ -264,9 +266,11 @@ export default function CameraView() {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
+        logger.info('CameraView', 'App backgrounded, stopping detection');
         wasBackgroundRef.current = true;
         stopDetection();
       } else {
+        logger.info('CameraView', 'App foregrounded, restarting detection');
         wasBackgroundRef.current = false;
         if (shouldDetect(cameraRef.current)) startDetection();
       }
@@ -290,6 +294,7 @@ export default function CameraView() {
 
   async function handleToggle() {
     if (isBroadcasting) {
+      logger.info('CameraView', 'Stopping broadcast', { cameraId });
       await stopCamera2NightVision();
       stopBroadcast();
       stopDetection();
@@ -299,17 +304,20 @@ export default function CameraView() {
       return;
     }
     try {
+      logger.info('CameraView', 'Starting broadcast', { cameraId });
       const localStream = await getLocalStream();
       setStream(localStream);
       await startBroadcast(localStream);
       toast.success('Broadcasting started');
     } catch (err) {
+      logger.error('CameraView', 'Failed to start broadcast', { error: err.message, cameraId });
       toast.error('Could not access camera: ' + err.message);
     }
   }
 
   async function flipCamera() {
     const next = facingMode === 'environment' ? 'user' : 'environment';
+    logger.info('CameraView', 'Flipping camera', { from: facingMode, to: next });
     setFacingMode(next);
     if (isBroadcasting) {
       streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -373,6 +381,7 @@ export default function CameraView() {
             <button
               onClick={async () => {
                 const next = !camera?.motionDetect;
+                logger.info('CameraView', 'Toggle motion detection', { enabled: next });
                 setCamera((c) => ({ ...c, motionDetect: next }));
                 await cameraAPI.update(cameraId, { motionDetect: next });
                 if (isBroadcasting) { next ? startDetection() : stopDetection(); }

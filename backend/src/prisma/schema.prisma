@@ -16,6 +16,7 @@ model User {
   name             String
   avatarUrl        String?
   role             Role           @default(USER)
+  isDemo           Boolean        @default(false)
   pushSubscription String?        // JSON string of PushSubscription
   emailAlerts      Boolean        @default(true)
   pushAlerts       Boolean        @default(true)
@@ -166,4 +167,23 @@ enum SubscriptionStatus {
   TRIALING
   INCOMPLETE
   INCOMPLETE_EXPIRED
+}
+
+// ── Log ────────────────────────────────────────────────────────
+model Log {
+  id        String   @id @default(uuid())
+  level     String   // debug, info, warn, error
+  tag       String   // WebRTC, Viewer, CameraView, Signaling, etc.
+  message   String
+  meta      Json?
+  sessionId String?
+  userId    String?
+  cameraId  String?
+  createdAt DateTime @default(now())
+
+  @@index([level, createdAt])
+  @@index([tag, createdAt])
+  @@index([userId])
+  @@index([cameraId])
+  @@index([createdAt])
 }

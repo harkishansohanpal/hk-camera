@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Camera, Wifi, WifiOff, Trash2, Eye, AlertTriangle, MoreVertical } from 'lucide-react';
+import { Plus, Camera, Wifi, WifiOff, Trash2, Eye, AlertTriangle, MoreVertical, HelpCircle } from 'lucide-react';
 import { cameraAPI } from '../services/api';
 import toast from 'react-hot-toast';
+import GuidedTour, { useTour } from '../components/GuidedTour';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export default function Dashboard() {
   const [creating, setCreating]   = useState(false);
   const [openMenu, setOpenMenu]   = useState(null);
   const menuRef                   = useRef(null);
+  const tour = useTour();
 
   async function loadCameras() {
     try {
@@ -23,6 +25,14 @@ export default function Dashboard() {
   }
 
   useEffect(() => { loadCameras(); }, []);
+
+  // Auto-show tour for first-time users once cameras have loaded
+  useEffect(() => {
+    if (!loading && !tour.completed && !tour.active) {
+      const timer = setTimeout(() => tour.start(), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, tour.completed, tour.active, tour.start]);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -61,17 +71,29 @@ export default function Dashboard() {
 
   return (
     <div className="page-container">
+      {/* Tour trigger */}
+      {tour.completed && (
+        <button
+          onClick={() => { tour.reset(); tour.start(); }}
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-1.5 px-3 py-2 bg-slate-700/80 hover:bg-slate-600 text-slate-300 rounded-xl text-[11px] transition-colors backdrop-blur-sm border border-slate-600/50"
+          title="Restart tour"
+        >
+          <HelpCircle size={12} />
+          Tour
+        </button>
+      )}
+
       <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8">
         <div className="min-w-0 flex-1">
-          <h1 className="page-title">Dashboard</h1>
+          <h1 className="page-title" data-tour="tour-welcome">Dashboard</h1>
           <p className="text-slate-400 text-xs sm:text-sm mt-0.5 truncate">{cameras.length} camera{cameras.length !== 1 ? 's' : ''} registered</p>
         </div>
-        <button onClick={() => setShowAdd(true)} className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-hk-500 hover:bg-hk-600 text-white rounded-xl transition-colors font-medium text-xs sm:text-sm flex-shrink-0">
+        <button onClick={() => setShowAdd(true)} data-tour="tour-add-camera" className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-hk-500 hover:bg-hk-600 text-white rounded-xl transition-colors font-medium text-xs sm:text-sm flex-shrink-0">
           <Plus size={16} /> <span className="hidden xs:inline">Add Camera</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6 lg:mb-8">
+      <div data-tour="tour-stats" className="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6 lg:mb-8">
         {[
           { label: 'Total', value: cameras.length, Icon: Camera,       color: 'text-hk-400' },
           { label: 'Online', value: onlineCams,     Icon: Wifi,          color: 'text-green-400'  },
@@ -103,7 +125,7 @@ export default function Dashboard() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+        <div data-tour="tour-camera-list" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
           {cameras.map((cam) => (
             <div
               key={cam.id}
@@ -132,6 +154,7 @@ export default function Dashboard() {
                   <div className="relative flex-shrink-0">
                     <button
                       onClick={() => setOpenMenu(openMenu === cam.id ? null : cam.id)}
+                      data-tour="tour-camera-menu"
                       className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 rounded-lg transition-colors"
                       title="More options"
                     >
@@ -163,6 +186,7 @@ export default function Dashboard() {
 
                 <button
                   onClick={() => navigate(`/viewer/${cam.streamKey}`)}
+                  data-tour="tour-view-live"
                   className="w-full flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-hk-500 hover:bg-hk-600 text-white rounded-xl transition-colors font-medium text-xs sm:text-sm"
                 >
                   <Eye size={14} />
@@ -172,6 +196,11 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* ── Guided Tour ──────────────────────────────────────── */}
+      {tour.active && (
+        <GuidedTour onFinish={tour.finish} />
       )}
 
       {showAdd && (

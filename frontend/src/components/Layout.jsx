@@ -39,7 +39,7 @@ export default function Layout() {
           <span className="font-bold text-lg text-white">HK Camera</span>
         </div>
 
-        <nav className="p-3 flex flex-col gap-0.5 flex-1">
+        <nav data-tour="tour-nav" className="p-3 flex flex-col gap-0.5 flex-1">
           {NAV_ITEMS.map(({ to, label, Icon }) => (
             <NavLink
               key={to}
@@ -161,7 +161,7 @@ export default function Layout() {
 
       {/* ── Mobile Bottom Tab Bar ────────────────────────── */}
       {!isViewer && (
-        <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-slate-800/95 backdrop-blur-md border-t border-slate-700/60"
+        <nav data-tour="tour-nav" className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-slate-800/95 backdrop-blur-md border-t border-slate-700/60"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
           <div className="flex h-14">
             {NAV_ITEMS.map(({ to, label, Icon }) => {

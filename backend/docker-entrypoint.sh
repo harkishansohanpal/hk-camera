@@ -7,5 +7,8 @@ npx prisma migrate deploy --schema=./src/prisma/schema.prisma 2>&1 && echo "Migr
   npx prisma db push --schema=./src/prisma/schema.prisma 2>&1
 }
 
+echo "Seeding database..."
+node src/prisma/seed.js 2>&1
+
 echo "Starting app..."
 exec node src/index.js
