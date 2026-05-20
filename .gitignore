@@ -60,5 +60,6 @@ frontend/test-results/
 # Scratch / temp files
 a.md
 *.md
+!docs/*.md
 image.png
 *.png
