@@ -62,7 +62,7 @@ export default function AdminDashboard() {
           {meta.levels?.map((l) => (
             <div key={l.level} className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
               <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mb-1">
-                {React.createElement(LEVEL_ICONS[l.level] || Info, { size: 12 })}
+                {createElement(LEVEL_ICONS[l.level] || Info, { size: 12 })}
                 {l.level.toUpperCase()}
               </div>
               <p className="text-xl font-bold text-white">{l.count}</p>

@@ -168,7 +168,7 @@ export function useWebRTC({ role, streamKey, onCommand }) {
       reconnection: false, // Viewer.jsx manages reconnect with backoff
     });
     socketRef.current = socket;
-    logger.debug('WebRTC', 'Socket created', { tookMs: Date.now() - connectStartTime });
+    logger.debug('WebRTC', 'Socket created', { tookMs: Date.now() - connectStartRef.current });
 
     // Use a flag to prevent handler execution after disconnect
     let isActive = true;
