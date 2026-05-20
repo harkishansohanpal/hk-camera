@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, ChevronRight, ChevronLeft, SkipForward } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
+import { ChevronRight, ChevronLeft, SkipForward } from 'lucide-react';
 
 const DISMISSED_KEY = 'hk-camera-tour-dismissed';
 
@@ -65,68 +65,6 @@ function getTargetEl(step) {
   return document.querySelector(`[data-tour="${step.target}"]`);
 }
 
-function computePosition(targetEl, preferred, tw, th) {
-  if (!targetEl) {
-    return { top: window.innerHeight / 2, left: window.innerWidth / 2 };
-  }
-
-  const tr = targetEl.getBoundingClientRect();
-  const gap = 8;
-  const pad = 12;
-  const { innerWidth, innerHeight } = window;
-  const isNarrow = innerWidth < 480;
-
-  // On narrow screens, force top/bottom placement — left/right doesn't have room
-  if (isNarrow && (preferred === 'left' || preferred === 'right')) {
-    preferred = 'bottom';
-  }
-
-  let top, left;
-
-  switch (preferred) {
-    case 'top':
-      top = tr.top - gap - th;
-      left = tr.left + tr.width / 2 - tw / 2;
-      if (top < pad) {
-        top = tr.bottom + gap;
-        left = tr.left + tr.width / 2 - tw / 2;
-      }
-      break;
-    case 'bottom':
-      top = tr.bottom + gap;
-      left = tr.left + tr.width / 2 - tw / 2;
-      if (top + th > innerHeight - pad) {
-        top = tr.top - gap - th;
-        left = tr.left + tr.width / 2 - tw / 2;
-      }
-      break;
-    case 'left':
-      top = tr.top + tr.height / 2 - th / 2;
-      left = tr.left - gap - tw;
-      if (left < pad) {
-        top = tr.top + tr.height / 2 - th / 2;
-        left = tr.right + gap;
-      }
-      break;
-    case 'right':
-      top = tr.top + tr.height / 2 - th / 2;
-      left = tr.right + gap;
-      if (left + tw > innerWidth - pad) {
-        top = tr.top + tr.height / 2 - th / 2;
-        left = tr.left - gap - tw;
-      }
-      break;
-    default:
-      top = tr.bottom + gap;
-      left = tr.left + tr.width / 2 - tw / 2;
-  }
-
-  top = Math.max(pad, Math.min(top, innerHeight - th - pad));
-  left = Math.max(pad, Math.min(left, innerWidth - tw - pad));
-
-  return { top, left };
-}
-
 export function useTour() {
   const [active, setActive] = useState(false);
   const [dismissed, setDismissed] = useState(() => localStorage.getItem(DISMISSED_KEY) === 'true');
@@ -149,7 +87,7 @@ export function useTour() {
 
 export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss }) {
   const [stepIndex, setStepIndex] = useState(0);
-  const [pos, setPos] = useState({ top: '50%', left: '50%' });
+  const [pos, setPos] = useState({ top: 0, left: 0 });
   const [spotlight, setSpotlight] = useState(null);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const tooltipRef = useRef(null);
@@ -158,7 +96,7 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
   const isFirst = stepIndex === 0;
   const isLast = stepIndex === steps.length - 1;
 
-  const reposition = useCallback(() => {
+  const positionTooltip = useCallback(() => {
     const el = getTargetEl(step);
     if (el) {
       const r = el.getBoundingClientRect();
@@ -167,34 +105,76 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
       setSpotlight(null);
     }
 
-    // Wait a tick for tooltip DOM to be available
-    requestAnimationFrame(() => {
-      if (!tooltipRef.current) {
-        setPos({ top: '50%', left: '50%' });
-        return;
+    const t = tooltipRef.current;
+    if (!t) return;
+    const tw = t.offsetWidth;
+    const th = t.offsetHeight;
+    if (tw === 0 || th === 0) {
+      setPos({ top: window.innerHeight / 2 - th / 2, left: window.innerWidth / 2 - tw / 2 });
+      return;
+    }
+
+    const pad = 12;
+    const gap = 8;
+    const { innerWidth, innerHeight } = window;
+    const isNarrow = innerWidth < 480;
+
+    let top;
+    let left = Math.max(pad, (innerWidth - tw) / 2);
+
+    if (!el) {
+      top = (innerHeight - th) / 2;
+    } else {
+      const tr = el.getBoundingClientRect();
+      const above = tr.top - gap - th;
+      const below = tr.bottom + gap;
+
+      if (isNarrow || step.position === 'center') {
+        top = below + th < innerHeight - pad ? below : (above > pad ? above : pad);
+        left = Math.max(pad, Math.min(tr.left + tr.width / 2 - tw / 2, innerWidth - tw - pad));
+      } else if (step.position === 'top') {
+        top = above > pad ? above : below;
+        left = Math.max(pad, Math.min(tr.left + tr.width / 2 - tw / 2, innerWidth - tw - pad));
+      } else if (step.position === 'bottom') {
+        top = below + th < innerHeight - pad ? below : (above > pad ? above : pad);
+        left = Math.max(pad, Math.min(tr.left + tr.width / 2 - tw / 2, innerWidth - tw - pad));
+      } else if (step.position === 'left') {
+        if (tr.left > tw + gap + pad) {
+          top = Math.max(pad, Math.min(tr.top + tr.height / 2 - th / 2, innerHeight - th - pad));
+          left = tr.left - gap - tw;
+        } else {
+          top = Math.max(pad, Math.min(tr.top + tr.height / 2 - th / 2, innerHeight - th - pad));
+          left = tr.right + gap;
+        }
+      } else if (step.position === 'right') {
+        if (tr.right + tw + gap + pad < innerWidth) {
+          top = Math.max(pad, Math.min(tr.top + tr.height / 2 - th / 2, innerHeight - th - pad));
+          left = tr.right + gap;
+        } else {
+          top = Math.max(pad, Math.min(tr.top + tr.height / 2 - th / 2, innerHeight - th - pad));
+          left = tr.left - gap - tw;
+        }
+      } else {
+        top = below + th < innerHeight - pad ? below : (above > pad ? above : pad);
+        left = Math.max(pad, Math.min(tr.left + tr.width / 2 - tw / 2, innerWidth - tw - pad));
       }
-      const t = tooltipRef.current;
-      const tw = t.offsetWidth;
-      const th = t.offsetHeight;
-      if (tw === 0 || th === 0) {
-        setPos({ top: '50%', left: '50%' });
-        return;
-      }
-      const p = computePosition(el, step.position, tw, th);
-      setPos({ top: p.top, left: p.left });
-    });
+    }
+
+    top = Math.max(pad, Math.min(top, innerHeight - th - pad));
+    left = Math.max(pad, Math.min(left, innerWidth - tw - pad));
+    setPos({ top, left });
   }, [step, stepIndex]);
 
-  useEffect(() => {
-    reposition();
-    const handler = () => reposition();
+  useLayoutEffect(() => {
+    positionTooltip();
+    const handler = () => positionTooltip();
     window.addEventListener('resize', handler);
     window.addEventListener('scroll', handler, true);
     return () => {
       window.removeEventListener('resize', handler);
       window.removeEventListener('scroll', handler, true);
     };
-  }, [reposition]);
+  }, [positionTooltip]);
 
   function handleNext() {
     if (isLast) {
@@ -213,6 +193,8 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
     if (dontShowAgain) onDismiss?.();
     onFinish?.();
   }
+
+  const isNarrow = typeof window !== 'undefined' ? window.innerWidth < 480 : false;
 
   return (
     <div className="fixed inset-0 z-[100]" style={{ pointerEvents: 'none' }}>
@@ -237,13 +219,15 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
       {/* Tooltip card */}
       <div
         ref={tooltipRef}
-        className="absolute z-10 bg-slate-800 border border-slate-600 rounded-2xl shadow-2xl p-4 sm:p-5 w-72 sm:w-80"
+        className="absolute z-10 bg-slate-800 border border-slate-600 rounded-2xl shadow-2xl p-4 sm:p-5"
         style={{
           top: pos.top,
           left: pos.left,
           pointerEvents: 'auto',
           transition: 'top 0.3s ease, left 0.3s ease',
           maxWidth: 'calc(100vw - 24px)',
+          width: isNarrow ? 'auto' : undefined,
+          minWidth: isNarrow ? undefined : 288,
         }}
       >
         {/* Progress dots */}
@@ -260,7 +244,7 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
           </div>
           <button
             onClick={handleSkip}
-            className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-200 transition-colors"
+            className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0"
           >
             <SkipForward size={12} />
             Skip
@@ -276,7 +260,7 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
             type="checkbox"
             checked={dontShowAgain}
             onChange={(e) => setDontShowAgain(e.target.checked)}
-            className="w-3.5 h-3.5 rounded border-slate-500 bg-slate-700 text-hk-500 focus:ring-hk-500/30 focus:ring-offset-0 cursor-pointer"
+            className="w-3.5 h-3.5 rounded border-slate-500 bg-slate-700 text-hk-500 focus:ring-hk-500/30 focus:ring-offset-0 cursor-pointer flex-shrink-0"
           />
           <span className="text-[11px] text-slate-400 group-hover:text-slate-300 transition-colors select-none">
             Don't show this on startup from next time
