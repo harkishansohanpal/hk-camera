@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Camera, Wifi, WifiOff, Trash2, Eye, AlertTriangle, MoreVertical, HelpCircle } from 'lucide-react';
+import { Plus, Camera, Wifi, WifiOff, Trash2, Eye, AlertTriangle, MoreVertical, HelpCircle, Radio } from 'lucide-react';
 import { cameraAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import GuidedTour, { useTour } from '../components/GuidedTour';
@@ -186,14 +186,24 @@ export default function Dashboard() {
                   <span className="text-slate-500 text-[10px] sm:text-xs">{cam._count?.recordings ?? 0} clips</span>
                 </div>
 
-                <button
-                  onClick={() => navigate(`/viewer/${cam.streamKey}`)}
-                  data-tour="tour-view-live"
-                  className="w-full flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-hk-500 hover:bg-hk-600 text-white rounded-xl transition-colors font-medium text-xs sm:text-sm"
-                >
-                  <Eye size={14} />
-                  View Live
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => navigate(`/viewer/${cam.streamKey}`)}
+                    data-tour="tour-view-live"
+                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-hk-500 hover:bg-hk-600 text-white rounded-xl transition-colors font-medium text-xs sm:text-sm"
+                  >
+                    <Eye size={14} />
+                    View Live
+                  </button>
+                  <button
+                    onClick={() => navigate(`/cameras/${cam.id}`)}
+                    data-tour="tour-broadcast"
+                    className="flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl transition-colors font-medium text-xs sm:text-sm"
+                  >
+                    <Radio size={14} />
+                    <span className="hidden xs:inline">Broadcast</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))}

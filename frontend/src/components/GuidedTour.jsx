@@ -23,10 +23,10 @@ const DEFAULT_STEPS = [
     position: 'left',
   },
   {
-    target: 'tour-host-camera',
+    target: 'tour-broadcast',
     title: 'Broadcast from Your Phone',
-    content: 'Open the app on your phone and go to CameraView. Enter the stream key from the camera you just added — your phone becomes the live camera.',
-    position: 'center',
+    content: 'Open the app on your phone and tap "Broadcast" on the camera card. Enter the stream key to start streaming live video.',
+    position: 'top',
   },
   {
     target: 'tour-camera-list',
