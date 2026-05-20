@@ -90,6 +90,7 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
   const [pos, setPos] = useState({ top: 0, left: 0 });
   const [spotlight, setSpotlight] = useState(null);
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [pulse, setPulse] = useState(false);
   const tooltipRef = useRef(null);
 
   const step = steps[stepIndex];
@@ -167,12 +168,15 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
 
   useLayoutEffect(() => {
     positionTooltip();
+    setPulse(true);
+    const timer = setTimeout(() => setPulse(false), 400);
     const handler = () => positionTooltip();
     window.addEventListener('resize', handler);
     window.addEventListener('scroll', handler, true);
     return () => {
       window.removeEventListener('resize', handler);
       window.removeEventListener('scroll', handler, true);
+      clearTimeout(timer);
     };
   }, [positionTooltip]);
 
@@ -198,6 +202,14 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
 
   return (
     <div className="fixed inset-0 z-[100]" style={{ pointerEvents: 'none' }}>
+      {/* Spotlight pulse animation keyframes */}
+      <style>{`
+        @keyframes tour-spotlight-pop {
+          0% { transform: scale(0.92); opacity: 0.6; }
+          50% { transform: scale(1.04); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50" style={{ pointerEvents: 'auto' }} onClick={handleSkip} />
 
@@ -210,8 +222,13 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
             left: spotlight.left,
             width: spotlight.width,
             height: spotlight.height,
-            boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)',
+            boxShadow: `
+              0 0 0 9999px rgba(0,0,0,0.7),
+              0 0 0 3px rgba(14,165,233,0.6),
+              0 0 24px 4px rgba(14,165,233,0.3)
+            `,
             transition: 'top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease',
+            animation: pulse ? 'tour-spotlight-pop 0.4s ease-out' : undefined,
           }}
         />
       )}
