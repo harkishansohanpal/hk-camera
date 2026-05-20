@@ -223,9 +223,9 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
             width: spotlight.width,
             height: spotlight.height,
             boxShadow: `
-              0 0 0 9999px rgba(0,0,0,0.7),
-              0 0 0 3px rgba(14,165,233,0.6),
-              0 0 24px 4px rgba(14,165,233,0.3)
+              0 0 0 9999px rgba(0,0,0,0.85),
+              0 0 0 2px rgba(255,255,255,0.7),
+              0 0 20px 3px rgba(255,255,255,0.25)
             `,
             transition: 'top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease',
             animation: pulse ? 'tour-spotlight-pop 0.4s ease-out' : undefined,
