@@ -19,8 +19,14 @@ const DEFAULT_STEPS = [
   {
     target: 'tour-add-camera',
     title: 'Add a Camera',
-    content: 'Click here to add your first camera. You\'ll need an RTSP stream URL or the stream key from your camera app.',
+    content: 'Click here to add a security camera. If you have an RTSP camera, enter its stream URL. For your phone, you\'ll use the stream key shown after adding.',
     position: 'left',
+  },
+  {
+    target: 'tour-host-camera',
+    title: 'Broadcast from Your Phone',
+    content: 'Open the app on your phone and go to CameraView. Enter the stream key from the camera you just added — your phone becomes the live camera.',
+    position: 'center',
   },
   {
     target: 'tour-camera-list',
@@ -49,7 +55,7 @@ const DEFAULT_STEPS = [
   {
     target: 'tour-end',
     title: 'You\'re All Set!',
-    content: 'Add a camera to start monitoring. If you need help, check the docs or join our Discord.',
+    content: 'Add a camera, then open the CameraView on your phone with the stream key to start broadcasting live.',
     position: 'center',
   },
 ];

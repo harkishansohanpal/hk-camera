@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [openMenu, setOpenMenu]   = useState(null);
   const menuRef                   = useRef(null);
   const tour = useTour();
+  const tourFired = useRef(false);
 
   async function loadCameras() {
     try {
@@ -26,13 +27,14 @@ export default function Dashboard() {
 
   useEffect(() => { loadCameras(); }, []);
 
-  // Auto-show tour on every login unless dismissed
+  // Auto-show tour on every login unless dismissed (once per page load)
   useEffect(() => {
-    if (!loading && !tour.dismissed && !tour.active) {
+    if (!loading && !tourFired.current && !tour.dismissed) {
+      tourFired.current = true;
       const timer = setTimeout(() => tour.start(), 500);
       return () => clearTimeout(timer);
     }
-  }, [loading, tour.dismissed, tour.active, tour.start]);
+  }, [loading, tour.dismissed]);
 
   useEffect(() => {
     function handleClickOutside(e) {
