@@ -65,58 +65,64 @@ function getTargetEl(step) {
   return document.querySelector(`[data-tour="${step.target}"]`);
 }
 
-function computePosition(targetEl, preferred, tooltipWidth, tooltipHeight) {
+function computePosition(targetEl, preferred, tw, th) {
   if (!targetEl) {
     return { top: window.innerHeight / 2, left: window.innerWidth / 2 };
   }
 
   const tr = targetEl.getBoundingClientRect();
-  const gap = 12;
-  const pad = 16;
+  const gap = 8;
+  const pad = 12;
   const { innerWidth, innerHeight } = window;
+  const isNarrow = innerWidth < 480;
+
+  // On narrow screens, force top/bottom placement — left/right doesn't have room
+  if (isNarrow && (preferred === 'left' || preferred === 'right')) {
+    preferred = 'bottom';
+  }
 
   let top, left;
 
   switch (preferred) {
     case 'top':
-      top = tr.top - gap - tooltipHeight;
-      left = tr.left + tr.width / 2 - tooltipWidth / 2;
+      top = tr.top - gap - th;
+      left = tr.left + tr.width / 2 - tw / 2;
       if (top < pad) {
         top = tr.bottom + gap;
-        left = tr.left + tr.width / 2 - tooltipWidth / 2;
+        left = tr.left + tr.width / 2 - tw / 2;
       }
       break;
     case 'bottom':
       top = tr.bottom + gap;
-      left = tr.left + tr.width / 2 - tooltipWidth / 2;
-      if (top + tooltipHeight > innerHeight - pad) {
-        top = tr.top - gap - tooltipHeight;
-        left = tr.left + tr.width / 2 - tooltipWidth / 2;
+      left = tr.left + tr.width / 2 - tw / 2;
+      if (top + th > innerHeight - pad) {
+        top = tr.top - gap - th;
+        left = tr.left + tr.width / 2 - tw / 2;
       }
       break;
     case 'left':
-      top = tr.top + tr.height / 2 - tooltipHeight / 2;
-      left = tr.left - gap - tooltipWidth;
+      top = tr.top + tr.height / 2 - th / 2;
+      left = tr.left - gap - tw;
       if (left < pad) {
-        top = tr.top + tr.height / 2 - tooltipHeight / 2;
+        top = tr.top + tr.height / 2 - th / 2;
         left = tr.right + gap;
       }
       break;
     case 'right':
-      top = tr.top + tr.height / 2 - tooltipHeight / 2;
+      top = tr.top + tr.height / 2 - th / 2;
       left = tr.right + gap;
-      if (left + tooltipWidth > innerWidth - pad) {
-        top = tr.top + tr.height / 2 - tooltipHeight / 2;
-        left = tr.left - gap - tooltipWidth;
+      if (left + tw > innerWidth - pad) {
+        top = tr.top + tr.height / 2 - th / 2;
+        left = tr.left - gap - tw;
       }
       break;
     default:
       top = tr.bottom + gap;
-      left = tr.left + tr.width / 2 - tooltipWidth / 2;
+      left = tr.left + tr.width / 2 - tw / 2;
   }
 
-  top = Math.max(pad, Math.min(top, innerHeight - tooltipHeight - pad));
-  left = Math.max(pad, Math.min(left, innerWidth - tooltipWidth - pad));
+  top = Math.max(pad, Math.min(top, innerHeight - th - pad));
+  left = Math.max(pad, Math.min(left, innerWidth - tw - pad));
 
   return { top, left };
 }
@@ -231,8 +237,14 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
       {/* Tooltip card */}
       <div
         ref={tooltipRef}
-        className="absolute z-10 bg-slate-800 border border-slate-600 rounded-2xl shadow-2xl p-5 w-72 sm:w-80"
-        style={{ top: pos.top, left: pos.left, pointerEvents: 'auto', transition: 'top 0.3s ease, left 0.3s ease' }}
+        className="absolute z-10 bg-slate-800 border border-slate-600 rounded-2xl shadow-2xl p-4 sm:p-5 w-72 sm:w-80"
+        style={{
+          top: pos.top,
+          left: pos.left,
+          pointerEvents: 'auto',
+          transition: 'top 0.3s ease, left 0.3s ease',
+          maxWidth: 'calc(100vw - 24px)',
+        }}
       >
         {/* Progress dots */}
         <div className="flex items-center justify-between mb-3">
