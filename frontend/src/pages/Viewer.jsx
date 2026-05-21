@@ -20,7 +20,7 @@ export default function Viewer() {
   const navigate = useNavigate();
   const videoRef = useRef(null);
 
-  const [muted, setMuted] = useState(true);
+  const [muted] = useState(true);
   const [showControls, setShowControls] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);

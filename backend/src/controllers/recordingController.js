@@ -98,9 +98,13 @@ async function createRecording(req, res, next) {
 
     if (process.env.STORAGE_STRATEGY === 's3') {
       const key = `recordings/${cameraId}/${req.file.filename}`;
-      const fileBuffer = fs.readFileSync(req.file.path);
+      const safePath = path.resolve(req.file.path);
+      if (!safePath.startsWith(process.env.LOCAL_UPLOAD_DIR ? path.resolve(process.env.LOCAL_UPLOAD_DIR) : path.resolve('./uploads'))) {
+        return res.status(400).json({ success: false, message: 'Invalid file path' });
+      }
+      const fileBuffer = fs.readFileSync(safePath);
       url = await uploadToS3(key, fileBuffer, req.file.mimetype);
-      fs.unlinkSync(req.file.path); // clean up temp file
+      fs.unlinkSync(safePath);
     } else {
       // Local storage – serve via /recordings/ static route
       url = `/recordings/${req.file.filename}`;

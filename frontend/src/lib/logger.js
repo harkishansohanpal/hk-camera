@@ -12,7 +12,9 @@ let _intervalId = null;
 
 function getSessionId() {
   if (!_sessionId) {
-    _sessionId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const arr = new Uint32Array(2);
+    crypto.getRandomValues(arr);
+    _sessionId = `${Date.now()}-${arr[0].toString(36)}${arr[1].toString(36)}`;
   }
   return _sessionId;
 }

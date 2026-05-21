@@ -30,16 +30,6 @@ const mockCamera = {
   detectionMode: 'PIXEL_DIFF',
 };
 
-const mockRecording = {
-  id: 'rec-regression-1',
-  filename: 'regression-test.webm',
-  url: '/recordings/regression-test.webm',
-  size: 1024,
-  duration: 30,
-  trigger: 'MOTION',
-  cameraId: mockCamera.id,
-};
-
 const mockPlan = {
   id: 'plan-pro',
   name: 'Pro',
@@ -47,15 +37,6 @@ const mockPlan = {
   price: 999,
   features: JSON.stringify(['ML Detection', '30-day recordings']),
   sortOrder: 1,
-};
-
-const mockSubscription = {
-  id: 'sub-regression',
-  userId: mockUser.id,
-  planId: mockPlan.id,
-  status: 'ACTIVE',
-  currentPeriodStart: new Date(),
-  currentPeriodEnd: new Date(Date.now() + 30 * 24 * 3600 * 1000),
 };
 
 function userToken(user = mockUser) {

@@ -65,7 +65,7 @@ app.use(helmet({
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
     ? process.env.CLIENT_URL
-    : true, // reflect any origin in development (tunnels, mobile testing, etc.)
+    : process.env.CLIENT_URL || true,
   credentials: true,
 }));
 

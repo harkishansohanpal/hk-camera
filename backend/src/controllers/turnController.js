@@ -22,7 +22,7 @@ async function getTurnCredentials(req, res) {
     const port = parseInt(COTURN_PORT, 10) || 3478;
     const ttl = parseInt(CLOUDFLARE_TURN_TTL, 10) || 86400;
     const username = `${ttl}:${req.user.id}`;
-    const hmac = crypto.createHmac('sha1', COTURN_SECRET).update(username).digest('base64');
+    const hmac = crypto.createHmac('sha256', COTURN_SECRET).update(username).digest('base64');
     const credential = Buffer.from(hmac, 'base64').toString('base64');
 
     const iceServers = [

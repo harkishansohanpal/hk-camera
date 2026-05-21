@@ -28,7 +28,8 @@ async function sendEmail({ to, subject, html }) {
     logger.debug('SMTP not configured – skipping email', { to, subject });
     return;
   }
-  await transporter.sendMail({ from: process.env.ALERT_FROM || process.env.SMTP_USER, to, subject, html });
+  const safeSubject = subject.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  await transporter.sendMail({ from: process.env.ALERT_FROM || process.env.SMTP_USER, to, subject: safeSubject, html });
   logger.info('Email sent', { to, subject });
 }
 
