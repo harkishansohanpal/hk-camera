@@ -21,6 +21,7 @@
 - **TURN server** – Coturn (self-hosted) or Cloudflare TURN with STUN fallback
 - **Mobile apps** – Native iOS and Android via Capacitor, installable as PWA
 - **User registration** – Self-service account creation
+- **Dark mode** – Light/dark theme toggle with CSS variables, persisted to localStorage
 
 ---
 
@@ -28,7 +29,7 @@
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 18, Vite, Tailwind CSS, TypeScript, Zustand, Socket.io client |
+| Frontend | React 18, Vite, Tailwind CSS, Socket.io client |
 | ML Detection | ONNX Runtime Web, YOLOv8-nano |
 | Backend | Node.js 20, Express, Socket.io |
 | Database | PostgreSQL + Prisma ORM |
@@ -75,10 +76,10 @@ Open http://localhost:5173 and log in. The seed script prints credentials to the
 
 | Suite | Framework | Count | Location |
 |-------|-----------|-------|----------|
-| Unit tests | Vitest | 35 | `frontend/src/**/*.test.js` |
-| Integration | Jest + Supertest | 30 | `backend/src/__tests__/` |
+| Unit tests | Vitest | 39 | `frontend/src/**/*.test.js` |
+| Integration | Jest + Supertest | 57 | `backend/src/__tests__/` |
 | E2E | Playwright | 16 | `frontend/e2e/` |
-| **Total** | | **81** | |
+| **Total** | | **112** | |
 
 Run tests:
 
@@ -120,27 +121,30 @@ hk-camera/
 │   │   ├── services/         # notificationService.js (email + push)
 │   │   ├── socket/           # WebRTC signaling server
 │   │   └── index.js          # App entry point
+│   ├── .eslintrc.cjs         # ESLint with security rules
 │   ├── fly.toml              # Fly.io deployment config
 │   ├── Dockerfile
 │   ├── jest.config.js
 │   └── package.json
 ├── frontend/
 │   ├── src/
-│   │   ├── components/       # CameraStream, ViewerStream, CameraControlsPanel, Layout, ProtectedRoute
-│   │   ├── contexts/         # AuthContext
+│   │   ├── components/       # CameraStream, ViewerStream, CameraControlsPanel, Layout, ProtectedRoute, GuidedTour
+│   │   ├── contexts/         # AuthContext, ThemeContext
 │   │   ├── hooks/            # useWebRTC, useMotionDetection, useYoloDetection, useMediaRecorder, ...
 │   │   ├── ml/               # Pure detection logic (parseDetections, preprocessFrame, constants)
-│   │   ├── pages/            # Landing, Pricing, Billing, Dashboard, CameraView, Viewer, ...
+│   │   ├── pages/            # Landing, Pricing, Billing, Dashboard, CameraView, Viewer, Settings, ...
+│   │   │   └── admin/        # Admin dashboard, logs, log analyzer
 │   │   ├── services/         # api.js (Axios + auto-refresh), advancedCamera.js
 │   │   ├── App.jsx
 │   │   ├── main.jsx
-│   │   └── index.css
+│   │   └── index.css         # Tailwind + CSS custom properties (light/dark)
 │   ├── e2e/                  # Playwright E2E tests
 │   ├── public/
 │   │   ├── _redirects        # Cloudflare Pages SPA fallback
 │   │   ├── models/           # YOLOv8n.onnx (downloaded during CI)
 │   │   ├── manifest.json     # PWA manifest
 │   │   └── icons/
+│   ├── .eslintrc.cjs         # ESLint with security + React hooks rules
 │   ├── capacitor.config.ts
 │   ├── playwright.config.js
 │   ├── nginx.conf
@@ -157,6 +161,12 @@ hk-camera/
 ├── docker-compose.yml
 ├── coturn/
 │   └── turnserver.conf       # Coturn TURN server config
+├── .github/
+│   ├── dependabot.yml        # Automated dependency updates
+│   └── workflows/
+│       ├── ci.yml            # Lint, test, security audit, build
+│       ├── codeql.yml        # CodeQL SAST analysis
+│       └── deploy.yml        # Auto-deploy to Fly.io + Cloudflare Pages
 ├── setup-oracle.sh
 ├── tunnel.sh
 ├── .env.example
@@ -182,7 +192,8 @@ If a password env var is empty, the seed script generates a random 16-character 
 
 - **Backend** — Fly.io (`hk-camera-backend`, config in `backend/fly.toml`)
 - **Frontend** — Cloudflare Pages (`_redirects` for SPA routing)
-- **CI/CD** — GitHub Actions: `ci.yml` (lint, test, build on every push), `deploy.yml` (auto-deploy on master)
+- **CI/CD** — GitHub Actions: `ci.yml` (lint, test, security audit, build), `codeql.yml` (CodeQL SAST), `deploy.yml` (auto-deploy on master)
+- **Security scanning** — CodeQL SAST + `npm audit` (fails on high severity) + `eslint-plugin-security` + Dependabot
 - **Self-hosted** — See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for Docker Compose + Oracle Cloud setup
 
 ---

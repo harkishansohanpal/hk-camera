@@ -55,6 +55,7 @@ HK Camera is a full-stack web application that turns any browser-equipped device
 | Component | Responsibility |
 |-----------|---------------|
 | `AuthContext` | Global auth state, JWT management, auto-refresh |
+| `ThemeContext` | Dark/light theme toggle, persisted to localStorage via `dark` class on `<html>` |
 | `useWebRTC` | WebRTC peer connection lifecycle for both camera and viewer roles |
 | `useMotionDetection` | Canvas pixel-diff algorithm for detecting movement |
 | `useMediaRecorder` | MediaRecorder API wrapper, upload to backend on stop |
@@ -63,6 +64,7 @@ HK Camera is a full-stack web application that turns any browser-equipped device
 | `Dashboard` | Camera management CRUD |
 | `Recordings` | Browse, play, delete recorded clips |
 | `Alerts` | View and manage motion/status alerts |
+| `Layout` | Sidebar + tab bar with navigation, user menu, theme toggle |
 
 ### Backend (Node.js + Express)
 
@@ -135,6 +137,16 @@ User ──── Camera ──── Recording
 **Alert** – motion/offline events, read state, optional thumbnail.
 
 ---
+
+## Theming System
+
+The app uses CSS custom properties with Tailwind's `darkMode: 'class'` strategy for light/dark theme support:
+
+- **`<html class="dark">`** toggles all CSS variables from their `:root` (light) defaults to `.dark` overrides
+- Variables defined for: page bg, card bg, text (primary/secondary/tertiary), input bg, shadows, Apple system colors
+- Tailwind extension classes (`bg-page`, `bg-card`, `text-text-primary`, etc.) map to these variables
+- All component styles use variable-based classes — no hardcoded light/dark color pairs
+- Theme preference persisted in `localStorage('hk-camera-theme')`, defaults to `dark`
 
 ## Authentication
 

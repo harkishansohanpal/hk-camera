@@ -281,11 +281,26 @@ Runs on every push to `master` and `hk-camera-beta`, and on PRs to `master`:
 
 | Job | What it runs |
 |-----|-------------|
-| `frontend` | ESLint lint, npm audit, Vitest unit tests (35), Vite production build |
-| `backend` | npm audit, Prisma generate, ESLint lint, Jest integration + regression tests (57) |
+| `frontend` | ESLint lint (with `eslint-plugin-security` rules), `npm audit --audit-level=high` (blocks on high severity), Vitest unit tests (39), Vite production build |
+| `backend` | `npm audit --audit-level=high` (blocks on high severity), Prisma generate, ESLint lint (with `eslint-plugin-security` rules), Jest integration + regression tests (57) |
 | `e2e` | Playwright E2E tests (16) + regression tests (20) against preview server + production backend |
 | `smoke` | Fast Playwright smoke tests (4) against preview server |
-| `security` | Checks HTTP security headers on Cloudflare Pages and Fly.io |
+| `security` | Checks HTTP security headers (CSP, XFO, HSTS, XCTO) on Cloudflare Pages and Fly.io |
+
+### CodeQL SAST (`codeql.yml`)
+
+Runs on every push/PR to master + weekly scheduled scan:
+
+- Uses GitHub's CodeQL analysis engine with `security-extended` and `security-and-quality` query suites
+- Targets `javascript-typescript` language (build-mode: none — no compilation needed)
+- Results appear as code scanning alerts on GitHub
+
+### Dependabot (`dependabot.yml`)
+
+Weekly automated PRs for:
+
+- `npm` dependencies in `/frontend` and `/backend` (grouped by dev/prod, minor/patch)
+- `github-actions` dependencies monthly
 
 ### Deploy Pipeline (`deploy.yml`)
 
@@ -305,3 +320,5 @@ Runs only on pushes to `master`:
 |--------|---------|-------|
 | `CLOUDFLARE_API_TOKEN` | deploy.yml | Cloudflare API token with Pages write |
 | `FLY_API_TOKEN` | deploy.yml | Fly.io deploy token (`flyctl tokens create deploy -a hk-camera-backend`) |
+
+No additional secrets are required for CodeQL or Dependabot — they are built-in GitHub features that work on public repositories.
