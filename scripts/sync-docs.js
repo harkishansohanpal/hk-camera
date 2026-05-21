@@ -29,13 +29,32 @@ function updateTestTable(content, suite, count) {
   return content.replace(re, (match, prefix, _old, suffix) => `${prefix}${count}${suffix}`);
 }
 
+console.error('DEBUG: PATH=' + process.env.PATH);
+console.error('DEBUG: CWD=' + process.cwd());
 try {
-  const feOut = run('npm test -- --reporter=verbose 2>&1', {
+  console.error('DEBUG: Running frontend tests...');
+  feOut = run('npm test -- --reporter=verbose 2>&1', {
     cwd: path.join(ROOT, 'frontend'),
   });
-  const beOut = run('npm test -- --verbose 2>&1', {
+  console.error('DEBUG: Frontend tests done, length=' + feOut.length);
+} catch (err) {
+  console.error('Frontend tests failed:', err.message.substring(0, 1000));
+  if (err.stdout) console.error('STDOUT:', err.stdout.toString().substring(0, 2000));
+  if (err.stderr) console.error('STDERR:', err.stderr.toString().substring(0, 2000));
+  process.exit(1);
+}
+try {
+  console.error('DEBUG: Running backend tests...');
+  beOut = run('npm test -- --verbose 2>&1', {
     cwd: path.join(ROOT, 'backend'),
   });
+  console.error('DEBUG: Backend tests done, length=' + beOut.length);
+} catch (err) {
+  console.error('Backend tests failed:', err.message.substring(0, 1000));
+  if (err.stdout) console.error('STDOUT:', err.stdout.toString().substring(0, 2000));
+  if (err.stderr) console.error('STDERR:', err.stderr.toString().substring(0, 2000));
+  process.exit(1);
+}
 
   const feTotal = parseTestCount(feOut);
   const beTotal = parseTestCount(beOut);
@@ -75,9 +94,3 @@ try {
   } else {
     console.log('All doc test counts are up to date.');
   }
-} catch (err) {
-  console.error('Failed to sync docs:', err.message);
-  if (err.stderr) console.error('STDERR:', err.stderr.toString().slice(0, 2000));
-  if (err.stdout) console.error('STDOUT:', err.stdout.toString().slice(0, 2000));
-  process.exit(1);
-}

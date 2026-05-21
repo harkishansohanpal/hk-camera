@@ -158,18 +158,7 @@ jobs:
         working-directory: .
 
       - name: Check test counts match docs
-        run: |
-          echo "=== Running frontend tests ==="
-          cd frontend && npm test -- --reporter=verbose 2>&1; FE_EXIT=$?
-          echo "=== Frontend tests exit code: $FE_EXIT ==="
-          echo "=== Running backend tests ==="
-          cd ../backend && npm test -- --verbose 2>&1; BE_EXIT=$?
-          echo "=== Backend tests exit code: $BE_EXIT ==="
-          cd ..
-          echo "=== Running docs:check ==="
-          node scripts/sync-docs.js --check 2>&1; DOCS_EXIT=$?
-          echo "=== docs:check exit code: $DOCS_EXIT ==="
-          exit $(( FE_EXIT | BE_EXIT | DOCS_EXIT ))
+        run: node scripts/sync-docs.js --check 2>&1
 
   # ── Security audit ──────────────────────────────────────────
   security:
