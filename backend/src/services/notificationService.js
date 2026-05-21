@@ -29,7 +29,12 @@ async function sendEmail({ to, subject, html }) {
     return;
   }
   const safeSubject = subject.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-  await transporter.sendMail({ from: process.env.ALERT_FROM || process.env.SMTP_USER, to, subject: safeSubject, html });
+  const safeHtml = html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/\s?on\w+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\s?on\w+\s*=\s*'[^']*'/gi, '')
+    .replace(/\s?on\w+\s*=\s*[^\s>]+/gi, '');
+  await transporter.sendMail({ from: process.env.ALERT_FROM || process.env.SMTP_USER, to, subject: safeSubject, html: safeHtml });
   logger.info('Email sent', { to, subject });
 }
 
