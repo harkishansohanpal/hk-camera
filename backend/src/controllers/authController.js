@@ -34,8 +34,10 @@ async function register(req, res, next) {
       data: {
         email, passwordHash, name,
         consentGivenAt: new Date(),
-        consentVersion: '2026-05-01',
-        ...(consent === true ? {} : {}), // validated by route
+        consentVersion: '2026-05-21',
+        termsConsentAt: new Date(),
+        termsConsentVersion: '2026-05-21',
+        consentIp: req.ip || req.connection?.remoteAddress || null,
       },
       select: { id: true, email: true, name: true, role: true, createdAt: true },
     });
@@ -130,7 +132,7 @@ async function me(req, res, next) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
-      select: { id: true, email: true, name: true, role: true, avatarUrl: true, emailAlerts: true, pushAlerts: true, consentGivenAt: true, doNotSell: true, createdAt: true },
+      select: { id: true, email: true, name: true, role: true, avatarUrl: true, emailAlerts: true, pushAlerts: true, consentGivenAt: true, termsConsentAt: true, consentIp: true, doNotSell: true, createdAt: true },
     });
     res.json({ success: true, data: user });
   } catch (err) {
