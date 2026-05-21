@@ -29,30 +29,31 @@ function updateTestTable(content, suite, count) {
   return content.replace(re, (match, prefix, _old, suffix) => `${prefix}${count}${suffix}`);
 }
 
-console.error('DEBUG: PATH=' + process.env.PATH);
-console.error('DEBUG: CWD=' + process.cwd());
+function notice(m) { process.stdout.write('::notice::' + m + '\n'); }
+notice('PATH=' + process.env.PATH);
+notice('CWD=' + process.cwd());
 try {
-  console.error('DEBUG: Running frontend tests...');
+  notice('Running frontend tests...');
   feOut = run('npm test -- --reporter=verbose 2>&1', {
     cwd: path.join(ROOT, 'frontend'),
   });
-  console.error('DEBUG: Frontend tests done, length=' + feOut.length);
+  notice('Frontend tests done, length=' + feOut.length);
 } catch (err) {
-  console.error('Frontend tests failed:', err.message.substring(0, 1000));
-  if (err.stdout) console.error('STDOUT:', err.stdout.toString().substring(0, 2000));
-  if (err.stderr) console.error('STDERR:', err.stderr.toString().substring(0, 2000));
+  process.stdout.write('::error::Frontend tests failed: ' + (err.message || '').substring(0, 2000) + '\n');
+  if (err.stdout) process.stdout.write('::error::STDOUT: ' + err.stdout.toString().substring(0, 4000) + '\n');
+  if (err.stderr) process.stdout.write('::error::STDERR: ' + err.stderr.toString().substring(0, 4000) + '\n');
   process.exit(1);
 }
 try {
-  console.error('DEBUG: Running backend tests...');
+  notice('Running backend tests...');
   beOut = run('npm test -- --verbose 2>&1', {
     cwd: path.join(ROOT, 'backend'),
   });
-  console.error('DEBUG: Backend tests done, length=' + beOut.length);
+  notice('Backend tests done, length=' + beOut.length);
 } catch (err) {
-  console.error('Backend tests failed:', err.message.substring(0, 1000));
-  if (err.stdout) console.error('STDOUT:', err.stdout.toString().substring(0, 2000));
-  if (err.stderr) console.error('STDERR:', err.stderr.toString().substring(0, 2000));
+  process.stdout.write('::error::Backend tests failed: ' + (err.message || '').substring(0, 2000) + '\n');
+  if (err.stdout) process.stdout.write('::error::STDOUT: ' + err.stdout.toString().substring(0, 4000) + '\n');
+  if (err.stderr) process.stdout.write('::error::STDERR: ' + err.stderr.toString().substring(0, 4000) + '\n');
   process.exit(1);
 }
 
