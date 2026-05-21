@@ -210,10 +210,27 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
           100% { transform: scale(1); opacity: 1; }
         }
       `}</style>
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" style={{ pointerEvents: 'auto' }} onClick={handleSkip} />
+      {/* Dark overlay — covers everything */}
+      {spotlight ? (
+        /* Spotlight cutout: the element is fully transparent, its shadow darkens everything around it */
+        <div
+          className="absolute rounded-lg pointer-events-none"
+          style={{
+            top: spotlight.top,
+            left: spotlight.left,
+            width: spotlight.width,
+            height: spotlight.height,
+            boxShadow: '0 0 0 9999px rgba(0,0,0,0.85)',
+            transition: 'top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease',
+            animation: pulse ? 'tour-spotlight-pop 0.4s ease-out' : undefined,
+          }}
+          onClick={handleSkip}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-black/85" style={{ pointerEvents: 'auto' }} onClick={handleSkip} />
+      )}
 
-      {/* Spotlight cutout */}
+      {/* White ring + glow (separate from the dark overlay so the cutout stays clear) */}
       {spotlight && (
         <div
           className="absolute rounded-lg pointer-events-none"
@@ -222,13 +239,8 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
             left: spotlight.left,
             width: spotlight.width,
             height: spotlight.height,
-            boxShadow: `
-              0 0 0 9999px rgba(0,0,0,0.85),
-              0 0 0 2px rgba(255,255,255,0.7),
-              0 0 20px 3px rgba(255,255,255,0.25)
-            `,
+            boxShadow: '0 0 0 2px rgba(255,255,255,0.7), 0 0 20px 3px rgba(255,255,255,0.25)',
             transition: 'top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease',
-            animation: pulse ? 'tour-spotlight-pop 0.4s ease-out' : undefined,
           }}
         />
       )}
