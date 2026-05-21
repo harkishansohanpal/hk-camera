@@ -152,6 +152,8 @@ jobs:
         working-directory: frontend
       - run: npm ci
         working-directory: backend
+      - run: npx prisma generate
+        working-directory: backend
       - run: npm ci
         working-directory: .
 

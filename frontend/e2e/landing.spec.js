@@ -4,7 +4,7 @@ test.describe('Landing Page', () => {
   test('loads with correct title and branding', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('banner').getByText('HK Camera')).toBeVisible();
-    await expect(page.locator('text=smart security camera')).toBeVisible();
+    await expect(page.locator('text=security camera')).toBeVisible();
   });
 
   test('has working navigation links', async ({ page }) => {

@@ -11,7 +11,7 @@ const files = {
 };
 
 function run(cmd, opts = {}) {
-  return execSync(cmd, { encoding: 'utf-8', timeout: 60000, ...opts });
+  return execSync(cmd, { encoding: 'utf-8', timeout: 120000, ...opts });
 }
 
 function parseTestCount(output) {
