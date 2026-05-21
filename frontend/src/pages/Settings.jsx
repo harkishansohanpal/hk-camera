@@ -1,27 +1,23 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { userAPI } from '../services/api';
-import { User, Lock, Bell, Trash2, CreditCard } from 'lucide-react';
+import { User, Lock, Bell, Trash2, CreditCard, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 export default function Settings() {
   const { user, refreshUser, logout } = useAuth();
   const navigate = useNavigate();
-
-  const [profile, setProfile]     = useState({ name: user?.name ?? '' });
-  const [password, setPassword]   = useState({ currentPassword: '', newPassword: '', confirm: '' });
-  const [notifs, setNotifs]       = useState({ emailAlerts: user?.emailAlerts ?? true, pushAlerts: user?.pushAlerts ?? true });
-  const [saving, setSaving]       = useState(false);
+  const [profile, setProfile] = useState({ name: user?.name ?? '' });
+  const [password, setPassword] = useState({ currentPassword: '', newPassword: '', confirm: '' });
+  const [notifs, setNotifs] = useState({ emailAlerts: user?.emailAlerts ?? true, pushAlerts: user?.pushAlerts ?? true });
+  const [saving, setSaving] = useState(false);
 
   async function saveProfile(e) {
     e.preventDefault();
     setSaving(true);
-    try {
-      await userAPI.updateProfile({ name: profile.name });
-      await refreshUser();
-      toast.success('Profile updated');
-    } catch { toast.error('Failed to update profile'); }
+    try { await userAPI.updateProfile({ name: profile.name }); await refreshUser(); toast.success('Profile updated'); }
+    catch { toast.error('Failed to update profile'); }
     finally { setSaving(false); }
   }
 
@@ -32,116 +28,93 @@ export default function Settings() {
     try {
       await userAPI.changePassword({ currentPassword: password.currentPassword, newPassword: password.newPassword });
       toast.success('Password changed. Please log in again.');
-      await logout();
-      navigate('/login');
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to change password');
-    } finally { setSaving(false); }
+      await logout(); navigate('/login');
+    } catch (err) { toast.error(err.response?.data?.message || 'Failed to change password'); }
+    finally { setSaving(false); }
   }
 
-  async function saveNotifications() {
-    await userAPI.updateProfile(notifs);
-    await refreshUser();
-    toast.success('Notification settings saved');
-  }
+  async function saveNotifications() { await userAPI.updateProfile(notifs); await refreshUser(); toast.success('Notification settings saved'); }
 
   async function handleDeleteAccount() {
     if (!confirm('This will permanently delete your account and all data. Are you absolutely sure?')) return;
-    await userAPI.deleteAccount();
-    logout();
-    navigate('/login');
-    toast.success('Account deleted');
+    await userAPI.deleteAccount(); logout(); navigate('/login'); toast.success('Account deleted');
   }
 
   return (
     <div className="page-container max-w-xl animate-fade-in">
-      <div className="page-header">
-        <h1 className="page-title">Settings</h1>
-      </div>
+      <div className="page-header"><h1 className="page-title">Settings</h1></div>
 
-      <div className="card p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <User size={16} className="text-hk-400" />
-          <h2 className="text-base font-semibold text-white">Profile</h2>
-        </div>
-        <form onSubmit={saveProfile} className="flex flex-col gap-4">
+      {/* Profile */}
+      <div className="section-header">Profile</div>
+      <div className="card-grouped">
+        <form onSubmit={saveProfile} className="p-5 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Display name</label>
+            <label className="block text-sm font-semibold text-gray-900 mb-1">Display name</label>
             <input className="input" value={profile.name} onChange={(e) => setProfile({ name: e.target.value })} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Email</label>
+            <label className="block text-sm font-semibold text-gray-900 mb-1">Email</label>
             <input className="input opacity-50 cursor-not-allowed" value={user?.email} disabled />
           </div>
           <button type="submit" className="btn-primary self-start text-sm" disabled={saving}>Save profile</button>
         </form>
       </div>
 
-      <div className="card p-5 mt-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Lock size={16} className="text-hk-400" />
-          <h2 className="text-base font-semibold text-white">Change Password</h2>
-        </div>
-        <form onSubmit={savePassword} className="flex flex-col gap-4">
+      {/* Password */}
+      <div className="section-header">Security</div>
+      <div className="card-grouped">
+        <form onSubmit={savePassword} className="p-5 space-y-4">
           {[
             { key: 'currentPassword', label: 'Current password' },
             { key: 'newPassword',     label: 'New password' },
             { key: 'confirm',         label: 'Confirm new password' },
           ].map(({ key, label }) => (
             <div key={key}>
-              <label className="block text-sm font-medium text-slate-300 mb-1">{label}</label>
-              <input type="password" className="input" value={password[key]} onChange={(e) => setPassword({ ...password, [key]: e.target.value })} required />
+              <label className="block text-sm font-semibold text-gray-900 mb-1">{label}</label>
+              <input type="password" className="input" value={password[key]}
+                onChange={(e) => setPassword({ ...password, [key]: e.target.value })} required />
             </div>
           ))}
           <button type="submit" className="btn-primary self-start text-sm" disabled={saving}>Change password</button>
         </form>
       </div>
 
-      <div className="card p-5 mt-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Bell size={16} className="text-hk-400" />
-          <h2 className="text-base font-semibold text-white">Notifications</h2>
-        </div>
-        <div className="flex flex-col gap-3">
-          {[
-            { key: 'emailAlerts', label: 'Email alerts', desc: 'Receive motion & offline alerts by email' },
-            { key: 'pushAlerts',  label: 'Push alerts',  desc: 'Receive browser push notifications' },
-          ].map(({ key, label, desc }) => (
-            <label key={key} className="flex items-center justify-between cursor-pointer gap-3 min-h-44 px-1">
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-slate-300">{label}</p>
-                <p className="text-xs text-slate-500">{desc}</p>
-              </div>
-              <input
-                type="checkbox" className="sr-only"
-                checked={notifs[key]}
-                onChange={(e) => setNotifs((n) => ({ ...n, [key]: e.target.checked }))}
-              />
-              <div className={`relative flex items-center w-11 h-6 rounded-full transition-colors cursor-pointer flex-shrink-0 ${notifs[key] ? 'bg-hk-500' : 'bg-slate-600'}`}>
-                <span className={`absolute w-5 h-5 bg-white rounded-full transition-transform shadow-sm ${notifs[key] ? 'translate-x-[22px]' : 'translate-x-[2px]'}`} />
-              </div>
-            </label>
-          ))}
-          <button onClick={saveNotifications} className="btn-primary self-start mt-1 text-sm">Save notifications</button>
-        </div>
+      {/* Notifications */}
+      <div className="section-header">Notifications</div>
+      <div className="card-grouped">
+        {[
+          { key: 'emailAlerts', label: 'Email alerts', desc: 'Receive motion & offline alerts by email' },
+          { key: 'pushAlerts',  label: 'Push alerts',  desc: 'Receive browser push notifications' },
+        ].map(({ key, label, desc }) => (
+          <label key={key} className="list-row justify-between cursor-pointer">
+            <div><p className="text-sm font-semibold text-gray-900">{label}</p><p className="text-xs text-ap-gray">{desc}</p></div>
+            <input type="checkbox" className="sr-only" checked={notifs[key]} onChange={(e) => setNotifs((n) => ({ ...n, [key]: e.target.checked }))} />
+            <div className={`toggle ${notifs[key] ? 'toggle-on' : 'toggle-off'}`}><span className="toggle-knob" /></div>
+          </label>
+        ))}
+        <div className="px-5 py-3"><button onClick={saveNotifications} className="btn-primary text-sm">Save notifications</button></div>
       </div>
 
-      <div className="card p-5 mt-4">
-        <div className="flex items-center gap-2 mb-3">
-          <CreditCard size={16} className="text-hk-400" />
-          <h2 className="text-base font-semibold text-white">Billing</h2>
-        </div>
-        <p className="text-slate-400 text-sm mb-4">Manage your subscription and payment methods.</p>
-        <button onClick={() => navigate('/billing')} className="btn-primary text-sm">View billing</button>
+      {/* Billing */}
+      <div className="section-header">Billing</div>
+      <div className="card-grouped">
+        <button onClick={() => navigate('/billing')} className="list-row w-full justify-between">
+          <div className="flex items-center gap-3">
+            <CreditCard size={16} className="text-ap-blue" />
+            <div className="text-left"><p className="text-sm font-semibold text-gray-900">Subscription</p><p className="text-xs text-ap-gray">Manage your plan and payment methods</p></div>
+          </div>
+          <ChevronRight size={16} className="text-ap-gray" />
+        </button>
       </div>
 
-      <div className="card p-5 mt-4 border-red-500/20">
-        <div className="flex items-center gap-2 mb-3">
-          <Trash2 size={16} className="text-red-400" />
-          <h2 className="text-base font-semibold text-red-400">Danger Zone</h2>
+      {/* Danger Zone */}
+      <div className="section-header text-ap-red">Danger Zone</div>
+      <div className="card-grouped border border-ap-red/20">
+        <div className="p-5">
+          <div className="flex items-center gap-2 mb-2"><Trash2 size={16} className="text-ap-red" /><h2 className="text-sm font-bold text-ap-red">Delete Account</h2></div>
+          <p className="text-ap-gray text-sm mb-4">Permanently delete your account and all associated cameras and recordings.</p>
+          <button onClick={handleDeleteAccount} className="btn-destructive text-sm">Delete my account</button>
         </div>
-        <p className="text-slate-400 text-sm mb-4">Permanently delete your account and all associated cameras and recordings.</p>
-        <button onClick={handleDeleteAccount} className="btn-destructive text-sm">Delete my account</button>
       </div>
     </div>
   );

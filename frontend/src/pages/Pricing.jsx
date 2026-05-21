@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, X, Loader, ArrowLeft } from 'lucide-react';
+import { Check, Loader, ArrowLeft } from 'lucide-react';
 import { subscriptionAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
@@ -33,23 +33,19 @@ export default function Pricing() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <Loader size={24} className="animate-spin text-hk-400" />
-      </div>
-    );
+    return <div className="min-h-screen bg-white flex items-center justify-center"><Loader size={24} className="animate-spin text-ap-blue" /></div>;
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-ap-gray6 text-gray-900">
       <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in">
-        <button onClick={() => navigate(-1)} className="btn-ghost text-sm mb-8">
+        <button onClick={() => navigate(-1)} className="btn-ghost text-sm mb-8 text-ap-gray hover:text-gray-900">
           <ArrowLeft size={16} /> Back
         </button>
 
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold tracking-tight mb-4">Simple, <span className="text-hk-400">transparent</span> pricing</h1>
-          <p className="text-slate-400 text-lg max-w-xl mx-auto">All plans include real-time streaming and motion detection. Upgrade as your needs grow.</p>
+          <h1 className="text-4xl font-bold tracking-tight mb-4">Simple, <span className="text-ap-blue">transparent</span> pricing</h1>
+          <p className="text-ap-gray text-lg max-w-xl mx-auto">All plans include real-time streaming and motion detection. Upgrade as your needs grow.</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
@@ -58,32 +54,26 @@ export default function Pricing() {
             const isFree = plan.price === 0;
 
             return (
-              <div key={plan.id} className={`card p-6 flex flex-col ${plan.highlighted ? 'ring-1 ring-hk-500/40' : ''}`}>
-                {plan.highlighted && (
-                  <span className="text-hk-400 text-xs font-semibold uppercase tracking-wider mb-2">Most Popular</span>
-                )}
-                <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
-                <p className="text-slate-400 text-sm mb-4">{plan.description}</p>
+              <div key={plan.id} className={`card p-6 flex flex-col shadow-apple ${plan.highlighted ? 'ring-2 ring-ap-blue/30' : ''}`}>
+                {plan.highlighted && <span className="text-ap-blue text-xs font-bold uppercase tracking-wider mb-2">Most Popular</span>}
+                <h3 className="text-xl font-bold text-gray-900 mb-1">{plan.name}</h3>
+                <p className="text-ap-gray text-sm mb-4">{plan.description}</p>
                 <div className="mb-6">
-                  <span className="text-4xl font-bold tracking-tight">${(plan.price / 100).toFixed(0)}</span>
-                  <span className="text-slate-400 text-sm ml-1">/month</span>
+                  <span className="text-4xl font-bold tracking-tight text-gray-900">${(plan.price / 100).toFixed(0)}</span>
+                  <span className="text-ap-gray text-sm ml-1">/month</span>
                 </div>
                 <ul className="space-y-3 mb-8 flex-1">
                   {features.map((f) => (
                     <li key={f} className="flex items-start gap-2.5 text-sm">
-                      <Check size={16} className="text-green-400 mt-0.5 flex-shrink-0" />
-                      <span className="text-slate-300">{f}</span>
+                      <Check size={16} className="text-ap-green mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-600">{f}</span>
                     </li>
                   ))}
                 </ul>
-                <button
-                  onClick={() => handleSelect(isFree ? null : plan.stripePriceId)}
+                <button onClick={() => handleSelect(isFree ? null : plan.stripePriceId)}
                   disabled={checkoutLoading === plan.stripePriceId}
-                  className={`btn w-full ${plan.highlighted ? 'btn-primary' : 'btn-secondary'} disabled:opacity-50`}
-                >
-                  {checkoutLoading === plan.stripePriceId ? (
-                    <Loader size={16} className="animate-spin" />
-                  ) : isFree ? 'Get Started' : 'Subscribe'}
+                  className={`btn w-full disabled:opacity-50 ${plan.highlighted ? 'btn-primary' : 'btn-secondary'}`}>
+                  {checkoutLoading === plan.stripePriceId ? <Loader size={16} className="animate-spin" /> : isFree ? 'Get Started' : 'Subscribe'}
                 </button>
               </div>
             );

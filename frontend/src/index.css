@@ -19,7 +19,7 @@
     min-height: 100%;
     margin: 0;
     padding: 0;
-    @apply bg-slate-900 text-slate-100;
+    @apply bg-ap-gray6 text-gray-900;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
     font-size: clamp(15px, 2vw, 17px);
     line-height: 1.47059;
@@ -34,91 +34,138 @@
   }
 
   ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { @apply bg-slate-800; }
-  ::-webkit-scrollbar-thumb { @apply bg-slate-600 rounded-full; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-ap-gray4 rounded-full; }
 
-  /* Apple HIG: all touch targets minimum 44x44pt */
   button, a, input, select, textarea, [role="button"], label {
     @apply min-h-44;
   }
+
+  h1, h2, h3 { letter-spacing: -0.022em; }
 }
 
 @layer components {
-  /* ── Apple-style buttons ─────────────────────────── */
+  /* ── iOS-style buttons ─────────────────────────── */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 select-none;
-    @apply min-h-44 min-w-44;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-200 select-none;
+    @apply min-h-44 min-w-44 px-5;
     font-size: clamp(15px, 2vw, 17px);
   }
+  .btn:active { @apply scale-[0.97]; }
+
   .btn-primary {
-    @apply btn bg-hk-500 hover:bg-hk-600 text-white active:bg-hk-700 active:scale-[0.97];
+    @apply btn bg-ap-blue text-white;
   }
+  .btn-primary:hover { @apply bg-[#0066E0]; }
+
   .btn-secondary {
-    @apply btn bg-slate-700/60 hover:bg-slate-700 text-slate-200 active:bg-slate-600 active:scale-[0.97] border border-slate-600/30;
+    @apply btn bg-ap-blue/10 text-ap-blue;
   }
+  .btn-secondary:hover { @apply bg-ap-blue/15; }
+
   .btn-destructive {
-    @apply btn bg-red-600 hover:bg-red-700 text-white active:bg-red-800 active:scale-[0.97];
+    @apply btn bg-ap-red text-white;
   }
+  .btn-destructive:hover { @apply bg-[#D63028]; }
+
   .btn-ghost {
-    @apply btn bg-transparent hover:bg-slate-700/50 text-slate-400 hover:text-slate-200 active:bg-slate-700;
+    @apply btn bg-transparent text-ap-gray hover:text-gray-900 active:text-gray-900;
   }
 
-  /* ── Apple-style card ────────────────────────────── */
+  /* ── iOS-style card (white, shadow, rounded) ────── */
   .card {
-    @apply bg-slate-800/60 rounded-2xl border border-slate-700/30;
+    @apply bg-white rounded-2xl shadow-apple-sm;
   }
   .card-highlighted {
-    @apply card hover:bg-slate-800/80 hover:border-slate-600/50 transition-all duration-200;
+    @apply card hover:shadow-apple transition-shadow;
   }
 
-  /* ── Apple-style inputs ──────────────────────────── */
+  /* ── iOS grouped list card ──────────────────────── */
+  .card-grouped {
+    @apply bg-white rounded-2xl shadow-apple-sm overflow-hidden;
+  }
+  .card-grouped > .list-row:not(:last-child) {
+    @apply border-b border-ap-separator;
+  }
+
+  .list-row {
+    @apply flex items-center gap-3 px-5 py-3 min-h-44 transition-colors;
+  }
+  .list-row:hover { @apply bg-ap-gray6/50; }
+  .list-row:active { @apply bg-ap-gray5/50; }
+
+  /* ── iOS-style inputs ──────────────────────────── */
   .input {
-    @apply w-full bg-slate-700/60 border border-slate-600/40 text-slate-100 rounded-xl px-4 py-3;
-    @apply focus:outline-none focus:ring-2 focus:ring-hk-500/50 focus:border-hk-500/50;
-    @apply placeholder:text-slate-500 transition-all duration-200;
+    @apply w-full bg-ap-gray6 border border-ap-gray4 text-gray-900 rounded-xl px-4 py-3;
+    @apply focus:outline-none focus:ring-2 focus:ring-ap-blue/30 focus:border-ap-blue;
+    @apply placeholder:text-ap-gray2 transition-all duration-200;
     font-size: clamp(15px, 2vw, 17px);
     line-height: 1.47059;
     min-height: 44px;
   }
 
-  /* ── Apple-style badges ──────────────────────────── */
+  /* ── iOS-style badges ──────────────────────────── */
   .badge {
-    @apply inline-flex items-center gap-1.5 rounded-full font-medium tracking-wide;
+    @apply inline-flex items-center gap-1.5 rounded-full font-semibold tracking-wide;
   }
-  .badge-online  { @apply badge bg-green-500/15 text-green-400; }
-  .badge-offline { @apply badge bg-slate-500/15 text-slate-400; }
-  .badge-alert   { @apply badge bg-red-500/15 text-red-400; }
+  .badge-blue     { @apply badge bg-ap-blue/10 text-ap-blue; }
+  .badge-green    { @apply badge bg-ap-green/10 text-ap-green; }
+  .badge-red      { @apply badge bg-ap-red/10 text-ap-red; }
+  .badge-orange   { @apply badge bg-ap-orange/10 text-ap-orange; }
+  .badge-gray     { @apply badge bg-ap-gray5/60 text-ap-gray; }
 
-  /* ── Apple-style page layout ─────────────────────── */
+  /* ── iOS-style page layout ─────────────────────── */
   .page-container {
-    @apply w-full max-w-5xl mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-8;
+    @apply w-full max-w-5xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10;
   }
   .page-header {
-    @apply flex items-center justify-between mb-6 sm:mb-8;
+    @apply mb-8;
   }
   .page-title {
     font-size: clamp(28px, 4vw, 34px);
-    @apply font-bold text-white tracking-tight leading-tight;
+    @apply font-bold text-gray-900 tracking-tight leading-tight;
     letter-spacing: -0.022em;
   }
   .page-subtitle {
-    @apply text-slate-500;
+    @apply text-ap-gray;
     font-size: clamp(13px, 1.8vw, 15px);
   }
 
-  /* ── Apple-style separators ──────────────────────── */
+  /* ── iOS section header ────────────────────────── */
+  .section-header {
+    @apply text-ap-gray text-xs font-semibold tracking-widest uppercase px-1 mb-2 mt-6;
+  }
+  .section-header:first-child { @apply mt-0; }
+
+  /* ── iOS separator ──────────────────────────────── */
   .separator {
-    @apply border-b border-slate-700/30;
+    @apply border-b border-ap-separator;
   }
 
-  /* ── Safe area helpers ───────────────────────────── */
+  /* ── Safe areas ───────────────────────────────── */
   .safe-bottom { @apply pb-[calc(env(safe-area-inset-bottom)+1rem)]; }
   .safe-top    { @apply pt-[calc(env(safe-area-inset-top)+0.5rem)]; }
 
-  /* ── Apple-style list row ────────────────────────── */
-  .list-row {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-200;
-    @apply active:bg-slate-700/40;
-    min-height: 44px;
+  /* ── iOS toggle switch ─────────────────────────── */
+  .toggle {
+    @apply relative inline-flex items-center w-[51px] h-[31px] rounded-full transition-colors duration-200 cursor-pointer flex-shrink-0;
+  }
+  .toggle-on  { @apply bg-ap-blue; }
+  .toggle-off { @apply bg-ap-gray3; }
+  .toggle-knob {
+    @apply absolute w-[27px] h-[27px] bg-white rounded-full shadow-sm transition-transform duration-200;
+    @apply top-[2px];
+  }
+  .toggle-on  .toggle-knob  { transform: translateX(22px); }
+  .toggle-off .toggle-knob { transform: translateX(2px); }
+
+  /* ── iOS navigation bar ────────────────────────── */
+  .nav-bar {
+    @apply bg-white/90 backdrop-blur-xl border-b border-ap-separator safe-top;
+  }
+
+  /* ── iOS tab bar ───────────────────────────────── */
+  .tab-bar {
+    @apply bg-white/90 backdrop-blur-xl border-t border-ap-separator safe-bottom;
   }
 }

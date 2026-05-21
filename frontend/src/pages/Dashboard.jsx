@@ -37,9 +37,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     function handleClickOutside(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setOpenMenu(null);
-      }
+      if (menuRef.current && !menuRef.current.contains(e.target)) { setOpenMenu(null); }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -75,40 +73,38 @@ export default function Dashboard() {
 
       {/* Tour trigger */}
       {tour.dismissed && (
-        <button
-          onClick={() => { tour.reset(); tour.start(); }}
-          className="fixed bottom-4 right-4 z-50 flex items-center gap-1.5 px-3 py-2 bg-slate-700/80 hover:bg-slate-600 text-slate-300 rounded-xl text-[11px] transition-colors backdrop-blur-sm border border-slate-600/50"
-          title="Restart tour"
-        >
-          <HelpCircle size={12} />
-          Tour
+        <button onClick={() => { tour.reset(); tour.start(); }}
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-1.5 px-3 py-2 bg-white shadow-apple text-ap-gray hover:text-gray-900 rounded-xl text-xs transition-colors border border-ap-separator">
+          <HelpCircle size={12} /> Tour
         </button>
       )}
 
-      {/* Page header */}
-      <div className="page-header">
-        <div className="min-w-0 flex-1">
+      {/* Header */}
+      <div className="page-header flex items-center justify-between">
+        <div>
           <h1 className="page-title" data-tour="tour-welcome">Dashboard</h1>
           <p className="page-subtitle mt-0.5">{cameras.length} camera{cameras.length !== 1 ? 's' : ''}</p>
         </div>
-        <button onClick={() => setShowAdd(true)} data-tour="tour-add-camera" className="btn-primary text-sm px-4">
-          <Plus size={16} /> <span className="hidden xs:inline">Add Camera</span>
+        <button onClick={() => setShowAdd(true)} data-tour="tour-add-camera" className="btn-primary text-sm px-5">
+          <Plus size={16} /> Add Camera
         </button>
       </div>
 
-      {/* Stats strip — Apple Health-style */}
+      {/* Stats - iOS Widget Style */}
       <div data-tour="tour-stats" className="grid grid-cols-3 gap-3 mb-8">
         {[
-          { label: 'Total', value: cameras.length, Icon: Camera,       color: 'text-hk-400' },
-          { label: 'Online', value: onlineCams,     Icon: Wifi,          color: 'text-green-400'  },
-          { label: 'Alerts', value: totalAlerts,    Icon: AlertTriangle, color: 'text-orange-400' },
+          { label: 'Total', value: cameras.length, Icon: Camera,       color: 'text-ap-blue' },
+          { label: 'Online', value: onlineCams,     Icon: Wifi,          color: 'text-ap-green' },
+          { label: 'Alerts', value: totalAlerts,    Icon: AlertTriangle, color: 'text-ap-orange' },
         ].map(({ label, value, Icon, color }) => (
-          <div key={label} className="card p-4">
+          <div key={label} className="card p-4 shadow-apple-sm">
             <div className="flex items-center gap-3">
-              <Icon size={22} className={`${color} opacity-70 flex-shrink-0`} />
+              <div className={`w-10 h-10 rounded-xl ${color.replace('text', 'bg')}/10 flex items-center justify-center flex-shrink-0`}>
+                <Icon size={20} className={color} />
+              </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold text-white tracking-tight">{value}</p>
-                <p className="text-slate-400 text-xs font-medium">{label}</p>
+                <p className="text-2xl font-bold text-gray-900 tracking-tight">{value}</p>
+                <p className="text-ap-gray text-xs font-semibold">{label}</p>
               </div>
             </div>
           </div>
@@ -118,13 +114,13 @@ export default function Dashboard() {
       {/* Camera grid */}
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-[3px] border-hk-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-[3px] border-ap-blue border-t-transparent rounded-full animate-spin" />
         </div>
       ) : cameras.length === 0 ? (
-        <div className="card text-center py-16 sm:py-20 px-6">
-          <Camera size={48} className="text-slate-600 mx-auto mb-4 opacity-60" />
-          <p className="text-slate-200 font-semibold text-lg">No cameras yet</p>
-          <p className="text-slate-400 text-sm mt-2">Add your first camera to get started</p>
+        <div className="card text-center py-16 px-6 shadow-apple">
+          <Camera size={48} className="text-ap-gray3 mx-auto mb-4" />
+          <p className="text-gray-900 font-semibold text-lg">No cameras yet</p>
+          <p className="text-ap-gray text-sm mt-2">Add your first camera to get started</p>
           <button onClick={() => setShowAdd(true)} className="mt-5 btn-primary text-sm px-5">
             <Plus size={16} /> Add Camera
           </button>
@@ -132,86 +128,61 @@ export default function Dashboard() {
       ) : (
         <div data-tour="tour-camera-list" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {cameras.map((cam) => (
-            <div
-              key={cam.id}
-              className="card overflow-hidden"
-            >
+            <div key={cam.id} className="card overflow-hidden shadow-apple-sm hover:shadow-apple transition-shadow">
               {/* Thumbnail */}
-              <div
-                className="w-full aspect-video bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center relative overflow-hidden cursor-pointer"
-                onClick={() => navigate(`/cameras/${cam.id}`)}
-              >
-                <Camera size={32} className="text-slate-600 opacity-60" />
+              <div className="w-full aspect-video bg-gradient-to-br from-ap-gray5 to-ap-gray6 flex items-center justify-center relative overflow-hidden cursor-pointer"
+                onClick={() => navigate(`/cameras/${cam.id}`)}>
+                <Camera size={32} className="text-ap-gray3" />
                 {cam.isOnline && (
                   <div className="absolute top-3 left-3">
-                    <span className="flex items-center gap-1.5 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full text-[11px] font-medium text-green-400">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse-slow" />
+                    <span className="badge-green text-[11px] px-2.5 py-1 bg-white/80 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-ap-green animate-pulse-slow" />
                       Live
                     </span>
                   </div>
                 )}
               </div>
 
-              {/* Info */}
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/cameras/${cam.id}`)}>
-                    <h3 className="font-semibold text-white truncate">{cam.name}</h3>
-                    {cam.description && (
-                      <p className="text-slate-400 text-sm mt-0.5 truncate">{cam.description}</p>
-                    )}
+                    <h3 className="font-semibold text-gray-900 truncate">{cam.name}</h3>
+                    {cam.description && <p className="text-ap-gray text-sm mt-0.5 truncate">{cam.description}</p>}
                   </div>
                   <div className="relative flex-shrink-0">
-                    <button
-                      onClick={() => setOpenMenu(openMenu === cam.id ? null : cam.id)}
+                    <button onClick={() => setOpenMenu(openMenu === cam.id ? null : cam.id)}
                       data-tour="tour-camera-menu"
-                      className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 rounded-xl transition-colors"
-                      title="More options"
-                    >
+                      className="w-9 h-9 flex items-center justify-center text-ap-gray hover:text-gray-900 hover:bg-ap-gray6 rounded-xl transition-colors">
                       <MoreVertical size={16} />
                     </button>
                     {openMenu === cam.id && (
-                      <div ref={menuRef} className="absolute right-0 mt-1 w-36 bg-slate-700 rounded-xl shadow-lg border border-slate-600/50 z-10 overflow-hidden">
-                        <button
-                          onClick={() => {
-                            handleDelete(cam.id);
-                            setOpenMenu(null);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-red-400 hover:bg-red-500/10 transition-colors text-sm font-medium"
-                        >
-                          <Trash2 size={14} />
-                          Delete
+                      <div ref={menuRef} className="absolute right-0 mt-1 w-36 bg-white rounded-xl shadow-apple-lg border border-ap-separator z-10 overflow-hidden">
+                        <button onClick={() => { handleDelete(cam.id); setOpenMenu(null); }}
+                          className="w-full flex items-center gap-2 px-4 py-3 text-left text-ap-red hover:bg-ap-red/5 transition-colors text-sm font-semibold">
+                          <Trash2 size={14} /> Delete
                         </button>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Status badge row */}
                 <div className="flex items-center gap-2 mb-3">
                   {cam.isOnline
-                    ? <span className="flex items-center gap-1 text-xs font-medium text-green-400"><Wifi size={11} /> Online</span>
-                    : <span className="flex items-center gap-1 text-xs font-medium text-slate-400"><WifiOff size={11} /> Offline</span>}
-                  <span className="text-slate-500 text-xs">{cam._count?.recordings ?? 0} recordings</span>
+                    ? <span className="badge-green text-xs"><Wifi size={11} /> Online</span>
+                    : <span className="badge-gray text-xs"><WifiOff size={11} /> Offline</span>}
+                  <span className="text-ap-gray text-xs">{cam._count?.recordings ?? 0} recordings</span>
                 </div>
 
-                {/* Actions */}
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => navigate(`/viewer/${cam.streamKey}`)}
+                  <button onClick={() => navigate(`/viewer/${cam.streamKey}`)}
                     data-tour="tour-view-live"
-                    className="flex-1 btn-primary text-sm"
-                  >
-                    <Eye size={15} />
-                    View Live
+                    className="flex-1 btn-primary text-sm">
+                    <Eye size={15} /> View Live
                   </button>
-                  <button
-                    onClick={() => navigate(`/cameras/${cam.id}`)}
+                  <button onClick={() => navigate(`/cameras/${cam.id}`)}
                     data-tour="tour-broadcast"
-                    className="flex-1 btn-secondary text-sm"
-                  >
-                    <Radio size={15} />
-                    Broadcast
+                    className="flex-1 btn-secondary text-sm">
+                    <Radio size={15} /> Broadcast
                   </button>
                 </div>
               </div>
@@ -220,40 +191,26 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Guided Tour */}
-      {tour.active && (
-        <GuidedTour onFinish={tour.finish} onDismiss={tour.dismissForever} />
-      )}
+      {tour.active && <GuidedTour onFinish={tour.finish} onDismiss={tour.dismissForever} />}
 
       {/* Add Camera Modal */}
       {showAdd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="card w-full max-w-md mx-auto p-6">
-            <h2 className="text-xl font-semibold text-white mb-5">Add New Camera</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
+          <div className="card w-full max-w-md mx-auto p-6 shadow-apple-lg">
+            <h2 className="text-xl font-bold text-gray-900 mb-5">Add New Camera</h2>
             <form onSubmit={handleCreate} className="flex flex-col gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Camera name</label>
-                <input
-                  className="input"
-                  placeholder="e.g. Front Door"
-                  value={newCam.name}
-                  onChange={(e) => setNewCam({ ...newCam, name: e.target.value })}
-                  required
-                />
+                <label className="block text-sm font-semibold text-gray-900 mb-1.5">Camera name</label>
+                <input className="input" placeholder="e.g. Front Door" value={newCam.name}
+                  onChange={(e) => setNewCam({ ...newCam, name: e.target.value })} required />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Description (optional)</label>
-                <input
-                  className="input"
-                  placeholder="e.g. Main entrance"
-                  value={newCam.description}
-                  onChange={(e) => setNewCam({ ...newCam, description: e.target.value })}
-                />
+                <label className="block text-sm font-semibold text-gray-900 mb-1.5">Description (optional)</label>
+                <input className="input" placeholder="e.g. Main entrance" value={newCam.description}
+                  onChange={(e) => setNewCam({ ...newCam, description: e.target.value })} />
               </div>
               <div className="flex gap-3 mt-2">
-                <button type="button" onClick={() => setShowAdd(false)} className="btn-secondary flex-1 text-sm">
-                  Cancel
-                </button>
+                <button type="button" onClick={() => setShowAdd(false)} className="btn-secondary flex-1 text-sm">Cancel</button>
                 <button type="submit" disabled={creating} className="btn-primary flex-1 text-sm disabled:opacity-50">
                   {creating ? 'Adding\u2026' : 'Add Camera'}
                 </button>

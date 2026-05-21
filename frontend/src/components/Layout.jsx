@@ -2,7 +2,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import {
   Camera, LayoutDashboard, Video, Bell, Settings, CreditCard,
-  LogOut, Menu, X,
+  LogOut, Menu, X, ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -29,26 +29,26 @@ export default function Layout() {
   }
 
   return (
-    <div className="w-full h-full flex bg-slate-900 overflow-hidden" style={{ height: '100dvh' }}>
+    <div className="w-full h-full flex bg-ap-gray6 overflow-hidden" style={{ height: '100dvh' }}>
       {/* ── Desktop Sidebar (lg+) ────────────────────────── */}
-      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:w-68 bg-slate-800/80 border-r border-slate-700/30 backdrop-blur-xl safe-top">
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-700/30">
-          <div className="w-8 h-8 bg-hk-500 rounded-lg flex items-center justify-center flex-shrink-0">
+      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:w-68 bg-white border-r border-ap-separator safe-top shadow-sm">
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-ap-separator">
+          <div className="w-8 h-8 bg-ap-blue rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
             <Camera size={16} className="text-white" />
           </div>
-          <span className="font-semibold text-base text-white tracking-tight">HK Camera</span>
+          <span className="font-bold text-base text-gray-900 tracking-tight">HK Camera</span>
         </div>
 
-        <nav data-tour="tour-nav" className="p-2 flex flex-col gap-0.5 flex-1">
+        <nav data-tour="tour-nav" className="py-2 flex flex-col gap-0.5 flex-1">
           {NAV_ITEMS.map(({ to, label, Icon }) => (
             <NavLink
               key={to}
               to={to}
               className={({ isActive }) => `
-                flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                flex items-center gap-3 mx-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200
                 ${isActive
-                  ? 'bg-hk-500/15 text-hk-400'
-                  : 'text-slate-400 hover:bg-slate-700/40 hover:text-white active:bg-slate-700/60'
+                  ? 'bg-ap-blue/10 text-ap-blue'
+                  : 'text-ap-gray hover:bg-ap-gray6 hover:text-gray-900'
                 }
               `}
             >
@@ -58,10 +58,19 @@ export default function Layout() {
           ))}
         </nav>
 
-        <div className="p-3 border-t border-slate-700/30">
+        <div className="p-3 border-t border-ap-separator">
+          <div className="flex items-center gap-3 px-3 py-2 mb-1">
+            <div className="w-9 h-9 rounded-full bg-ap-blue/10 flex items-center justify-center text-ap-blue font-bold text-sm flex-shrink-0">
+              {user?.name?.[0]?.toUpperCase() ?? 'U'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>
+              <p className="text-xs text-ap-gray truncate">{user?.email}</p>
+            </div>
+          </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-400 hover:text-red-400 hover:bg-red-500/5 transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-ap-gray hover:text-ap-red hover:bg-ap-red/5 transition-colors"
           >
             <LogOut size={18} />
             Log Out
@@ -69,121 +78,86 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* ── Mobile Sidebar Drawer ────────────────────────── */}
+      {/* ── Mobile Sidebar ───────────────────────────────── */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-72 bg-slate-800/95 border-r border-slate-700/30 backdrop-blur-xl
+        fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-ap-separator shadow-apple-lg
         transform transition-transform duration-200 ease-in-out lg:hidden safe-top
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700/30">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-ap-separator">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-hk-500 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-ap-blue rounded-xl flex items-center justify-center shadow-sm">
               <Camera size={16} className="text-white" />
             </div>
-            <span className="font-semibold text-base text-white">HK Camera</span>
+            <span className="font-bold text-base text-gray-900">HK Camera</span>
           </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white rounded-xl transition-colors"
-          >
+          <button onClick={() => setSidebarOpen(false)} className="w-10 h-10 flex items-center justify-center text-ap-gray hover:text-gray-900 rounded-xl transition-colors">
             <X size={20} />
           </button>
         </div>
 
-        <nav className="p-2 flex flex-col gap-0.5 mt-2">
+        <nav className="py-2 flex flex-col gap-0.5 mt-2">
           {NAV_ITEMS.map(({ to, label, Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              onClick={() => setSidebarOpen(false)}
+            <NavLink key={to} to={to} onClick={() => setSidebarOpen(false)}
               className={({ isActive }) => `
-                flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200
-                ${isActive ? 'bg-hk-500/15 text-hk-400' : 'text-slate-400 hover:bg-slate-700/40 hover:text-white'}
-              `}
-            >
-              <Icon size={18} />
-              {label}
+                flex items-center gap-3 mx-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all
+                ${isActive ? 'bg-ap-blue/10 text-ap-blue' : 'text-ap-gray hover:bg-ap-gray6 hover:text-gray-900'}
+              `}>
+              <Icon size={18} /> {label}
             </NavLink>
           ))}
         </nav>
 
-        <div className="p-3 mt-auto border-t border-slate-700/30">
+        <div className="p-3 mt-auto border-t border-ap-separator">
           <div className="flex items-center gap-3 px-3 py-3 mb-2">
-            <div className="w-9 h-9 rounded-full bg-hk-500/20 flex items-center justify-center text-hk-400 font-semibold text-sm flex-shrink-0">
+            <div className="w-9 h-9 rounded-full bg-ap-blue/10 flex items-center justify-center text-ap-blue font-bold text-sm flex-shrink-0">
               {user?.name?.[0]?.toUpperCase() ?? 'U'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-              <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+              <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>
+              <p className="text-xs text-ap-gray truncate">{user?.email}</p>
             </div>
           </div>
-          <button
-            onClick={() => { setSidebarOpen(false); handleLogout(); }}
-            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-slate-400 hover:text-red-400 hover:bg-red-500/5 transition-colors"
-          >
-            <LogOut size={18} />
-            Log Out
+          <button onClick={() => { setSidebarOpen(false); handleLogout(); }}
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-ap-gray hover:text-ap-red hover:bg-ap-red/5 transition-colors">
+            <LogOut size={18} /> Log Out
           </button>
         </div>
       </aside>
 
-      {/* ── Overlay (mobile sidebar) ──────────────────────── */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      {sidebarOpen && <div className="fixed inset-0 z-40 bg-black/20 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
-      {/* ── Main content area ────────────────────────────── */}
+      {/* ── Main ──────────────────────────────────────────── */}
       <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${!isViewer ? 'lg:ml-68' : ''}`}>
-        {/* Mobile header (< lg) */}
         {!isViewer && (
-          <header className="lg:hidden flex items-center gap-2 px-3 py-1.5 bg-slate-800/80 border-b border-slate-700/30 safe-top" style={{ zIndex: 30 }}>
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white rounded-xl transition-colors flex-shrink-0"
-            >
+          <header className="nav-bar lg:hidden flex items-center gap-2 px-3 py-1.5" style={{ zIndex: 30 }}>
+            <button onClick={() => setSidebarOpen(true)} className="w-10 h-10 flex items-center justify-center text-ap-gray hover:text-gray-900 rounded-xl transition-colors flex-shrink-0">
               <Menu size={20} />
             </button>
             <div className="flex items-center gap-2">
-              <Camera size={18} className="text-hk-500 flex-shrink-0" />
-              <span className="font-semibold text-white text-base">HK Camera</span>
+              <Camera size={18} className="text-ap-blue flex-shrink-0" />
+              <span className="font-bold text-gray-900 text-base">HK Camera</span>
             </div>
           </header>
         )}
 
-        {/* Page content */}
-        <main
-          className={`flex-1 ${!isViewer ? 'overflow-y-auto' : 'overflow-hidden'}`}
-          style={!isViewer ? {
-            paddingBottom: 'calc(3.75rem + env(safe-area-inset-bottom))'
-          } : {}}
-        >
+        <main className={`flex-1 ${!isViewer ? 'overflow-y-auto' : 'overflow-hidden'}`}
+          style={!isViewer ? { paddingBottom: 'calc(3.75rem + env(safe-area-inset-bottom))' } : {}}>
           <Outlet />
         </main>
       </div>
 
-      {/* ── Mobile Bottom Tab Bar ────────────────────────── */}
+      {/* ── Mobile Tab Bar ────────────────────────────────── */}
       {!isViewer && (
-        <nav data-tour="tour-nav" className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-slate-800/90 backdrop-blur-xl border-t border-slate-700/30"
+        <nav data-tour="tour-nav" className="tab-bar fixed bottom-0 left-0 right-0 z-40 lg:hidden"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
           <div className="flex h-14">
             {NAV_ITEMS.map(({ to, label, Icon }) => {
               const isActive = location.pathname === to || (to !== '/dashboard' && location.pathname.startsWith(to));
               return (
-                <NavLink
-                  key={to}
-                  to={to}
-                  className="flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors min-w-0"
-                >
-                  <Icon
-                    size={20}
-                    className={isActive ? 'text-hk-400' : 'text-slate-500'}
-                  />
-                  <span className={`text-[10px] leading-tight font-medium ${isActive ? 'text-hk-400' : 'text-slate-500'}`}>
-                    {label}
-                  </span>
+                <NavLink key={to} to={to} className="flex-1 flex flex-col items-center justify-center gap-0.5 min-w-0 pt-1">
+                  <Icon size={20} className={isActive ? 'text-ap-blue' : 'text-ap-gray'} />
+                  <span className={`text-[10px] leading-tight font-semibold ${isActive ? 'text-ap-blue' : 'text-ap-gray'}`}>{label}</span>
                 </NavLink>
               );
             })}
