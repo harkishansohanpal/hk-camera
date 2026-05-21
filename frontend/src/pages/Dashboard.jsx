@@ -198,10 +198,10 @@ export default function Dashboard() {
                   <button
                     onClick={() => navigate(`/cameras/${cam.id}`)}
                     data-tour="tour-broadcast"
-                    className="flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl transition-colors font-medium text-xs sm:text-sm"
+                    className="flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition-colors font-medium text-xs sm:text-sm"
                   >
                     <Radio size={14} />
-                    <span className="hidden xs:inline">Broadcast</span>
+                    Broadcast
                   </button>
                 </div>
               </div>
