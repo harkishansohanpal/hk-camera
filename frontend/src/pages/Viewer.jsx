@@ -113,10 +113,29 @@ export default function Viewer() {
   function handleFullscreen() {
     const videoEl = videoRef.current;
     const containerEl = document.getElementById('viewer-container');
-    if (videoEl?.webkitEnterFullscreen) { videoEl.webkitEnterFullscreen(); return; }
-    if (!document.fullscreenElement) { containerEl?.requestFullscreen?.().catch(() => setShowControls(false)); }
-    else { document.exitFullscreen?.(); }
+    if (videoEl?.webkitEnterFullscreen && !document.webkitFullscreenElement && !document.fullscreenElement) {
+      videoEl.webkitEnterFullscreen(); return;
+    }
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      containerEl?.requestFullscreen?.().catch(() => setShowControls(false));
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen)?.();
+    }
   }
+
+  useEffect(() => {
+    function onFsChange() {
+      if ((!document.fullscreenElement && !document.webkitFullscreenElement) && videoRef.current?.paused) {
+        videoRef.current.play().catch(() => {});
+      }
+    }
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFsChange);
+      document.removeEventListener('webkitfullscreenchange', onFsChange);
+    };
+  }, []);
 
   const isBad = status === 'error' || status === 'disconnected';
 

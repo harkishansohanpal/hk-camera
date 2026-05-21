@@ -26,7 +26,20 @@ export default function ViewerStream({ remoteStream, status, className = '', vid
     video.addEventListener('loadedmetadata', tryPlay, { once: true });
     function onVisibilityChange() { if (!document.hidden && video.paused) tryPlay(); }
     document.addEventListener('visibilitychange', onVisibilityChange);
-    return () => { document.removeEventListener('visibilitychange', onVisibilityChange); video.removeEventListener('loadedmetadata', tryPlay); };
+    function onFullscreenChange() {
+      if (!document.fullscreenElement && video.paused) {
+        video.srcObject = remoteStream;
+        tryPlay();
+      }
+    }
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      document.removeEventListener('fullscreenchange', onFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
+      video.removeEventListener('loadedmetadata', tryPlay);
+    };
   }, [remoteStream]);
 
   const overlay = STATUS_LABELS[status];
