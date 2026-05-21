@@ -32,10 +32,6 @@ export default function Pricing() {
     }
   }
 
-  if (loading) {
-    return <div className="min-h-screen bg-card flex items-center justify-center"><Loader size={24} className="animate-spin text-ap-blue" /></div>;
-  }
-
   return (
     <div className="min-h-screen bg-page text-text-primary">
       <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in">
@@ -48,6 +44,15 @@ export default function Pricing() {
           <p className="text-text-secondary text-lg max-w-xl mx-auto">All plans include real-time streaming and motion detection. Upgrade as your needs grow.</p>
         </div>
 
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader size={24} className="animate-spin text-ap-blue" />
+          </div>
+        ) : plans.length === 0 ? (
+          <div className="text-center py-20 text-text-secondary">
+            <p className="text-lg">Unable to load plans right now. Please try again later.</p>
+          </div>
+        ) : (
         <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
           {plans.map((plan) => {
             const features = Array.isArray(plan.features) ? plan.features : JSON.parse(plan.features || '[]');
@@ -79,6 +84,7 @@ export default function Pricing() {
             );
           })}
         </div>
+        )}
       </div>
     </div>
   );
