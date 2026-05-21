@@ -21,8 +21,8 @@ export default function CookieBanner() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
-      <div className="max-w-lg mx-auto bg-card border border-ap-separator rounded-2xl shadow-apple-lg p-4 backdrop-blur-xl">
+    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 pointer-events-none">
+      <div className="max-w-lg mx-auto bg-card border border-ap-separator rounded-2xl shadow-apple-lg p-4 backdrop-blur-xl pointer-events-auto">
         <div className="flex items-start gap-3">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-text-primary mb-1">Cookie & Privacy Notice</p>

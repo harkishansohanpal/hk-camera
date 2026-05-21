@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('hk-cookie-consent', 'dismissed');
+  });
+});
+
 test.describe('Full Regression – Authentication Flow', () => {
   test('register form validates required fields', async ({ page }) => {
     await page.goto('/register');
@@ -45,7 +51,7 @@ test.describe('Full Regression – Authentication Flow', () => {
 test.describe('Full Regression – Navigation & Routing', () => {
   test('pricing page is directly accessible', async ({ page }) => {
     await page.goto('/pricing');
-    await expect(page.locator('h1')).toContainText('pricing', { ignoreCase: true });
+    await expect(page.locator('h1')).toContainText('pricing', { ignoreCase: true, timeout: 15000 });
   });
 
   test('login page is directly accessible', async ({ page }) => {

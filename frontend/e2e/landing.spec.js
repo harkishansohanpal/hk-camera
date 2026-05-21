@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('hk-cookie-consent', 'dismissed');
+  });
+});
+
 test.describe('Landing Page', () => {
   test('loads with correct title and branding', async ({ page }) => {
     await page.goto('/');

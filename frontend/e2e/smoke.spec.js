@@ -1,5 +1,11 @@
 import { test, expect } from '@playwright/test';
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('hk-cookie-consent', 'dismissed');
+  });
+});
+
 const PROD_URL = process.env.CI ? 'https://hk-camera.pages.dev' : 'http://localhost:5173';
 
 test.describe('Production Smoke Tests', () => {
