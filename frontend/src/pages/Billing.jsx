@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CreditCard, Loader, ExternalLink, XCircle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, CreditCard, Loader, ExternalLink, XCircle } from 'lucide-react';
 import { subscriptionAPI } from '../services/api';
 import toast from 'react-hot-toast';
 

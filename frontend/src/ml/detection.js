@@ -74,7 +74,7 @@ function nonMaxSuppression(detections, iouThreshold) {
 
 export function parseDetections(output, confidenceThreshold, imgWidth, imgHeight) {
   const tensor = output.dims ? output : output[0];
-  let [d0, d1, d2] = tensor.dims;
+  let [, d1, d2] = tensor.dims;
   // Handle transposed output [1, 8400, 84] → [1, 84, 8400]
   if (d1 === 8400 && d2 === 84) [d1, d2] = [d2, d1];
   const cols = d1, rows = d2;

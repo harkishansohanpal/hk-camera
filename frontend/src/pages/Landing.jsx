@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Camera, Shield, Video, Bell, Smartphone, Zap, ChevronRight, Monitor, Radio, Eye, Volume2, Cloud, Lock, RefreshCw, Check, Moon, Sliders, Search, Wifi, Users, Code, ChevronDown } from 'lucide-react';
+import { Camera, Shield, Video, Bell, Smartphone, Zap, ChevronRight, Monitor, Radio, Eye, Volume2, Cloud, Lock, Moon, Sliders, Search, Wifi, Users, Code, ChevronDown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const PRODUCTS = [

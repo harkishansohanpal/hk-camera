@@ -34,22 +34,6 @@ function makeDetectionOutput(detections, numClasses = 80) {
  * Build an output where a specific row has a given class with max confidence,
  * even if classId is outside the normal range.
  */
-function outputWithCustomClass(classId, confidence) {
-  const cols = 84;
-  const data = new Float32Array(cols);
-  data[0] = 0.5;
-  data[1] = 0.5;
-  data[2] = 0.2;
-  data[3] = 0.3;
-  // All 80 scores start at 0, but we set one to our value
-  if (classId >= 0 && classId < 80) {
-    data[4 + classId] = confidence;
-  } else {
-    // out-of-range: leave all scores at 0, so detection is below threshold
-    // and gets filtered out — we'll test the unknown case differently
-  }
-  return [{ dims: [1, cols, 1], data }];
-}
 
 // ── parseDetections ─────────────────────────────────────────────
 

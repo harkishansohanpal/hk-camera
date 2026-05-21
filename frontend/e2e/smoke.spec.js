@@ -37,7 +37,7 @@ test.describe('Production Smoke Tests', () => {
   });
 
   test('404 page redirects to landing', async ({ page }) => {
-    const res = await page.goto(PROD_URL + '/nonexistent-route');
+    await page.goto(PROD_URL + '/nonexistent-route');
     await expect(page).toHaveURL(PROD_URL + '/');
   });
 });

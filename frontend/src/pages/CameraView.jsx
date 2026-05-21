@@ -37,7 +37,7 @@ export default function CameraView() {
   const wasBackgroundRef = useRef(false);
   const nvCanvasRef = useRef(null);
   const nvListenerRef = useRef(null);
-  const nvFrameRef = useRef(null);
+
   const recCanvasRef = useRef(null);
   const recRafRef = useRef(null);
 

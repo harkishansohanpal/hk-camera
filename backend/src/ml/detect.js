@@ -93,7 +93,7 @@ function nonMaxSuppression(detections, iouThreshold) {
 
 function parseDetections(output, confidenceThreshold, imgWidth = 640, imgHeight = 480) {
   const tensor = output.dims ? output : output[0];
-  let [d0, d1, d2] = tensor.dims;
+  let [, d1, d2] = tensor.dims;
   if (d1 === 8400 && d2 === 84) [d1, d2] = [d2, d1];
   const cols = d1, rows = d2;
   const data = tensor.data;
@@ -131,7 +131,7 @@ function parseDetections(output, confidenceThreshold, imgWidth = 640, imgHeight 
 
 async function detect(buffer, { confidenceThreshold = 80, imgWidth, imgHeight } = {}) {
   const sess = await loadModel();
-  const input = await preprocess(buffer, imgWidth, imgHeight);
+  const input = await preprocess(buffer);
   const tensor = new ort.Tensor('float32', input, [1, 3, INPUT_SIZE, INPUT_SIZE]);
   const feeds = { images: tensor };
   const results = await sess.run(feeds);

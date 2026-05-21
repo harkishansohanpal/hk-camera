@@ -37,7 +37,7 @@ export default function Viewer() {
 
   const [cameraControlSettings, setCameraControlSettings] = useState({ exposure: 0, focus: 50, whiteBalance: 'auto', iso: 100, brightness: 50, contrast: 50 });
 
-  const isAndroid = /Android/.test(navigator.userAgent);
+
   const [retryCountdown, setRetryCountdown] = useState(null);
   const retryCountRef = useRef(0);
   const isRetryingRef = useRef(false);

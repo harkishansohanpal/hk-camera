@@ -17,7 +17,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import { turnAPI } from '../services/api';
 import { logger } from '../lib/logger';
-import { useConnectionStats } from './useConnectionStats';
+
 
 const FINAL_SOCKET_URL = import.meta.env.VITE_SOCKET_URL || '';
 

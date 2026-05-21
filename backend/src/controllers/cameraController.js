@@ -1,5 +1,5 @@
 const { prisma } = require('../config/database');
-const { getIO, isCameraOnline } = require('../socket/signalingServer');
+const { isCameraOnline } = require('../socket/signalingServer');
 const logger = require('../config/logger');
 
 // ── GET /api/cameras ──────────────────────────────────────────

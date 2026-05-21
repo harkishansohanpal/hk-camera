@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, BellOff, Trash2, CheckCheck, Shield } from 'lucide-react';
+import { BellOff, Trash2, CheckCheck, Shield } from 'lucide-react';
 import { alertAPI } from '../services/api';
 import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';

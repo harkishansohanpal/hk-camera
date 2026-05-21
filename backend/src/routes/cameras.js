@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { body, query } = require('express-validator');
+const { body } = require('express-validator');
 const {
   listCameras, createCamera, getCamera, updateCamera,
   deleteCamera, getStreamKey, rotateStreamKey, heartbeat,
