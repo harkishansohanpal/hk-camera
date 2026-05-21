@@ -1,0 +1,10 @@
+{
+  "name": "hk-camera",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "docs:sync": "node scripts/sync-docs.js",
+    "docs:check": "node scripts/sync-docs.js --check"
+  },
+  "devDependencies": {}
+}

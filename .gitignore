@@ -60,6 +60,7 @@ frontend/test-results/
 # Scratch / temp files
 a.md
 *.md
+!README.md
 !docs/*.md
 
 # Editor / IDE
