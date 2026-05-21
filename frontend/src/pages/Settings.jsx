@@ -135,7 +135,7 @@ export default function Settings() {
         <label className="list-row justify-between cursor-pointer">
           <div className="flex items-center gap-3">
             <Shield size={16} className="text-ap-blue" />
-            <div><p className="text-sm font-semibold text-text-primary">Do Not Sell My Personal Information</p><p className="text-xs text-text-secondary">Under CCPA/CPRA, you can opt out of data sharing</p></div>
+            <div><p className="text-sm font-semibold text-text-primary">Do Not Sell My Personal Information</p><p className="text-xs text-text-secondary">Under CCPA/CPRA, you can opt out of data sharing. We do not sell data.</p></div>
           </div>
           <input type="checkbox" className="sr-only" checked={doNotSell} onChange={handleDoNotSell} />
           <div className={`toggle ${doNotSell ? 'toggle-on' : 'toggle-off'}`}><span className="toggle-knob" /></div>

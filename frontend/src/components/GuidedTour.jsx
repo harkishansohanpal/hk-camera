@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useLayoutEffect } from 'react';
 import { ChevronRight, ChevronLeft, SkipForward } from 'lucide-react';
+import { consentGiven } from '../lib/consent';
 
 const DISMISSED_KEY = 'hk-camera-tour-dismissed';
 
@@ -22,11 +23,11 @@ function getTargetEl(step) {
 
 export function useTour() {
   const [active, setActive] = useState(false);
-  const [dismissed, setDismissed] = useState(() => localStorage.getItem(DISMISSED_KEY) === 'true');
+  const [dismissed, setDismissed] = useState(() => consentGiven() ? localStorage.getItem(DISMISSED_KEY) === 'true' : false);
   const start = useCallback(() => setActive(true), []);
   const finish = useCallback(() => setActive(false), []);
-  const dismissForever = useCallback(() => { setDismissed(true); localStorage.setItem(DISMISSED_KEY, 'true'); }, []);
-  const reset = useCallback(() => { localStorage.removeItem(DISMISSED_KEY); setDismissed(false); }, []);
+  const dismissForever = useCallback(() => { setDismissed(true); if (consentGiven()) localStorage.setItem(DISMISSED_KEY, 'true'); }, []);
+  const reset = useCallback(() => { if (consentGiven()) localStorage.removeItem(DISMISSED_KEY); setDismissed(false); }, []);
   return { active, dismissed, start, finish, reset, dismissForever };
 }
 

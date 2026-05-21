@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { consentGiven } from '../lib/consent';
 
 const THEME_KEY = 'hk-camera-theme';
 
@@ -7,7 +8,8 @@ const ThemeContext = createContext();
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(() => {
     if (typeof window === 'undefined') return 'dark';
-    return localStorage.getItem(THEME_KEY) || 'dark';
+    if (consentGiven()) return localStorage.getItem(THEME_KEY) || 'dark';
+    return 'dark';
   });
 
   useEffect(() => {
@@ -17,7 +19,9 @@ export function ThemeProvider({ children }) {
     } else {
       root.classList.remove('dark');
     }
-    localStorage.setItem(THEME_KEY, theme);
+    if (consentGiven()) {
+      localStorage.setItem(THEME_KEY, theme);
+    }
   }, [theme]);
 
   const setTheme = useCallback((t) => setThemeState(t), []);

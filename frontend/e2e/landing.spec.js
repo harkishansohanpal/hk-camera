@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
-    localStorage.setItem('hk-cookie-consent', 'dismissed');
+    localStorage.setItem('hk-consent', 'accepted');
   });
 });
 
