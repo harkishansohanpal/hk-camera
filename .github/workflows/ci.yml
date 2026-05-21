@@ -157,14 +157,19 @@ jobs:
       - run: npm ci
         working-directory: .
 
-      - name: Run frontend tests
-        run: npm test -- --reporter=verbose 2>&1
-        working-directory: frontend
-      - name: Run backend tests
-        run: npm test -- --verbose 2>&1
-        working-directory: backend
-      - name: Validate test counts in docs
-        run: node scripts/sync-docs.js --check 2>&1
+      - name: Check test counts match docs
+        run: |
+          echo "=== Running frontend tests ==="
+          cd frontend && npm test -- --reporter=verbose 2>&1; FE_EXIT=$?
+          echo "=== Frontend tests exit code: $FE_EXIT ==="
+          echo "=== Running backend tests ==="
+          cd ../backend && npm test -- --verbose 2>&1; BE_EXIT=$?
+          echo "=== Backend tests exit code: $BE_EXIT ==="
+          cd ..
+          echo "=== Running docs:check ==="
+          node scripts/sync-docs.js --check 2>&1; DOCS_EXIT=$?
+          echo "=== docs:check exit code: $DOCS_EXIT ==="
+          exit $(( FE_EXIT | BE_EXIT | DOCS_EXIT ))
 
   # ── Security audit ──────────────────────────────────────────
   security:
