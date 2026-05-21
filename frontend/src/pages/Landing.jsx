@@ -193,22 +193,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Footer ────────────────────────────────────────── */}
-      <footer className="border-t border-ap-separator py-8 px-4 sm:px-6 bg-card">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-text-secondary text-sm">
-            <div className="w-6 h-6 bg-ap-blue rounded-lg flex items-center justify-center">
-              <Camera size={12} className="text-white" />
-            </div>
-            HK Camera
-          </div>
-          <div className="flex items-center gap-6">
-            <button onClick={() => navigate('/pricing')} className="text-ap-gray3 hover:text-text-secondary text-xs transition-colors">Pricing</button>
-            <Link to="/login" className="text-ap-gray3 hover:text-text-secondary text-xs transition-colors">Log in</Link>
-          </div>
-          <p className="text-ap-gray3 text-xs">Open source on GitHub.</p>
-        </div>
-      </footer>
     </div>
   );
 }
