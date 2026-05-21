@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { userAPI } from '../services/api';
-import { User, Lock, Bell, Trash2, CreditCard, ChevronRight } from 'lucide-react';
+import { User, Lock, Bell, Trash2, CreditCard, ChevronRight, Download, Shield } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
 
 export default function Settings() {
   const { user, refreshUser, logout } = useAuth();
@@ -11,6 +11,8 @@ export default function Settings() {
   const [profile, setProfile] = useState({ name: user?.name ?? '' });
   const [password, setPassword] = useState({ currentPassword: '', newPassword: '', confirm: '' });
   const [notifs, setNotifs] = useState({ emailAlerts: user?.emailAlerts ?? true, pushAlerts: user?.pushAlerts ?? true });
+  const [doNotSell, setDoNotSell] = useState(user?.doNotSell ?? false);
+  const [exporting, setExporting] = useState(false);
   const [saving, setSaving] = useState(false);
 
   async function saveProfile(e) {
@@ -34,6 +36,26 @@ export default function Settings() {
   }
 
   async function saveNotifications() { await userAPI.updateProfile(notifs); await refreshUser(); toast.success('Notification settings saved'); }
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const { data } = await userAPI.exportData();
+      const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'hk-camera-export.json'; a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Data exported');
+    } catch { toast.error('Export failed'); }
+    finally { setExporting(false); }
+  }
+
+  async function handleDoNotSell() {
+    const next = !doNotSell;
+    setDoNotSell(next);
+    try { await userAPI.updateDoNotSell({ doNotSell: next }); await refreshUser(); toast.success(next ? 'Do Not Sell enabled' : 'Do Not Sell disabled'); }
+    catch { setDoNotSell(!next); toast.error('Failed to update'); }
+  }
 
   async function handleDeleteAccount() {
     if (!confirm('This will permanently delete your account and all data. Are you absolutely sure?')) return;
@@ -105,6 +127,35 @@ export default function Settings() {
           </div>
           <ChevronRight size={16} className="text-text-secondary" />
         </button>
+      </div>
+
+      {/* Privacy & Data */}
+      <div className="section-header">Privacy & Data</div>
+      <div className="card-grouped">
+        <label className="list-row justify-between cursor-pointer">
+          <div className="flex items-center gap-3">
+            <Shield size={16} className="text-ap-blue" />
+            <div><p className="text-sm font-semibold text-text-primary">Do Not Sell My Personal Information</p><p className="text-xs text-text-secondary">Under CCPA/CPRA, you can opt out of data sharing</p></div>
+          </div>
+          <input type="checkbox" className="sr-only" checked={doNotSell} onChange={handleDoNotSell} />
+          <div className={`toggle ${doNotSell ? 'toggle-on' : 'toggle-off'}`}><span className="toggle-knob" /></div>
+        </label>
+        <div className="px-5 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Download size={16} className="text-ap-blue" />
+            <div><p className="text-sm font-semibold text-text-primary">Export My Data</p><p className="text-xs text-text-secondary">Download all your cameras, recordings, and alerts</p></div>
+          </div>
+          <button onClick={handleExport} disabled={exporting} className="btn-secondary text-xs px-4 py-2">
+            {exporting ? 'Exporting\u2026' : 'Export'}
+          </button>
+        </div>
+        <Link to="/privacy" className="list-row w-full justify-between">
+          <div className="flex items-center gap-3">
+            <Shield size={16} className="text-ap-blue" />
+            <div className="text-left"><p className="text-sm font-semibold text-text-primary">Privacy Policy</p><p className="text-xs text-text-secondary">How we handle your data</p></div>
+          </div>
+          <ChevronRight size={16} className="text-text-secondary" />
+        </Link>
       </div>
 
       {/* Danger Zone */}

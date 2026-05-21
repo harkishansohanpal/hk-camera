@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { body } = require('express-validator');
-const { updateProfile, changePassword, deleteAccount } = require('../controllers/userController');
+const { updateProfile, changePassword, deleteAccount, exportData, updateDoNotSell } = require('../controllers/userController');
 const { authenticate, requireNotDemo } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 
@@ -27,5 +27,15 @@ router.patch(
 );
 
 router.delete('/me', requireNotDemo, deleteAccount);
+
+router.get('/me/export', exportData);
+
+router.patch(
+  '/me/do-not-sell',
+  requireNotDemo,
+  [body('doNotSell').isBoolean()],
+  validate,
+  updateDoNotSell
+);
 
 module.exports = router;

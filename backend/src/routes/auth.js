@@ -14,6 +14,7 @@ router.post(
     body('email').isEmail().normalizeEmail(),
     body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
     body('name').trim().notEmpty().withMessage('Name is required'),
+    body('consent').isBoolean().custom((v) => v === true).withMessage('You must accept the Privacy Policy'),
   ],
   validate,
   register

@@ -14,20 +14,25 @@ import Alerts     from './pages/Alerts';
 import Landing    from './pages/Landing';
 import Pricing    from './pages/Pricing';
 import Billing    from './pages/Billing';
+import Privacy    from './pages/Privacy';
 import AdminRoute    from './components/AdminRoute';
 import AdminLayout   from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminLogAnalyzer from './pages/admin/AdminLogAnalyzer';
 
+import CookieBanner from './components/CookieBanner';
+
 export default function App() {
   return (
     <AuthProvider>
+      <CookieBanner />
       <Routes>
         {/* Public */}
         <Route path="/"         element={<Landing />} />
         <Route path="/pricing"  element={<Pricing />} />
         <Route path="/login"    element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/privacy"  element={<Privacy />} />
 
         {/* Protected */}
         <Route element={<ProtectedRoute />}>

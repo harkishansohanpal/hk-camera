@@ -47,10 +47,10 @@ async function getCamera(req, res, next) {
 // ── PATCH /api/cameras/:cameraId ──────────────────────────────
 async function updateCamera(req, res, next) {
   try {
-    const { name, description, motionDetect, sensitivity, recordOnMotion, twoWayAudio, nightVision, exposure, focus, whiteBalance, iso, brightness, contrast } = req.body;
+    const { name, description, motionDetect, sensitivity, recordOnMotion, retentionDays, twoWayAudio, nightVision, exposure, focus, whiteBalance, iso, brightness, contrast } = req.body;
     const camera = await prisma.camera.update({
       where: { id: req.params.cameraId },
-      data: { name, description, motionDetect, sensitivity, recordOnMotion, twoWayAudio, nightVision, exposure, focus, whiteBalance, iso, brightness, contrast },
+      data: { name, description, motionDetect, sensitivity, recordOnMotion, retentionDays, twoWayAudio, nightVision, exposure, focus, whiteBalance, iso, brightness, contrast },
     });
     res.json({ success: true, data: camera });
   } catch (err) { next(err); }

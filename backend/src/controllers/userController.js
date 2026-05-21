@@ -46,4 +46,70 @@ async function deleteAccount(req, res, next) {
   } catch (err) { next(err); }
 }
 
-module.exports = { updateProfile, changePassword, deleteAccount };
+// ── GET /api/users/me/export ──────────────────────────────────
+async function exportData(req, res, next) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: {
+        cameras: {
+          include: { recordings: { orderBy: { createdAt: 'desc' }, take: 500 } },
+        },
+        alerts: { orderBy: { createdAt: 'desc' }, take: 500 },
+        subscription: true,
+      },
+    });
+
+    const exportObj = {
+      exportedAt: new Date().toISOString(),
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        createdAt: user.createdAt,
+        consentGivenAt: user.consentGivenAt,
+        doNotSell: user.doNotSell,
+      },
+      cameras: user.cameras.map((c) => ({
+        id: c.id,
+        name: c.name,
+        description: c.description,
+        createdAt: c.createdAt,
+        recordingCount: c.recordings.length,
+        recordings: c.recordings.map((r) => ({
+          id: r.id,
+          url: r.url,
+          size: r.size,
+          duration: r.duration,
+          trigger: r.trigger,
+          createdAt: r.createdAt,
+        })),
+      })),
+      alerts: user.alerts.map((a) => ({
+        id: a.id,
+        type: a.type,
+        message: a.message,
+        createdAt: a.createdAt,
+      })),
+      subscription: user.subscription
+        ? { planId: user.subscription.planId, status: user.subscription.status }
+        : null,
+    };
+
+    res.json({ success: true, data: exportObj });
+  } catch (err) { next(err); }
+}
+
+async function updateDoNotSell(req, res, next) {
+  try {
+    const { doNotSell } = req.body;
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { doNotSell },
+    });
+    res.json({ success: true, data: { doNotSell } });
+  } catch (err) { next(err); }
+}
+
+module.exports = { updateProfile, changePassword, deleteAccount, exportData, updateDoNotSell };

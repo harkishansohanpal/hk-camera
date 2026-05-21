@@ -193,6 +193,12 @@ export default function Landing() {
         </div>
       </section>
 
+      <footer className="py-6 px-4 border-t border-ap-separator bg-card">
+        <div className="max-w-7xl mx-auto flex items-center justify-center gap-4 text-xs text-text-secondary">
+          <Link to="/privacy" className="hover:text-text-primary transition-colors">Privacy Policy</Link>
+          <span className="text-ap-gray3">Open source on GitHub</span>
+        </div>
+      </footer>
     </div>
   );
 }

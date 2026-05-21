@@ -8,6 +8,7 @@ export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm]       = useState({ name: '', email: '', password: '' });
+  const [consent, setConsent] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
@@ -16,9 +17,13 @@ export default function Register() {
       toast.error('Password must be at least 8 characters');
       return;
     }
+    if (!consent) {
+      toast.error('You must accept the Privacy Policy');
+      return;
+    }
     setLoading(true);
     try {
-      await register(form);
+      await register({ ...form, consent });
       navigate('/dashboard');
       toast.success('Welcome to HK Camera!');
     } catch (err) {
@@ -52,6 +57,16 @@ export default function Register() {
                   value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} required />
               </div>
             ))}
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input type="checkbox" checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+                className="w-4 h-4 mt-0.5 rounded border-ap-gray4 bg-card text-ap-blue focus:ring-ap-blue/30 cursor-pointer flex-shrink-0" />
+              <span className="text-xs text-text-secondary group-hover:text-text-primary transition-colors leading-relaxed">
+                I agree to the{' '}
+                <Link to="/privacy" className="text-ap-blue hover:text-blue-700 font-semibold underline">Privacy Policy</Link>{' '}
+                and understand how my data is handled
+              </span>
+            </label>
             <button type="submit" className="btn-primary w-full mt-1" disabled={loading}>
               {loading ? 'Creating account\u2026' : 'Create account'}
             </button>

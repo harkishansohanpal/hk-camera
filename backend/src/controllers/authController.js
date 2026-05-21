@@ -25,14 +25,19 @@ function refreshTokenExpiry() {
 // ── POST /api/auth/register ───────────────────────────────────
 async function register(req, res, next) {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name, consent } = req.body;
 
     const exists = await prisma.user.findUnique({ where: { email } });
     if (exists) return res.status(409).json({ success: false, message: 'Email already in use' });
 
     const passwordHash = await bcrypt.hash(password, 12);
     const user = await prisma.user.create({
-      data: { email, passwordHash, name },
+      data: {
+        email, passwordHash, name,
+        consentGivenAt: new Date(),
+        consentVersion: '2026-05-01',
+        ...(consent === true ? {} : {}), // validated by route
+      },
       select: { id: true, email: true, name: true, role: true, createdAt: true },
     });
 
@@ -126,7 +131,7 @@ async function me(req, res, next) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
-      select: { id: true, email: true, name: true, role: true, avatarUrl: true, emailAlerts: true, pushAlerts: true, createdAt: true },
+      select: { id: true, email: true, name: true, role: true, avatarUrl: true, emailAlerts: true, pushAlerts: true, consentGivenAt: true, doNotSell: true, createdAt: true },
     });
     res.json({ success: true, data: user });
   } catch (err) {

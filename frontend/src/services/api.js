@@ -122,6 +122,8 @@ export const userAPI = {
   updateProfile:  (data) => api.patch('/users/me', data),
   changePassword: (data) => api.patch('/users/me/password', data),
   deleteAccount:  ()     => api.delete('/users/me'),
+  exportData:     ()     => api.get('/users/me/export'),
+  updateDoNotSell:(data) => api.patch('/users/me/do-not-sell', data),
 };
 
 // ── ML Detection ─────────────────────────────────────────────

@@ -24,3 +24,8 @@ primary_region = "iad"
   STORAGE_STRATEGY = "s3"
   LOCAL_UPLOAD_DIR = "/app/uploads"
   LOCAL_RECORDING_DIR = "/app/recordings"
+
+[[crons]]
+  schedule = "0 3 * * *"
+  command = "node scripts/purge-old-recordings.js"
+  process = "app"
