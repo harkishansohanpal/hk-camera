@@ -2,6 +2,10 @@ const nodemailer = require('nodemailer');
 const webpush = require('web-push');
 const logger = require('../config/logger');
 
+function escapeHtml(s) {
+  return String(s).replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[c]);
+}
+
 // ── Web Push VAPID setup ──────────────────────────────────────
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
@@ -28,13 +32,7 @@ async function sendEmail({ to, subject, html }) {
     logger.debug('SMTP not configured – skipping email', { to, subject });
     return;
   }
-  const safeSubject = subject.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-  const safeHtml = html
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/\s?on\w+\s*=\s*"[^"]*"/gi, '')
-    .replace(/\s?on\w+\s*=\s*'[^']*'/gi, '')
-    .replace(/\s?on\w+\s*=\s*[^\s>]+/gi, '');
-  await transporter.sendMail({ from: process.env.ALERT_FROM || process.env.SMTP_USER, to, subject: safeSubject, html: safeHtml });
+  await transporter.sendMail({ from: process.env.ALERT_FROM || process.env.SMTP_USER, to, subject: escapeHtml(subject), html });
   logger.info('Email sent', { to, subject });
 }
 
@@ -53,13 +51,13 @@ async function sendPush(subscription, payload) {
 
 // ── Motion detected ───────────────────────────────────────────
 async function sendMotionAlert(user, camera, thumbnailUrl) {
-  const subject = `🚨 Motion detected – ${camera.name}`;
+  const subject = `🚨 Motion detected – ${escapeHtml(camera.name)}`;
   const html = `
     <h2>Motion Detected</h2>
-    <p>Camera: <strong>${camera.name}</strong></p>
-    <p>Time: ${new Date().toLocaleString()}</p>
-    ${thumbnailUrl ? `<img src="${thumbnailUrl}" style="max-width:400px" alt="Motion thumbnail" />` : ''}
-    <p><a href="${process.env.CLIENT_URL}/cameras/${camera.id}">View live feed →</a></p>
+    <p>Camera: <strong>${escapeHtml(camera.name)}</strong></p>
+    <p>Time: ${escapeHtml(new Date().toLocaleString())}</p>
+    ${thumbnailUrl ? `<img src="${escapeHtml(thumbnailUrl)}" style="max-width:400px" alt="Motion thumbnail" />` : ''}
+    <p><a href="${escapeHtml(process.env.CLIENT_URL)}/cameras/${camera.id}">View live feed →</a></p>
   `;
 
   if (user.emailAlerts) await sendEmail({ to: user.email, subject, html });
@@ -80,12 +78,12 @@ async function sendRecordingCompleteAlert(user, camera, recording) {
   if (!user.emailAlerts) return;
   await sendEmail({
     to: user.email,
-    subject: `📹 New recording – ${camera.name}`,
+    subject: `📹 New recording – ${escapeHtml(camera.name)}`,
     html: `
       <h2>Recording Saved</h2>
-      <p>Camera: <strong>${camera.name}</strong></p>
-      <p>Duration: ${recording.duration ? `${recording.duration}s` : 'N/A'}</p>
-      <p><a href="${process.env.CLIENT_URL}/recordings/${recording.id}">View recording →</a></p>
+      <p>Camera: <strong>${escapeHtml(camera.name)}</strong></p>
+      <p>Duration: ${recording.duration ? `${escapeHtml(String(recording.duration))}s` : 'N/A'}</p>
+      <p><a href="${escapeHtml(process.env.CLIENT_URL)}/recordings/${recording.id}">View recording →</a></p>
     `,
   });
 }
@@ -95,8 +93,8 @@ async function sendCameraOfflineAlert(user, camera) {
   if (!user.emailAlerts) return;
   await sendEmail({
     to: user.email,
-    subject: `⚠️ Camera offline – ${camera.name}`,
-    html: `<p>Your camera <strong>${camera.name}</strong> went offline at ${new Date().toLocaleString()}.</p>`,
+    subject: `⚠️ Camera offline – ${escapeHtml(camera.name)}`,
+    html: `<p>Your camera <strong>${escapeHtml(camera.name)}</strong> went offline at ${escapeHtml(new Date().toLocaleString())}.</p>`,
   });
 }
 
