@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { Camera, Shield, Video, Bell, Smartphone, Zap, ChevronRight, Monitor, Radio, Eye, Volume2, Cloud, Lock, RefreshCw, Check } from 'lucide-react';
+import { Camera, Shield, Video, Bell, Smartphone, Zap, ChevronRight, Monitor, Radio, Eye, Volume2, Cloud, Lock, RefreshCw, Check, Moon, Sliders, Search } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Landing() {
@@ -73,8 +73,11 @@ export default function Landing() {
               { Icon: Zap, title: 'ML Object Detection', desc: 'YOLOv8 AI detects people, vehicles, and animals — not just pixel changes. Fewer false alerts.' },
               { Icon: Bell, title: 'Smart Alerts', desc: 'Get notified via email, push, or in-app when motion is detected. Configurable sensitivity.' },
               { Icon: Eye, title: 'Night Vision', desc: 'Android Camera2 native low-light mode + IR phosphor overlay for viewing in complete darkness.' },
-              { Icon: Smartphone, title: 'Mobile Apps', desc: 'Native iOS and Android apps via Capacitor. Install as PWA for quick access.' },
               { Icon: Volume2, title: 'Two-Way Audio', desc: 'Speak through your camera from the viewer. Built-in echo cancellation.' },
+              { Icon: Sliders, title: 'Remote Camera Control', desc: 'Adjust torch, focus, exposure, and white balance remotely from the viewer.' },
+              { Icon: Search, title: 'Recording & Playback', desc: 'Auto-record on motion or manually. Browse, search, and replay from anywhere.' },
+              { Icon: Smartphone, title: 'Mobile Apps', desc: 'Native iOS and Android via Capacitor. Works as a PWA for quick access.' },
+              { Icon: Moon, title: 'Dark Mode', desc: 'Light and dark themes with automatic persistence. Easy on the eyes day or night.' },
             ].map(({ Icon, title, desc }) => (
               <div key={title} className="card-highlighted p-6 sm:p-8 transition-all duration-200">
                 <div className="w-11 h-11 bg-ap-blue/10 rounded-xl flex items-center justify-center mb-4">
@@ -138,6 +141,8 @@ export default function Landing() {
               { Icon: RefreshCw, title: 'JWT Rotation', desc: 'Short-lived access tokens (15 min) with rotating refresh tokens.' },
               { Icon: Shield, title: 'Rate Limiting', desc: 'API-wide and auth-specific rate limiting with input validation.' },
               { Icon: Shield, title: 'Security Headers', desc: 'Helmet.js, CORS restriction, Stripe webhook verification, automated npm audit.' },
+              { Icon: Shield, title: 'SAST Scanning', desc: 'CodeQL security analysis + eslint-plugin-security catch vulnerabilities before deployment.' },
+              { Icon: RefreshCw, title: 'Dependabot', desc: 'Automated weekly dependency updates with grouped minor/patch PRs.' },
             ].map(({ Icon, title, desc }) => (
               <div key={title} className="card p-6 hover:shadow-apple transition-shadow">
                 <div className="w-10 h-10 bg-ap-blue/10 rounded-xl flex items-center justify-center mb-3">
