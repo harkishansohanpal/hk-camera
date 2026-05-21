@@ -112,8 +112,10 @@ app.use('/api/subscriptions', subscriptionRoutes);
 // ── Admin routes (require ADMIN role) ─────────────────────────
 const { authenticate, requireAdmin } = require('./middleware/auth');
 const adminRoutes = require('./routes/admin');
-app.use('/api/admin', authenticate, requireAdmin, adminRoutes);
+const adminUserRoutes = require('./routes/adminUsers');
 
+app.use('/api/admin', authenticate, requireAdmin, adminRoutes);
+app.use('/api/admin/users', authenticate, requireAdmin, adminUserRoutes);
 // ── 404 + global error handler ────────────────────────────────
 app.use(notFound);
 app.use(errorHandler);

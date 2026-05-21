@@ -19,10 +19,11 @@ async function authenticate(req, res, next) {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
-      select: { id: true, email: true, name: true, role: true, isDemo: true },
+      select: { id: true, email: true, name: true, role: true, isDemo: true, suspended: true },
     });
 
     if (!user) return res.status(401).json({ success: false, message: 'User not found' });
+    if (user.suspended) return res.status(423).json({ success: false, message: 'Account suspended' });
 
     req.user = user;
     next();

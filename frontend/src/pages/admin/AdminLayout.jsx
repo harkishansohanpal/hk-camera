@@ -1,9 +1,10 @@
 import { Outlet, NavLink } from 'react-router-dom';
-import { Activity, FileText, MessageSquare, ArrowLeft, Camera } from 'lucide-react';
+import { Activity, FileText, MessageSquare, Users, ArrowLeft, Camera } from 'lucide-react';
 
 const links = [
   { to: '/admin',          icon: Activity,     label: 'Dashboard', end: true },
   { to: '/admin/logs',     icon: FileText,     label: 'Logs',      end: false },
+  { to: '/admin/users',    icon: Users,        label: 'Users',     end: false },
   { to: '/admin/analyze',  icon: MessageSquare, label: 'Analyze',  end: false },
 ];
 

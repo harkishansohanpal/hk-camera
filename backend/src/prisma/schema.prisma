@@ -26,6 +26,10 @@ model User {
   termsConsentVersion String?
   consentIp           String?
   doNotSell           Boolean        @default(false) // CCPA "Do Not Sell"
+  suspended           Boolean        @default(false)
+  suspendedAt         DateTime?
+  suspensionReason    String?
+  legalHold           Boolean        @default(false)
   stripeCustomerId    String?        @unique
   subscription        Subscription?
   refreshTokens       RefreshToken[]
