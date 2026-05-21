@@ -1,10 +1,65 @@
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Camera, Shield, Video, Bell, Smartphone, Zap, ChevronRight, Monitor, Radio, Eye, Volume2, Cloud, Lock, RefreshCw, Check, Moon, Sliders, Search, Wifi, Users } from 'lucide-react';
+import { Camera, Shield, Video, Bell, Smartphone, Zap, ChevronRight, Monitor, Radio, Eye, Volume2, Cloud, Lock, RefreshCw, Check, Moon, Sliders, Search, Wifi, Users, Code, ChevronDown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+
+const PRODUCTS = [
+  { id: 'live', Icon: Video, title: 'Live Video', desc: 'See what your camera sees, instantly. Open it from any browser — no app download needed.', tech: 'Peer-to-peer WebRTC video with ultra-low latency. Watch from any browser, anywhere.' },
+  { id: 'detection', Icon: Zap, title: 'Smart Detection', desc: 'Knows the difference between a person, a car, and a squirrel. You get fewer false alerts.', tech: 'YOLOv8 AI detects people, vehicles, and animals — not just pixel changes. Fewer false alerts.' },
+  { id: 'alerts', Icon: Bell, title: 'Instant Alerts', desc: 'Get a notification the moment something happens. Choose email, push, or both.', tech: 'Get notified via email, push, or in-app when motion is detected. Configurable sensitivity.' },
+  { id: 'night', Icon: Eye, title: 'Night Vision', desc: 'Works in the dark. Your camera can still see clearly even when the lights are off.', tech: 'Android Camera2 native low-light mode + IR phosphor overlay for viewing in complete darkness.' },
+  { id: 'audio', Icon: Volume2, title: 'Talk Through It', desc: 'Hear what\'s happening and speak back. Works like a two-way intercom.', tech: 'Speak through your camera from the viewer. Built-in echo cancellation.' },
+  { id: 'control', Icon: Sliders, title: 'Control From Anywhere', desc: 'Adjust brightness, turn on the flashlight, or flip the camera view — all remotely.', tech: 'Adjust torch, focus, exposure, and white balance remotely from the viewer.' },
+  { id: 'recordings', Icon: Search, title: 'Record & Replay', desc: 'Save clips when motion is detected. Go back and watch what you missed.', tech: 'Auto-record on motion or manually. Browse, search, and replay from anywhere.' },
+  { id: 'mobile', Icon: Smartphone, title: 'Works on Phones Too', desc: 'Use your phone as a camera or watch from it. Everything works on mobile browsers.', tech: 'Native iOS and Android via Capacitor. Works as a PWA for quick access.' },
+  { id: 'theme', Icon: Moon, title: 'Easy on the Eyes', desc: 'Switch between light and dark mode. Looks great however you like it.', tech: 'Light and dark themes with automatic persistence. Easy on the eyes day or night.' },
+];
+
+const SECURITY = [
+  { id: 'encryption', Icon: Lock, title: 'Fully Encrypted', desc: 'Your video is scrambled from end to end. Even we can\'t see your feed.', tech: 'Video streams use SRTP via WebRTC with DTLS-SRTP key exchange.' },
+  { id: 'privacy', Icon: Users, title: 'Private to You', desc: 'Only people you share the link with can watch. You\'re in control.', tech: 'Short-lived access tokens (15 min) with rotating refresh tokens. Camera auth via stream key.' },
+  { id: 'storage', Icon: Cloud, title: 'Your Data is Safe', desc: 'Recordings are stored securely. Delete them anytime — it\'s your footage.', tech: 'AES-256 encryption for all recordings. TLS enforced in production.' },
+  { id: 'network', Icon: Wifi, title: 'Works on Your Network', desc: 'Video goes directly between devices when possible. No middleman needed.', tech: 'Media relayed through authenticated TURN servers with HMAC-SHA1 credentials.' },
+  { id: 'opensource', Icon: Shield, title: 'Open Source', desc: 'The code is public for anyone to inspect. No secrets, no backdoors.', tech: 'CodeQL SAST analysis + eslint-plugin-security catch vulnerabilities before deployment. npm audit blocks high-severity issues.' },
+  { id: 'exit', Icon: Moon, title: 'No Vendor Lock-In', desc: 'Stop anytime, keep your data. No contracts, no cancellation fees.', tech: 'Self-host option via Docker Compose. Standard RTSP/WebRTC protocols — works with any camera.' },
+];
+
+function Card({ item, expanded, onToggle }) {
+  const { Icon, title, desc, tech } = item;
+  return (
+    <div className="card p-6 sm:p-8 transition-all duration-200">
+      <div className="w-11 h-11 bg-ap-blue/10 rounded-xl flex items-center justify-center mb-4">
+        <Icon size={20} className="text-ap-blue" />
+      </div>
+      <h3 className="text-base font-semibold text-text-primary mb-2">{title}</h3>
+      <p className="text-text-secondary text-sm leading-relaxed">{desc}</p>
+      <button onClick={() => onToggle(item.id)}
+        className="mt-3 flex items-center gap-1 text-xs font-semibold text-ap-blue hover:text-blue-600 transition-colors">
+        <Code size={12} />
+        {expanded ? 'Hide' : 'Show'} technical details
+        <ChevronDown size={12} className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+      </button>
+      {expanded && (
+        <div className="mt-3 pt-3 border-t border-ap-separator animate-fade-in">
+          <p className="text-xs text-text-secondary leading-relaxed">{tech}</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Landing() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const [expanded, setExpanded] = useState(new Set());
+
+  function toggle(id) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
 
   if (loading) return null;
   if (user) { navigate('/dashboard', { replace: true }); return null; }
@@ -68,24 +123,8 @@ export default function Landing() {
             <p className="text-text-secondary max-w-2xl mx-auto text-lg">Works with any device that has a camera — laptop, tablet, or phone.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              { Icon: Video, title: 'Live Video', desc: 'See what your camera sees, instantly. Open it from any browser — no app download needed.' },
-              { Icon: Zap, title: 'Smart Detection', desc: 'Knows the difference between a person, a car, and a squirrel. You get fewer false alerts.' },
-              { Icon: Bell, title: 'Instant Alerts', desc: 'Get a notification the moment something happens. Choose email, push, or both.' },
-              { Icon: Eye, title: 'Night Vision', desc: 'Works in the dark. Your camera can still see clearly even when the lights are off.' },
-              { Icon: Volume2, title: 'Talk Through It', desc: 'Hear what\'s happening and speak back. Works like a two-way intercom.' },
-              { Icon: Sliders, title: 'Control From Anywhere', desc: 'Adjust brightness, turn on the flashlight, or flip the camera view — all remotely.' },
-              { Icon: Search, title: 'Record & Replay', desc: 'Save clips when motion is detected. Go back and watch what you missed.' },
-              { Icon: Smartphone, title: 'Works on Phones Too', desc: 'Use your phone as a camera or watch from it. Everything works on mobile browsers.' },
-              { Icon: Moon, title: 'Easy on the Eyes', desc: 'Switch between light and dark mode. Looks great however you like it.' },
-            ].map(({ Icon, title, desc }) => (
-              <div key={title} className="card-highlighted p-6 sm:p-8 transition-all duration-200">
-                <div className="w-11 h-11 bg-ap-blue/10 rounded-xl flex items-center justify-center mb-4">
-                  <Icon size={20} className="text-ap-blue" />
-                </div>
-                <h3 className="text-base font-semibold text-text-primary mb-2">{title}</h3>
-                <p className="text-text-secondary text-sm leading-relaxed">{desc}</p>
-              </div>
+            {PRODUCTS.map((item) => (
+              <Card key={item.id} item={item} expanded={expanded.has(item.id)} onToggle={toggle} />
             ))}
           </div>
           <div className="text-center mt-12">
@@ -136,21 +175,8 @@ export default function Landing() {
             <p className="text-text-secondary text-lg max-w-2xl mx-auto">Your video feeds belong to you — no one else can watch without your permission.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              { Icon: Lock, title: 'Fully Encrypted', desc: 'Your video is scrambled from end to end. Even we can\'t see your feed.' },
-              { Icon: Users, title: 'Private to You', desc: 'Only people you share the link with can watch. You\'re in control.' },
-              { Icon: Cloud, title: 'Your Data is Safe', desc: 'Recordings are stored securely. Delete them anytime — it\'s your footage.' },
-              { Icon: Wifi, title: 'Works on Your Network', desc: 'Video goes directly between devices when possible. No middleman needed.' },
-              { Icon: Shield, title: 'Open Source', desc: 'The code is public for anyone to inspect. No secrets, no backdoors.' },
-              { Icon: Moon, title: 'No Vendor Lock-In', desc: 'Stop anytime, keep your data. No contracts, no cancellation fees.' },
-            ].map(({ Icon, title, desc }) => (
-              <div key={title} className="card p-6 hover:shadow-apple transition-shadow">
-                <div className="w-10 h-10 bg-ap-blue/10 rounded-xl flex items-center justify-center mb-3">
-                  <Icon size={18} className="text-ap-blue" />
-                </div>
-                <h3 className="text-base font-semibold text-text-primary mb-2">{title}</h3>
-                <p className="text-text-secondary text-sm leading-relaxed">{desc}</p>
-              </div>
+            {SECURITY.map((item) => (
+              <Card key={item.id} item={item} expanded={expanded.has(item.id)} onToggle={toggle} />
             ))}
           </div>
         </div>

@@ -7,12 +7,12 @@ const DEFAULT_STEPS = [
   { target: 'tour-welcome', title: 'Welcome to HK Camera', content: 'Let\'s take a 60-second tour to get you started. You can skip at any time.', position: 'center' },
   { target: 'tour-stats', title: 'At a Glance', content: 'See your total cameras, how many are online, and your recent alert count \u2014 all in one row.', position: 'bottom' },
   { target: 'tour-add-camera', title: 'Add a Camera', content: 'Click here to add a security camera. For your phone, you\'ll use the stream key shown after adding.', position: 'left' },
-  { target: 'tour-broadcast', title: 'Broadcast from Your Phone', content: 'Open the app on your phone and tap "Broadcast" on the camera card. Enter the stream key to start streaming live video.', position: 'top' },
+  { target: 'tour-broadcast', title: 'Go Live from Your Phone', content: 'Open the app on your phone and tap "Go Live" on the camera card. Enter the stream key to start streaming live video.', position: 'top' },
   { target: 'tour-camera-list', title: 'Your Cameras', content: 'All your cameras appear here. Each card shows the name, online status, and recording count.', position: 'top' },
   { target: 'tour-view-live', title: 'View Live Feed', content: 'Click "View Live" to watch the camera stream in real-time. Uses WebRTC for low-latency streaming.', position: 'top' },
   { target: 'tour-camera-menu', title: 'Camera Settings', content: 'Manage each camera \u2014 rename, adjust detection settings, or delete it.', position: 'left' },
   { target: 'tour-nav', title: 'Navigation', content: 'Use the sidebar to access Recordings, Alerts, and Settings at any time.', position: 'right' },
-  { target: 'tour-end', title: 'You\'re All Set!', content: 'Add a camera, then open the CameraView on your phone with the stream key to start broadcasting live.', position: 'center' },
+  { target: 'tour-end', title: 'You\'re All Set!', content: 'Add a camera, then open the CameraView on your phone with the stream key to start streaming live.', position: 'center' },
 ];
 
 function getTargetEl(step) {

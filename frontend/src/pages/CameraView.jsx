@@ -202,7 +202,7 @@ export default function CameraView() {
     try {
       logger.info('CameraView', 'Starting broadcast', { cameraId });
       const localStream = await getLocalStream(); setStream(localStream); await startBroadcast(localStream);
-      toast.success('Broadcasting started');
+      toast.success('Streaming started');
     } catch (err) { logger.error('CameraView', 'Failed to start broadcast', { error: err.message, cameraId }); toast.error('Could not access camera: ' + err.message); }
   }
 

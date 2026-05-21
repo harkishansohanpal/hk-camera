@@ -182,7 +182,7 @@ export default function Dashboard() {
                   <button onClick={() => navigate(`/cameras/${cam.id}`)}
                     data-tour="tour-broadcast"
                     className="flex-1 btn-secondary text-sm">
-                    <Radio size={15} /> Broadcast
+                    <Radio size={15} /> Go Live
                   </button>
                 </div>
               </div>
