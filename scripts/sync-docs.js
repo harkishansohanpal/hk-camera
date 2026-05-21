@@ -14,10 +14,15 @@ function run(cmd, opts = {}) {
   return execSync(cmd, { encoding: 'utf-8', timeout: 120000, ...opts });
 }
 
+function stripAnsi(s) {
+  return s.replace(/\u001b\[[0-9;]*m/g, '');
+}
 function parseTestCount(output) {
   // Vitest: "Tests  39 passed (39)"
   // Jest:   "Tests:       57 passed, 57 total"
-  const m = output.match(/Tests:?\s+(\d+)\s+passed/);
+  // Strip ANSI escape codes that vitest emits even in non-TTY mode
+  const clean = stripAnsi(output);
+  const m = clean.match(/Tests:?\s+(\d+)\s+passed/);
   return m ? parseInt(m[1], 10) : null;
 }
 
@@ -29,45 +34,32 @@ function updateTestTable(content, suite, count) {
   return content.replace(re, (match, prefix, _old, suffix) => `${prefix}${count}${suffix}`);
 }
 
-function notice(m) { process.stdout.write('::notice::' + m + '\n'); }
-notice('PATH=' + process.env.PATH);
-notice('CWD=' + process.cwd());
 try {
-  notice('Running frontend tests...');
   feOut = run('npm test -- --reporter=verbose 2>&1', {
     cwd: path.join(ROOT, 'frontend'),
   });
-  notice('Frontend tests done, length=' + feOut.length);
 } catch (err) {
-  process.stdout.write('::error::Frontend tests failed: ' + (err.message || '').substring(0, 2000) + '\n');
-  if (err.stdout) process.stdout.write('::error::STDOUT: ' + err.stdout.toString().substring(0, 4000) + '\n');
-  if (err.stderr) process.stdout.write('::error::STDERR: ' + err.stderr.toString().substring(0, 4000) + '\n');
+  console.error('Frontend tests failed:', err.message.substring(0, 500));
+  if (err.stdout) console.error('STDOUT:', err.stdout.toString().substring(0, 1000));
+  if (err.stderr) console.error('STDERR:', err.stderr.toString().substring(0, 1000));
   process.exit(1);
 }
 try {
-  notice('Running backend tests...');
   beOut = run('npm test -- --verbose 2>&1', {
     cwd: path.join(ROOT, 'backend'),
   });
-  notice('Backend tests done, length=' + beOut.length);
 } catch (err) {
-  process.stdout.write('::error::Backend tests failed: ' + (err.message || '').substring(0, 2000) + '\n');
-  if (err.stdout) process.stdout.write('::error::STDOUT: ' + err.stdout.toString().substring(0, 4000) + '\n');
-  if (err.stderr) process.stdout.write('::error::STDERR: ' + err.stderr.toString().substring(0, 4000) + '\n');
+  console.error('Backend tests failed:', err.message.substring(0, 500));
+  if (err.stdout) console.error('STDOUT:', err.stdout.toString().substring(0, 1000));
+  if (err.stderr) console.error('STDERR:', err.stderr.toString().substring(0, 1000));
   process.exit(1);
 }
 
   const feTotal = parseTestCount(feOut);
   const beTotal = parseTestCount(beOut);
 
-  process.stdout.write('::notice::feTotal=' + feTotal + ' beTotal=' + beTotal + '\n');
-
   if (!feTotal || !beTotal) {
-    const feLines = feOut.split('\n').filter(l => l.includes('Tests'));
-    const beLines = beOut.split('\n').filter(l => l.includes('Tests'));
-    process.stdout.write('::error::fe lines with Tests: ' + JSON.stringify(feLines) + '\n');
-    process.stdout.write('::error::be lines with Tests: ' + JSON.stringify(beLines) + '\n');
-    process.stdout.write('::error::Could not parse test counts. feOut length=' + feOut.length + ' beOut length=' + beOut.length + '\n');
+    console.error('Could not parse test counts');
     process.exit(1);
   }
 
