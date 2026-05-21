@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { Camera, Shield, Video, Bell, Smartphone, Zap, ChevronRight, Monitor, Radio, Eye, Volume2, Cloud, Lock, RefreshCw, Check, Moon, Sliders, Search } from 'lucide-react';
+import { Camera, Shield, Video, Bell, Smartphone, Zap, ChevronRight, Monitor, Radio, Eye, Volume2, Cloud, Lock, RefreshCw, Check, Moon, Sliders, Search, Wifi, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Landing() {
@@ -22,7 +22,7 @@ export default function Landing() {
           </div>
           <div className="hidden sm:flex items-center gap-6">
             <button onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
-              className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">Products</button>
+              className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">What you get</button>
             <button onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
               className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors">How it Works</button>
             <button onClick={() => navigate('/pricing')}
@@ -39,19 +39,19 @@ export default function Landing() {
       <section className="pt-36 pb-24 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-5xl sm:text-7xl font-bold tracking-tight max-w-4xl mx-auto leading-[1.05] text-text-primary">
-            Turn any device into a{' '}
-            <span className="text-ap-blue">smart security camera</span>
+            Turn any phone or laptop into a{' '}
+            <span className="text-ap-blue">security camera</span>
           </h1>
           <p className="mt-6 text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
-            AI-powered motion detection, real-time WebRTC streaming, two-way audio, and cloud recordings.
-            Works from any browser — no hardware required.
+            No expensive equipment. No monthly contracts. Just grab your phone, open a browser,
+            and you have a working security camera with smart alerts and recordings.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
             <button onClick={() => navigate('/register')} className="btn-primary text-lg px-8 py-3.5 shadow-apple-lg">
               Start Free <ChevronRight size={20} />
             </button>
             <button onClick={() => navigate('/pricing')} className="btn-secondary text-lg px-8 py-3.5">
-              View Plans
+              See Plans
             </button>
           </div>
         </div>
@@ -63,21 +63,21 @@ export default function Landing() {
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4 text-text-primary">
               Everything you need to{' '}
-              <span className="text-ap-blue">secure your home</span>
+              <span className="text-ap-blue">keep an eye on things</span>
             </h2>
-            <p className="text-text-secondary max-w-2xl mx-auto text-lg">Check in all around home with easy-to-set-up security cameras — no hardware required.</p>
+            <p className="text-text-secondary max-w-2xl mx-auto text-lg">Works with any device that has a camera — laptop, tablet, or phone.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { Icon: Video, title: 'Live Streaming', desc: 'Peer-to-peer WebRTC video with ultra-low latency. Watch from any browser, anywhere.' },
-              { Icon: Zap, title: 'ML Object Detection', desc: 'YOLOv8 AI detects people, vehicles, and animals — not just pixel changes. Fewer false alerts.' },
-              { Icon: Bell, title: 'Smart Alerts', desc: 'Get notified via email, push, or in-app when motion is detected. Configurable sensitivity.' },
-              { Icon: Eye, title: 'Night Vision', desc: 'Android Camera2 native low-light mode + IR phosphor overlay for viewing in complete darkness.' },
-              { Icon: Volume2, title: 'Two-Way Audio', desc: 'Speak through your camera from the viewer. Built-in echo cancellation.' },
-              { Icon: Sliders, title: 'Remote Camera Control', desc: 'Adjust torch, focus, exposure, and white balance remotely from the viewer.' },
-              { Icon: Search, title: 'Recording & Playback', desc: 'Auto-record on motion or manually. Browse, search, and replay from anywhere.' },
-              { Icon: Smartphone, title: 'Mobile Apps', desc: 'Native iOS and Android via Capacitor. Works as a PWA for quick access.' },
-              { Icon: Moon, title: 'Dark Mode', desc: 'Light and dark themes with automatic persistence. Easy on the eyes day or night.' },
+              { Icon: Video, title: 'Live Video', desc: 'See what your camera sees, instantly. Open it from any browser — no app download needed.' },
+              { Icon: Zap, title: 'Smart Detection', desc: 'Knows the difference between a person, a car, and a squirrel. You get fewer false alerts.' },
+              { Icon: Bell, title: 'Instant Alerts', desc: 'Get a notification the moment something happens. Choose email, push, or both.' },
+              { Icon: Eye, title: 'Night Vision', desc: 'Works in the dark. Your camera can still see clearly even when the lights are off.' },
+              { Icon: Volume2, title: 'Talk Through It', desc: 'Hear what\'s happening and speak back. Works like a two-way intercom.' },
+              { Icon: Sliders, title: 'Control From Anywhere', desc: 'Adjust brightness, turn on the flashlight, or flip the camera view — all remotely.' },
+              { Icon: Search, title: 'Record & Replay', desc: 'Save clips when motion is detected. Go back and watch what you missed.' },
+              { Icon: Smartphone, title: 'Works on Phones Too', desc: 'Use your phone as a camera or watch from it. Everything works on mobile browsers.' },
+              { Icon: Moon, title: 'Easy on the Eyes', desc: 'Switch between light and dark mode. Looks great however you like it.' },
             ].map(({ Icon, title, desc }) => (
               <div key={title} className="card-highlighted p-6 sm:p-8 transition-all duration-200">
                 <div className="w-11 h-11 bg-ap-blue/10 rounded-xl flex items-center justify-center mb-4">
@@ -101,15 +101,16 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4 text-text-primary">
-              How it <span className="text-ap-blue">works</span>
+              Set up in{' '}
+              <span className="text-ap-blue">under a minute</span>
             </h2>
-            <p className="text-text-secondary text-lg max-w-2xl mx-auto">Get started in under a minute. No installation, no hardware, no credit card.</p>
+            <p className="text-text-secondary text-lg max-w-2xl mx-auto">No installation. No boxes to mount. Just open and go.</p>
           </div>
           <div className="grid sm:grid-cols-3 gap-8 sm:gap-12">
             {[
-              { step: '1', title: 'Open in browser', desc: 'Open HK Camera on any device with a camera — laptop, phone, or tablet. No installation needed.', icon: Monitor },
-              { step: '2', title: 'Go live', desc: 'Press broadcast to start streaming. Your camera becomes available instantly via WebRTC.', icon: Radio },
-              { step: '3', title: 'Watch & protect', desc: 'View from anywhere, get AI-powered alerts, review recordings, and speak through your camera.', icon: Eye },
+              { step: '1', title: 'Open the site', desc: 'Go to HK Camera on any device with a camera — your phone, laptop, or tablet works fine.', icon: Monitor },
+              { step: '2', title: 'Press "Go Live"', desc: 'Tap the button and your camera starts streaming. It\'s that simple.', icon: Radio },
+              { step: '3', title: 'Watch from anywhere', desc: 'Open the same feed on another device. See live video, get alerts, and talk back.', icon: Eye },
             ].map(({ step, title, desc, icon: Icon }) => (
               <div key={step} className="text-center">
                 <div className="w-14 h-14 bg-ap-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -129,20 +130,19 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4 text-text-primary">
-              Enterprise-grade <span className="text-ap-blue">security</span>
+              Your privacy{' '}
+              <span className="text-ap-blue">matters</span>
             </h2>
-            <p className="text-text-secondary text-lg max-w-2xl mx-auto">Your video feeds and data are protected with modern encryption and security practices.</p>
+            <p className="text-text-secondary text-lg max-w-2xl mx-auto">Your video feeds belong to you — no one else can watch without your permission.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { Icon: Lock, title: 'E2E Encryption', desc: 'Video streams use SRTP via WebRTC with DTLS-SRTP key exchange.' },
-              { Icon: Radio, title: 'TURN Relay', desc: 'Media relayed through authenticated TURN servers with HMAC-SHA1 credentials.' },
-              { Icon: Cloud, title: 'Encrypted at Rest', desc: 'AES-256 encryption for all recordings. TLS enforced in production.' },
-              { Icon: RefreshCw, title: 'JWT Rotation', desc: 'Short-lived access tokens (15 min) with rotating refresh tokens.' },
-              { Icon: Shield, title: 'Rate Limiting', desc: 'API-wide and auth-specific rate limiting with input validation.' },
-              { Icon: Shield, title: 'Security Headers', desc: 'Helmet.js, CORS restriction, Stripe webhook verification, automated npm audit.' },
-              { Icon: Shield, title: 'SAST Scanning', desc: 'CodeQL security analysis + eslint-plugin-security catch vulnerabilities before deployment.' },
-              { Icon: RefreshCw, title: 'Dependabot', desc: 'Automated weekly dependency updates with grouped minor/patch PRs.' },
+              { Icon: Lock, title: 'Fully Encrypted', desc: 'Your video is scrambled from end to end. Even we can\'t see your feed.' },
+              { Icon: Users, title: 'Private to You', desc: 'Only people you share the link with can watch. You\'re in control.' },
+              { Icon: Cloud, title: 'Your Data is Safe', desc: 'Recordings are stored securely. Delete them anytime — it\'s your footage.' },
+              { Icon: Wifi, title: 'Works on Your Network', desc: 'Video goes directly between devices when possible. No middleman needed.' },
+              { Icon: Shield, title: 'Open Source', desc: 'The code is public for anyone to inspect. No secrets, no backdoors.' },
+              { Icon: Moon, title: 'No Vendor Lock-In', desc: 'Stop anytime, keep your data. No contracts, no cancellation fees.' },
             ].map(({ Icon, title, desc }) => (
               <div key={title} className="card p-6 hover:shadow-apple transition-shadow">
                 <div className="w-10 h-10 bg-ap-blue/10 rounded-xl flex items-center justify-center mb-3">
@@ -159,8 +159,8 @@ export default function Landing() {
       {/* ── CTA ───────────────────────────────────────────── */}
       <section className="py-24 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4 text-text-primary">Ready to secure your space?</h2>
-          <p className="text-text-secondary text-lg mb-8">Set up your first camera in under a minute. No credit card required.</p>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4 text-text-primary">Ready to give it a try?</h2>
+          <p className="text-text-secondary text-lg mb-8">Set up your first camera in under a minute. No credit card needed.</p>
           <button onClick={() => navigate('/register')} className="btn-primary text-lg px-8 py-3.5 shadow-apple-lg">
             Get Started Free <ChevronRight size={20} />
           </button>
