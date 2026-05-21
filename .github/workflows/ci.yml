@@ -157,14 +157,14 @@ jobs:
       - run: npm ci
         working-directory: .
 
-      - name: Check test counts match docs
-        run: |
-          npm run docs:check 2>&1
-          EC=$?
-          if [ $EC -ne 0 ]; then
-            echo "=== docs:check failed with exit code $EC ==="
-            exit $EC
-          fi
+      - name: Run frontend tests
+        run: npm test -- --reporter=verbose 2>&1
+        working-directory: frontend
+      - name: Run backend tests
+        run: npm test -- --verbose 2>&1
+        working-directory: backend
+      - name: Validate test counts in docs
+        run: node scripts/sync-docs.js --check 2>&1
 
   # ── Security audit ──────────────────────────────────────────
   security:
