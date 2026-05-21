@@ -15,6 +15,7 @@ import Landing    from './pages/Landing';
 import Pricing    from './pages/Pricing';
 import Billing    from './pages/Billing';
 import Privacy    from './pages/Privacy';
+import Terms      from './pages/Terms';
 import AdminRoute    from './components/AdminRoute';
 import AdminLayout   from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/login"    element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/privacy"  element={<Privacy />} />
+        <Route path="/terms"    element={<Terms />} />
 
         {/* Protected */}
         <Route element={<ProtectedRoute />}>

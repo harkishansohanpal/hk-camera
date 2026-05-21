@@ -30,8 +30,8 @@ export default function Privacy() {
           <h3 className="text-base font-semibold text-text-primary mb-2">How we protect your data</h3>
           <div className="space-y-3">
             <div><strong className="text-text-primary">Encryption</strong> &mdash; Video streams are encrypted in transit using WebRTC (DTLS-SRTP). Recordings are encrypted at rest (AES-256).</div>
-            <div><strong className="text-text-primary">Access control</strong> &mdash; Each camera has a unique stream key. Only people with the key can watch or record.</div>
-            <div><strong className="text-text-primary">No snooping</strong> &mdash; Your video feeds are private. We do not monitor, record, or analyze your camera streams.</div>
+          <div><strong className="text-text-primary">Access control</strong> &mdash; Each camera has a unique stream key. Only people with the key can watch or record.</div>
+          <div><strong className="text-text-primary">No snooping</strong> &mdash; Your video feeds are private. We do not monitor, record, or analyze your camera streams. Our object detection (YOLOv8) runs entirely on your device and does not perform facial recognition. See our <Link to="/terms" className="text-ap-blue hover:text-blue-600 font-semibold">Terms of Service</Link> for our full biometric data policy.</div>
           </div>
         </section>
 
@@ -85,6 +85,8 @@ export default function Privacy() {
             <div><strong className="text-text-primary">Correction</strong> &mdash; You can update your name and email in Settings.</div>
             <div><strong className="text-text-primary">Right to lodge a complaint (GDPR Art. 77)</strong> &mdash; If you are in the EEA and believe we have not handled your data properly, you have the right to lodge a complaint with your local data protection supervisory authority.</div>
             <div><strong className="text-text-primary">Automated decision-making</strong> &mdash; We do not use automated decision-making or profiling that produces legal effects concerning you.</div>
+            <div><strong className="text-text-primary">Audio recording</strong> &mdash; Two-way audio requires compliance with wiretap laws. See our <Link to="/terms" className="text-ap-blue hover:text-blue-600 font-semibold">Terms of Service</Link> for your legal responsibilities.</div>
+            <div><strong className="text-text-primary">Copyright (DMCA)</strong> &mdash; If you believe content infringes your copyright, see our <Link to="/terms" className="text-ap-blue hover:text-blue-600 font-semibold">Terms of Service</Link> for takedown instructions.</div>
           </div>
         </section>
 

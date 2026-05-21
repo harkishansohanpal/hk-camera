@@ -64,7 +64,8 @@ export default function Register() {
               <span className="text-xs text-text-secondary group-hover:text-text-primary transition-colors leading-relaxed">
                 I agree to the{' '}
                 <Link to="/privacy" className="text-ap-blue hover:text-blue-700 font-semibold underline">Privacy Policy</Link>{' '}
-                and understand how my data is handled
+                and{' '}
+                <Link to="/terms" className="text-ap-blue hover:text-blue-700 font-semibold underline">Terms of Service</Link>
               </span>
             </label>
             <button type="submit" className="btn-primary w-full mt-1" disabled={loading}>

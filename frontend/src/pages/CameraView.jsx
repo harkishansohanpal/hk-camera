@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Shield, Video, Brain } from 'lucide-react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { ArrowLeft, Shield, Video, Brain, Mic, MicOff } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { Torch } from '@capawesome/capacitor-torch';
 import { AdvancedCamera } from '../services/advancedCamera';
@@ -27,6 +27,8 @@ export default function CameraView() {
   const [screenDimmed, setScreenDimmed] = useState(false);
   const [backgroundMode, setBackgroundMode] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
+  const [audioConsentWarn, setAudioConsentWarn] = useState(false);
+  const audioConsentedRef = useRef(false);
   const { acquire: acquireWL, release: releaseWL } = useWakeLock();
   const isAndroid = /Android/.test(navigator.userAgent);
   const videoRef = useRef(null);
@@ -241,7 +243,11 @@ export default function CameraView() {
       </div>
 
       <CameraStream ref={videoRef} stream={stream} isBroadcasting={isBroadcasting} onToggle={handleToggle}
-        onFlip={flipCamera} micOn={micOn} onMicToggle={() => setMicOn((v) => !v)}
+        onFlip={flipCamera} micOn={micOn} onMicToggle={() => {
+          if (micOn) { setMicOn(false); return; }
+          if (!audioConsentedRef.current) { setAudioConsentWarn(true); return; }
+          setMicOn(true);
+        }}
         isRecording={isRecording} onRecordToggle={handleRecordToggle}
         className="aspect-video w-full rounded-2xl overflow-hidden shadow-apple" />
 
@@ -311,6 +317,27 @@ export default function CameraView() {
         <p className="text-text-secondary text-xs">Tap to restore screen</p>
       </div>}
       {isAndroid && torchOn && <div className="fixed inset-0 z-50 bg-white pointer-events-none" />}
+
+      {audioConsentWarn && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-card border border-ap-separator rounded-2xl shadow-apple-lg p-6 max-w-sm w-full">
+            <div className="w-10 h-10 bg-ap-orange/10 rounded-xl flex items-center justify-center mb-3">
+              <MicOff size={18} className="text-ap-orange" />
+            </div>
+            <h3 className="text-base font-bold text-text-primary mb-2">Audio Recording Notice</h3>
+            <p className="text-xs text-text-secondary leading-relaxed mb-4">
+              Some states and countries require consent from all parties before recording audio. By enabling the microphone, you confirm you have the legal right to record audio in your jurisdiction. See our{' '}
+              <Link to="/terms" className="text-ap-blue hover:text-blue-600 font-semibold">Terms of Service</Link> for details.
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setAudioConsentWarn(false)} className="flex-1 btn-secondary text-sm">Cancel</button>
+              <button onClick={() => { audioConsentedRef.current = true; setAudioConsentWarn(false); setMicOn(true); }} className="flex-1 btn-primary text-sm">
+                I Understand
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

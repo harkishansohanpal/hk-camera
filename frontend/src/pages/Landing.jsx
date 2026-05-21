@@ -197,6 +197,8 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto flex items-baseline justify-center gap-6 text-xs text-text-secondary">
           <Link to="/privacy" className="hover:text-text-primary transition-colors leading-none">Privacy Policy</Link>
           <span aria-hidden="true" className="text-ap-gray3 select-none">&middot;</span>
+          <Link to="/terms" className="hover:text-text-primary transition-colors leading-none">Terms of Service</Link>
+          <span aria-hidden="true" className="text-ap-gray3 select-none">&middot;</span>
           <span className="text-ap-gray3 leading-none">Open source on GitHub</span>
         </div>
       </footer>
