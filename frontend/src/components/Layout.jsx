@@ -2,9 +2,10 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import {
   Camera, LayoutDashboard, Video, Bell, Settings, CreditCard,
-  LogOut, Menu, X, ChevronRight,
+  LogOut, Menu, X, Sun, Moon,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import toast from 'react-hot-toast';
 
 const NAV_ITEMS = [
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
 
 export default function Layout() {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -29,69 +31,74 @@ export default function Layout() {
   }
 
   return (
-    <div className="w-full h-full flex bg-ap-gray6 overflow-hidden" style={{ height: '100dvh' }}>
+    <div className="w-full h-full flex bg-page overflow-hidden" style={{ height: '100dvh' }}>
       {/* ── Desktop Sidebar (lg+) ────────────────────────── */}
-      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:w-68 bg-white border-r border-ap-separator safe-top shadow-sm">
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-ap-separator">
-          <div className="w-8 h-8 bg-ap-blue rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:w-68 bg-card border-r transition-colors safe-top shadow-sm"
+        style={{ borderColor: 'var(--color-separator)' }}>
+        <div className="flex items-center gap-3 px-5 py-4 border-b" style={{ borderColor: 'var(--color-separator)' }}>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
+            style={{ backgroundColor: 'var(--ap-blue)' }}>
             <Camera size={16} className="text-white" />
           </div>
-          <span className="font-bold text-base text-gray-900 tracking-tight">HK Camera</span>
+          <span className="font-bold text-base text-text-primary tracking-tight">HK Camera</span>
         </div>
 
         <nav data-tour="tour-nav" className="py-2 flex flex-col gap-0.5 flex-1">
           {NAV_ITEMS.map(({ to, label, Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
+            <NavLink key={to} to={to}
               className={({ isActive }) => `
                 flex items-center gap-3 mx-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200
                 ${isActive
-                  ? 'bg-ap-blue/10 text-ap-blue'
-                  : 'text-ap-gray hover:bg-ap-gray6 hover:text-gray-900'
+                  ? 'text-ap-blue'
+                  : 'text-text-secondary hover:bg-card-hover hover:text-text-primary'
                 }
               `}
-            >
+              style={({ isActive }) => isActive ? { backgroundColor: 'color-mix(in srgb, var(--ap-blue) 10%, transparent)' } : {}}>
               <Icon size={18} className="flex-shrink-0" />
               {label}
             </NavLink>
           ))}
         </nav>
 
-        <div className="p-3 border-t border-ap-separator">
+        <div className="p-3 border-t" style={{ borderColor: 'var(--color-separator)' }}>
           <div className="flex items-center gap-3 px-3 py-2 mb-1">
-            <div className="w-9 h-9 rounded-full bg-ap-blue/10 flex items-center justify-center text-ap-blue font-bold text-sm flex-shrink-0">
+            <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
+              style={{ backgroundColor: 'color-mix(in srgb, var(--ap-blue) 10%, transparent)', color: 'var(--ap-blue)' }}>
               {user?.name?.[0]?.toUpperCase() ?? 'U'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>
-              <p className="text-xs text-ap-gray truncate">{user?.email}</p>
+              <p className="text-sm font-semibold text-text-primary truncate">{user?.name}</p>
+              <p className="text-xs text-text-secondary truncate">{user?.email}</p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-ap-gray hover:text-ap-red hover:bg-ap-red/5 transition-colors"
-          >
-            <LogOut size={18} />
-            Log Out
+          <button onClick={toggleTheme}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-text-secondary hover:text-text-primary hover:bg-card-hover transition-colors mb-0.5">
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          </button>
+          <button onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-text-secondary hover:text-ap-red transition-colors">
+            <LogOut size={18} /> Log Out
           </button>
         </div>
       </aside>
 
       {/* ── Mobile Sidebar ───────────────────────────────── */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-ap-separator shadow-apple-lg
+        fixed inset-y-0 left-0 z-50 w-72 bg-card border-r shadow-apple-lg
         transform transition-transform duration-200 ease-in-out lg:hidden safe-top
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-ap-separator">
+      `} style={{ borderColor: 'var(--color-separator)' }}>
+        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--color-separator)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-ap-blue rounded-xl flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm"
+              style={{ backgroundColor: 'var(--ap-blue)' }}>
               <Camera size={16} className="text-white" />
             </div>
-            <span className="font-bold text-base text-gray-900">HK Camera</span>
+            <span className="font-bold text-base text-text-primary">HK Camera</span>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="w-10 h-10 flex items-center justify-center text-ap-gray hover:text-gray-900 rounded-xl transition-colors">
+          <button onClick={() => setSidebarOpen(false)}
+            className="w-10 h-10 flex items-center justify-center text-text-secondary hover:text-text-primary rounded-xl transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -101,42 +108,50 @@ export default function Layout() {
             <NavLink key={to} to={to} onClick={() => setSidebarOpen(false)}
               className={({ isActive }) => `
                 flex items-center gap-3 mx-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all
-                ${isActive ? 'bg-ap-blue/10 text-ap-blue' : 'text-ap-gray hover:bg-ap-gray6 hover:text-gray-900'}
-              `}>
+                ${isActive ? 'text-ap-blue' : 'text-text-secondary hover:bg-card-hover hover:text-text-primary'}
+              `}
+              style={({ isActive }) => isActive ? { backgroundColor: 'color-mix(in srgb, var(--ap-blue) 10%, transparent)' } : {}}>
               <Icon size={18} /> {label}
             </NavLink>
           ))}
         </nav>
 
-        <div className="p-3 mt-auto border-t border-ap-separator">
+        <div className="p-3 mt-auto border-t" style={{ borderColor: 'var(--color-separator)' }}>
           <div className="flex items-center gap-3 px-3 py-3 mb-2">
-            <div className="w-9 h-9 rounded-full bg-ap-blue/10 flex items-center justify-center text-ap-blue font-bold text-sm flex-shrink-0">
+            <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
+              style={{ backgroundColor: 'color-mix(in srgb, var(--ap-blue) 10%, transparent)', color: 'var(--ap-blue)' }}>
               {user?.name?.[0]?.toUpperCase() ?? 'U'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>
-              <p className="text-xs text-ap-gray truncate">{user?.email}</p>
+              <p className="text-sm font-semibold text-text-primary truncate">{user?.name}</p>
+              <p className="text-xs text-text-secondary truncate">{user?.email}</p>
             </div>
           </div>
+          <button onClick={() => { setSidebarOpen(false); toggleTheme(); }}
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-text-secondary hover:text-text-primary hover:bg-card-hover transition-colors mb-0.5">
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          </button>
           <button onClick={() => { setSidebarOpen(false); handleLogout(); }}
-            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-ap-gray hover:text-ap-red hover:bg-ap-red/5 transition-colors">
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-text-secondary hover:text-ap-red transition-colors">
             <LogOut size={18} /> Log Out
           </button>
         </div>
       </aside>
 
-      {sidebarOpen && <div className="fixed inset-0 z-40 bg-black/20 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+      {sidebarOpen && <div className="fixed inset-0 z-40 bg-black/20 dark:bg-black/40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
       {/* ── Main ──────────────────────────────────────────── */}
       <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${!isViewer ? 'lg:ml-68' : ''}`}>
         {!isViewer && (
           <header className="nav-bar lg:hidden flex items-center gap-2 px-3 py-1.5" style={{ zIndex: 30 }}>
-            <button onClick={() => setSidebarOpen(true)} className="w-10 h-10 flex items-center justify-center text-ap-gray hover:text-gray-900 rounded-xl transition-colors flex-shrink-0">
+            <button onClick={() => setSidebarOpen(true)}
+              className="w-10 h-10 flex items-center justify-center text-text-secondary hover:text-text-primary rounded-xl transition-colors flex-shrink-0">
               <Menu size={20} />
             </button>
             <div className="flex items-center gap-2">
-              <Camera size={18} className="text-ap-blue flex-shrink-0" />
-              <span className="font-bold text-gray-900 text-base">HK Camera</span>
+              <Camera size={18} className="flex-shrink-0" style={{ color: 'var(--ap-blue)' }} />
+              <span className="font-bold text-text-primary text-base">HK Camera</span>
             </div>
           </header>
         )}
@@ -156,8 +171,8 @@ export default function Layout() {
               const isActive = location.pathname === to || (to !== '/dashboard' && location.pathname.startsWith(to));
               return (
                 <NavLink key={to} to={to} className="flex-1 flex flex-col items-center justify-center gap-0.5 min-w-0 pt-1">
-                  <Icon size={20} className={isActive ? 'text-ap-blue' : 'text-ap-gray'} />
-                  <span className={`text-[10px] leading-tight font-semibold ${isActive ? 'text-ap-blue' : 'text-ap-gray'}`}>{label}</span>
+                  <Icon size={20} className={isActive ? 'text-ap-blue' : 'text-text-secondary'} />
+                  <span className={`text-[10px] leading-tight font-semibold ${isActive ? 'text-ap-blue' : 'text-text-secondary'}`}>{label}</span>
                 </NavLink>
               );
             })}

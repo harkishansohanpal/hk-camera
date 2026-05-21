@@ -82,7 +82,7 @@ export default function Recordings() {
       ) : filtered.length === 0 ? (
         <div className="card text-center py-16 shadow-apple-sm">
           <Video size={36} className="text-ap-gray3 mx-auto mb-3" />
-          <p className="text-gray-900 font-semibold">No recordings found</p>
+          <p className="text-text-secondary font-semibold">No recordings found</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
@@ -90,9 +90,9 @@ export default function Recordings() {
             <div key={rec.id} className="card flex items-center gap-3 px-4 py-3 shadow-apple-sm hover:shadow-apple transition-shadow">
               <input type="checkbox" checked={selectedRecordings.has(rec.id)}
                 onChange={(e) => setSelectedRecordings((prev) => { const n = new Set(prev); e.target.checked ? n.add(rec.id) : n.delete(rec.id); return n; })}
-                className="w-4 h-4 text-ap-blue bg-ap-gray6 border-ap-gray4 rounded focus:ring-ap-blue/30 flex-shrink-0" />
+                className="w-4 h-4 text-ap-blue bg-fill-input border-ap-gray4 rounded focus:ring-ap-blue/30 flex-shrink-0" />
               <button onClick={() => setPlaying(rec)}
-                className="w-10 h-10 bg-ap-gray6 hover:bg-ap-blue/10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
+                className="w-10 h-10 bg-fill-input hover:bg-ap-blue/10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
                 <Play size={15} className="text-ap-blue" />
               </button>
               <div className="flex-1 min-w-0">

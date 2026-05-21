@@ -29,14 +29,14 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-dvh flex items-center justify-center bg-ap-gray6 px-4">
+    <div className="min-h-dvh flex items-center justify-center bg-page px-4">
       <div className="w-full max-w-sm animate-slide-up">
         <div className="flex flex-col items-center mb-8">
           <div className="w-14 h-14 bg-ap-blue rounded-2xl flex items-center justify-center mb-4 shadow-apple shadow-ap-blue/20">
             <Camera size={28} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Create account</h1>
-          <p className="text-ap-gray text-sm mt-1">Start monitoring in minutes</p>
+          <h1 className="text-2xl font-bold text-text-primary tracking-tight">Create account</h1>
+          <p className="text-text-secondary text-sm mt-1">Start monitoring in minutes</p>
         </div>
 
         <div className="card p-6 shadow-apple">
@@ -47,7 +47,7 @@ export default function Register() {
               { key: 'password', label: 'Password',  type: 'password', placeholder: 'Min 8 characters' },
             ].map(({ key, label, type, placeholder }) => (
               <div key={key}>
-                <label className="block text-sm font-semibold text-gray-900 mb-1.5">{label}</label>
+                <label className="block text-sm font-semibold text-text-primary mb-1.5">{label}</label>
                 <input type={type} className="input" placeholder={placeholder}
                   value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} required />
               </div>
@@ -58,7 +58,7 @@ export default function Register() {
           </form>
         </div>
 
-        <p className="text-center text-ap-gray text-sm mt-5">
+        <p className="text-center text-text-secondary text-sm mt-5">
           Already have an account?{' '}
           <Link to="/login" className="text-ap-blue hover:text-blue-700 font-semibold">Sign in</Link>
         </p>

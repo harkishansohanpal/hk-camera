@@ -31,41 +31,41 @@ export default function Billing() {
   return (
     <div className="page-container max-w-2xl animate-fade-in">
       <div className="flex items-center gap-2 mb-6">
-        <button onClick={() => navigate('/settings')} className="w-10 h-10 flex items-center justify-center text-ap-gray hover:text-gray-900 hover:bg-ap-gray6 rounded-xl transition-colors">
+        <button onClick={() => navigate('/settings')} className="w-10 h-10 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-card-hover rounded-xl transition-colors">
           <ArrowLeft size={18} />
         </button>
-        <h1 className="text-xl font-bold text-gray-900">Billing</h1>
+        <h1 className="text-xl font-bold text-text-primary">Billing</h1>
       </div>
 
       {!sub ? (
         <div className="card text-center py-12 shadow-apple">
           <CreditCard size={40} className="text-ap-gray3 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">No active subscription</h2>
-          <p className="text-ap-gray text-sm mb-6">You are on the Free plan. Upgrade to unlock more features.</p>
+          <h2 className="text-lg font-semibold text-text-primary mb-2">No active subscription</h2>
+          <p className="text-text-secondary text-sm mb-6">You are on the Free plan. Upgrade to unlock more features.</p>
           <button onClick={() => navigate('/pricing')} className="btn-primary text-sm px-5">View Plans</button>
         </div>
       ) : (
         <>
           <div className="card-grouped">
             <div className="list-row justify-between">
-              <span className="text-sm text-ap-gray">Plan</span>
-              <span className="text-sm font-semibold text-gray-900">{sub.plan?.name || 'Unknown'}</span>
+              <span className="text-sm text-text-secondary">Plan</span>
+              <span className="text-sm font-semibold text-text-primary">{sub.plan?.name || 'Unknown'}</span>
             </div>
             <div className="list-row justify-between">
-              <span className="text-sm text-ap-gray">Status</span>
+              <span className="text-sm text-text-secondary">Status</span>
               <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
                 sub.status === 'ACTIVE' ? 'bg-ap-green/10 text-ap-green' :
                 sub.status === 'TRIALING' ? 'bg-ap-blue/10 text-ap-blue' :
                 sub.status === 'PAST_DUE' ? 'bg-ap-red/10 text-ap-red' :
-                'bg-ap-gray5 text-ap-gray'
+                'bg-ap-gray5 text-text-secondary'
               }`}>
                 {sub.status === 'ACTIVE' ? 'Active' : sub.status === 'TRIALING' ? 'Trial' : sub.status === 'PAST_DUE' ? 'Past Due' : sub.status === 'CANCELED' ? 'Canceled' : sub.status}
               </span>
             </div>
             {sub.currentPeriodEnd && (
               <div className="list-row justify-between">
-                <span className="text-sm text-ap-gray">{sub.cancelAtPeriodEnd ? 'Expires' : 'Renews'}</span>
-                <span className="text-sm font-semibold text-gray-900">{new Date(sub.currentPeriodEnd).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                <span className="text-sm text-text-secondary">{sub.cancelAtPeriodEnd ? 'Expires' : 'Renews'}</span>
+                <span className="text-sm font-semibold text-text-primary">{new Date(sub.currentPeriodEnd).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
               </div>
             )}
           </div>

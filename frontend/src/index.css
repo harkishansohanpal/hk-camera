@@ -3,6 +3,46 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-page: #F2F2F7;
+    --color-card: #FFFFFF;
+    --color-card-hover: #F2F2F7;
+    --color-text-primary: #1C1C1E;
+    --color-text-secondary: #8E8E93;
+    --color-text-tertiary: #AEAEB2;
+    --color-input-bg: #E5E5EA;
+    --color-input-border: #D1D1D6;
+    --color-input-focus: #007AFF;
+    --color-separator: rgba(60,60,67,0.12);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 14px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+    --ap-blue: #007AFF;
+    --ap-green: #34C759;
+    --ap-red: #FF3B30;
+    --ap-orange: #FF9500;
+  }
+
+  .dark {
+    --color-page: #1C1C1E;
+    --color-card: #2C2C2E;
+    --color-card-hover: #3A3A3C;
+    --color-text-primary: #F2F2F7;
+    --color-text-secondary: #AEAEB2;
+    --color-text-tertiary: #636366;
+    --color-input-bg: #3A3A3C;
+    --color-input-border: #48484A;
+    --color-input-focus: #0A84FF;
+    --color-separator: rgba(84,84,88,0.36);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 14px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.3);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+    --ap-blue: #0A84FF;
+    --ap-green: #30D158;
+    --ap-red: #FF453A;
+    --ap-orange: #FF9F0A;
+  }
+
   *, *::before, *::after { box-sizing: border-box; }
 
   html {
@@ -19,7 +59,7 @@
     min-height: 100%;
     margin: 0;
     padding: 0;
-    @apply bg-ap-gray6 text-gray-900;
+    @apply bg-page text-text-primary transition-colors duration-200;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
     font-size: clamp(15px, 2vw, 17px);
     line-height: 1.47059;
@@ -35,7 +75,7 @@
 
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { @apply bg-ap-gray4 rounded-full; }
+  ::-webkit-scrollbar-thumb { @apply rounded-full; background: var(--color-text-tertiary); }
 
   button, a, input, select, textarea, [role="button"], label {
     @apply min-h-44;
@@ -45,7 +85,6 @@
 }
 
 @layer components {
-  /* ── iOS-style buttons ─────────────────────────── */
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all duration-200 select-none;
     @apply min-h-44 min-w-44 px-5;
@@ -54,67 +93,81 @@
   .btn:active { @apply scale-[0.97]; }
 
   .btn-primary {
-    @apply btn bg-ap-blue text-white;
+    @apply btn text-white;
+    background-color: var(--ap-blue);
   }
-  .btn-primary:hover { @apply bg-[#0066E0]; }
+  .btn-primary:hover { filter: brightness(0.9); }
 
   .btn-secondary {
-    @apply btn bg-ap-blue/10 text-ap-blue;
+    @apply btn;
+    color: var(--ap-blue);
+    background-color: color-mix(in srgb, var(--ap-blue) 10%, transparent);
   }
-  .btn-secondary:hover { @apply bg-ap-blue/15; }
+  .btn-secondary:hover { background-color: color-mix(in srgb, var(--ap-blue) 18%, transparent); }
 
   .btn-destructive {
-    @apply btn bg-ap-red text-white;
+    @apply btn text-white;
+    background-color: var(--ap-red);
   }
-  .btn-destructive:hover { @apply bg-[#D63028]; }
+  .btn-destructive:hover { filter: brightness(0.9); }
 
   .btn-ghost {
-    @apply btn bg-transparent text-ap-gray hover:text-gray-900 active:text-gray-900;
+    @apply btn bg-transparent text-text-secondary hover:text-text-primary;
   }
 
-  /* ── iOS-style card (white, shadow, rounded) ────── */
   .card {
-    @apply bg-white rounded-2xl shadow-apple-sm;
+    @apply rounded-2xl;
+    background-color: var(--color-card);
+    box-shadow: var(--shadow-sm);
   }
   .card-highlighted {
-    @apply card hover:shadow-apple transition-shadow;
+    @apply card;
+    box-shadow: var(--shadow-sm);
+  }
+  .card-highlighted:hover {
+    box-shadow: var(--shadow-md);
   }
 
-  /* ── iOS grouped list card ──────────────────────── */
   .card-grouped {
-    @apply bg-white rounded-2xl shadow-apple-sm overflow-hidden;
+    @apply rounded-2xl overflow-hidden;
+    background-color: var(--color-card);
+    box-shadow: var(--shadow-sm);
   }
   .card-grouped > .list-row:not(:last-child) {
-    @apply border-b border-ap-separator;
+    border-bottom: 1px solid var(--color-separator);
   }
 
   .list-row {
-    @apply flex items-center gap-3 px-5 py-3 min-h-44 transition-colors;
+    @apply flex items-center gap-3 px-5 py-3 min-h-44 transition-colors cursor-pointer;
   }
-  .list-row:hover { @apply bg-ap-gray6/50; }
-  .list-row:active { @apply bg-ap-gray5/50; }
+  .list-row:hover { background-color: var(--color-card-hover); }
+  .list-row:active { background-color: color-mix(in srgb, var(--color-card-hover) 80%, black); }
 
-  /* ── iOS-style inputs ──────────────────────────── */
   .input {
-    @apply w-full bg-ap-gray6 border border-ap-gray4 text-gray-900 rounded-xl px-4 py-3;
-    @apply focus:outline-none focus:ring-2 focus:ring-ap-blue/30 focus:border-ap-blue;
-    @apply placeholder:text-ap-gray2 transition-all duration-200;
+    @apply w-full rounded-xl px-4 py-3 transition-all duration-200;
     font-size: clamp(15px, 2vw, 17px);
     line-height: 1.47059;
     min-height: 44px;
+    background-color: var(--color-input-bg);
+    border: 1px solid var(--color-input-border);
+    color: var(--color-text-primary);
   }
+  .input:focus {
+    outline: none;
+    border-color: var(--color-input-focus);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-input-focus) 30%, transparent);
+  }
+  .input::placeholder { color: var(--color-text-tertiary); }
 
-  /* ── iOS-style badges ──────────────────────────── */
   .badge {
     @apply inline-flex items-center gap-1.5 rounded-full font-semibold tracking-wide;
   }
-  .badge-blue     { @apply badge bg-ap-blue/10 text-ap-blue; }
-  .badge-green    { @apply badge bg-ap-green/10 text-ap-green; }
-  .badge-red      { @apply badge bg-ap-red/10 text-ap-red; }
-  .badge-orange   { @apply badge bg-ap-orange/10 text-ap-orange; }
-  .badge-gray     { @apply badge bg-ap-gray5/60 text-ap-gray; }
+  .badge-blue     { @apply badge; color: var(--ap-blue); background-color: color-mix(in srgb, var(--ap-blue) 10%, transparent); }
+  .badge-green    { @apply badge; color: var(--ap-green); background-color: color-mix(in srgb, var(--ap-green) 10%, transparent); }
+  .badge-red      { @apply badge; color: var(--ap-red); background-color: color-mix(in srgb, var(--ap-red) 10%, transparent); }
+  .badge-orange   { @apply badge; color: var(--ap-orange); background-color: color-mix(in srgb, var(--ap-orange) 10%, transparent); }
+  .badge-gray     { @apply badge; color: var(--color-text-secondary); background-color: color-mix(in srgb, var(--color-text-secondary) 12%, transparent); }
 
-  /* ── iOS-style page layout ─────────────────────── */
   .page-container {
     @apply w-full max-w-5xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-10;
   }
@@ -123,49 +176,49 @@
   }
   .page-title {
     font-size: clamp(28px, 4vw, 34px);
-    @apply font-bold text-gray-900 tracking-tight leading-tight;
+    @apply font-bold tracking-tight leading-tight;
     letter-spacing: -0.022em;
+    color: var(--color-text-primary);
   }
   .page-subtitle {
-    @apply text-ap-gray;
     font-size: clamp(13px, 1.8vw, 15px);
+    color: var(--color-text-secondary);
   }
 
-  /* ── iOS section header ────────────────────────── */
   .section-header {
-    @apply text-ap-gray text-xs font-semibold tracking-widest uppercase px-1 mb-2 mt-6;
+    @apply text-xs font-semibold tracking-widest uppercase px-1 mb-2 mt-6;
+    color: var(--color-text-secondary);
   }
   .section-header:first-child { @apply mt-0; }
 
-  /* ── iOS separator ──────────────────────────────── */
   .separator {
-    @apply border-b border-ap-separator;
+    border-bottom: 1px solid var(--color-separator);
   }
 
-  /* ── Safe areas ───────────────────────────────── */
   .safe-bottom { @apply pb-[calc(env(safe-area-inset-bottom)+1rem)]; }
   .safe-top    { @apply pt-[calc(env(safe-area-inset-top)+0.5rem)]; }
 
-  /* ── iOS toggle switch ─────────────────────────── */
   .toggle {
     @apply relative inline-flex items-center w-[51px] h-[31px] rounded-full transition-colors duration-200 cursor-pointer flex-shrink-0;
   }
-  .toggle-on  { @apply bg-ap-blue; }
-  .toggle-off { @apply bg-ap-gray3; }
+  .toggle-on  { background-color: var(--ap-blue); }
+  .toggle-off { background-color: var(--color-text-tertiary); }
   .toggle-knob {
     @apply absolute w-[27px] h-[27px] bg-white rounded-full shadow-sm transition-transform duration-200;
     @apply top-[2px];
   }
   .toggle-on  .toggle-knob  { transform: translateX(22px); }
-  .toggle-off .toggle-knob { transform: translateX(2px); }
+  .toggle-off .toggle-knob  { transform: translateX(2px); }
 
-  /* ── iOS navigation bar ────────────────────────── */
   .nav-bar {
-    @apply bg-white/90 backdrop-blur-xl border-b border-ap-separator safe-top;
+    background-color: color-mix(in srgb, var(--color-card) 90%, transparent);
+    @apply backdrop-blur-xl border-b transition-colors duration-200 safe-top;
+    border-bottom-color: var(--color-separator);
   }
 
-  /* ── iOS tab bar ───────────────────────────────── */
   .tab-bar {
-    @apply bg-white/90 backdrop-blur-xl border-t border-ap-separator safe-bottom;
+    background-color: color-mix(in srgb, var(--color-card) 90%, transparent);
+    @apply backdrop-blur-xl border-t transition-colors duration-200 safe-bottom;
+    border-top-color: var(--color-separator);
   }
 }

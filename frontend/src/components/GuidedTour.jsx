@@ -111,7 +111,7 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
         }} />
       )}
 
-      <div ref={tooltipRef} className="absolute z-10 bg-white rounded-2xl shadow-apple-lg p-4 sm:p-5 border border-ap-separator"
+      <div ref={tooltipRef} className="absolute z-10 bg-card rounded-2xl shadow-apple-lg p-4 sm:p-5 border border-ap-separator"
         style={{ top: pos.top, left: pos.left, pointerEvents: 'auto', transition: 'top 0.3s ease, left 0.3s ease', maxWidth: 'calc(100vw - 24px)', width: isNarrow ? 'auto' : undefined, minWidth: isNarrow ? undefined : 288 }}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex gap-1">
@@ -119,20 +119,20 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
               <div key={i} className={`h-1 rounded-full transition-all duration-300 ${i === stepIndex ? 'w-6 bg-ap-blue' : 'w-1.5 bg-ap-gray4'}`} />
             ))}
           </div>
-          <button onClick={handleSkip} className="flex items-center gap-1 text-[11px] text-ap-gray hover:text-gray-900 transition-colors flex-shrink-0 min-h-0">
+          <button onClick={handleSkip} className="flex items-center gap-1 text-[11px] text-text-secondary hover:text-text-primary transition-colors flex-shrink-0 min-h-0">
             <SkipForward size={12} /> Skip
           </button>
         </div>
-        <h3 className="text-sm font-bold text-gray-900 mb-1.5">{step.title}</h3>
-        <p className="text-xs text-gray-600 leading-relaxed mb-3">{step.content}</p>
+        <h3 className="text-sm font-bold text-text-primary mb-1.5">{step.title}</h3>
+        <p className="text-xs text-text-secondary leading-relaxed mb-3">{step.content}</p>
         <label className="flex items-center gap-2 mb-4 cursor-pointer group">
           <input type="checkbox" checked={dontShowAgain} onChange={(e) => setDontShowAgain(e.target.checked)}
-            className="w-3.5 h-3.5 rounded border-ap-gray4 bg-white text-ap-blue focus:ring-ap-blue/30 cursor-pointer flex-shrink-0" />
-          <span className="text-[11px] text-ap-gray group-hover:text-gray-900 transition-colors select-none">Don't show this on startup from next time</span>
+            className="w-3.5 h-3.5 rounded border-ap-gray4 bg-card text-ap-blue focus:ring-ap-blue/30 cursor-pointer flex-shrink-0" />
+          <span className="text-[11px] text-text-secondary group-hover:text-text-primary transition-colors select-none">Don't show this on startup from next time</span>
         </label>
         <div className="flex items-center justify-between">
           <button onClick={handleBack} disabled={isFirst}
-            className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors ${isFirst ? 'text-ap-gray3 cursor-not-allowed' : 'text-ap-gray hover:text-gray-900 hover:bg-ap-gray6'}`}>
+            className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors ${isFirst ? 'text-ap-gray3 cursor-not-allowed' : 'text-text-secondary hover:text-text-primary hover:bg-card-hover'}`}>
             <ChevronLeft size={14} /> Back
           </button>
           <button onClick={handleNext} className="flex items-center gap-1 text-xs font-semibold px-4 py-1.5 bg-ap-blue hover:bg-[#0066E0] text-white rounded-xl transition-colors">

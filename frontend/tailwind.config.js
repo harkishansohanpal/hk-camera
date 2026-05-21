@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
@@ -7,6 +8,19 @@ export default {
         sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"Helvetica Neue"', 'system-ui', 'sans-serif'],
       },
       colors: {
+        page: 'var(--color-page)',
+        card: 'var(--color-card)',
+        'card-hover': 'var(--color-card-hover)',
+        text: {
+          primary: 'var(--color-text-primary)',
+          secondary: 'var(--color-text-secondary)',
+          tertiary: 'var(--color-text-tertiary)',
+        },
+        fill: {
+          input: 'var(--color-input-bg)',
+          'input-border': 'var(--color-input-border)',
+          'input-focus': 'var(--color-input-focus)',
+        },
         ap: {
           blue:      '#007AFF',
           green:     '#34C759',
@@ -22,8 +36,7 @@ export default {
           gray4:     '#D1D1D6',
           gray5:     '#E5E5EA',
           gray6:     '#F2F2F7',
-          bg:        '#FFFFFF',
-          separator: 'rgba(60,60,67,0.12)',
+          separator: 'var(--color-separator)',
         },
       },
       spacing: { '44': '44px' },
@@ -39,9 +52,9 @@ export default {
         slideUp: { '0%': { opacity: '0', transform: 'translateY(12px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
       },
       boxShadow: {
-        'apple-sm': '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
-        'apple':    '0 4px 14px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
-        'apple-lg': '0 12px 40px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)',
+        'apple-sm': 'var(--shadow-sm)',
+        'apple':    'var(--shadow-md)',
+        'apple-lg': 'var(--shadow-lg)',
       },
     },
   },

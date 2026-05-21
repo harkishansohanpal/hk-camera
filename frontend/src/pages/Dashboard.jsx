@@ -74,7 +74,7 @@ export default function Dashboard() {
       {/* Tour trigger */}
       {tour.dismissed && (
         <button onClick={() => { tour.reset(); tour.start(); }}
-          className="fixed bottom-4 right-4 z-50 flex items-center gap-1.5 px-3 py-2 bg-white shadow-apple text-ap-gray hover:text-gray-900 rounded-xl text-xs transition-colors border border-ap-separator">
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-1.5 px-3 py-2 bg-card shadow-apple text-text-secondary hover:text-text-primary rounded-xl text-xs transition-colors border border-ap-separator">
           <HelpCircle size={12} /> Tour
         </button>
       )}
@@ -103,8 +103,8 @@ export default function Dashboard() {
                 <Icon size={20} className={color} />
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold text-gray-900 tracking-tight">{value}</p>
-                <p className="text-ap-gray text-xs font-semibold">{label}</p>
+                <p className="text-2xl font-bold text-text-primary tracking-tight">{value}</p>
+                <p className="text-text-secondary text-xs font-semibold">{label}</p>
               </div>
             </div>
           </div>
@@ -119,8 +119,8 @@ export default function Dashboard() {
       ) : cameras.length === 0 ? (
         <div className="card text-center py-16 px-6 shadow-apple">
           <Camera size={48} className="text-ap-gray3 mx-auto mb-4" />
-          <p className="text-gray-900 font-semibold text-lg">No cameras yet</p>
-          <p className="text-ap-gray text-sm mt-2">Add your first camera to get started</p>
+          <p className="text-text-primary font-semibold text-lg">No cameras yet</p>
+          <p className="text-text-secondary text-sm mt-2">Add your first camera to get started</p>
           <button onClick={() => setShowAdd(true)} className="mt-5 btn-primary text-sm px-5">
             <Plus size={16} /> Add Camera
           </button>
@@ -135,7 +135,7 @@ export default function Dashboard() {
                 <Camera size={32} className="text-ap-gray3" />
                 {cam.isOnline && (
                   <div className="absolute top-3 left-3">
-                    <span className="badge-green text-[11px] px-2.5 py-1 bg-white/80 shadow-sm">
+                    <span className="badge-green text-[11px] px-2.5 py-1 bg-card/80 shadow-sm">
                       <span className="w-1.5 h-1.5 rounded-full bg-ap-green animate-pulse-slow" />
                       Live
                     </span>
@@ -146,17 +146,17 @@ export default function Dashboard() {
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/cameras/${cam.id}`)}>
-                    <h3 className="font-semibold text-gray-900 truncate">{cam.name}</h3>
-                    {cam.description && <p className="text-ap-gray text-sm mt-0.5 truncate">{cam.description}</p>}
+                    <h3 className="font-semibold text-text-primary truncate">{cam.name}</h3>
+                    {cam.description && <p className="text-text-secondary text-sm mt-0.5 truncate">{cam.description}</p>}
                   </div>
                   <div className="relative flex-shrink-0">
                     <button onClick={() => setOpenMenu(openMenu === cam.id ? null : cam.id)}
                       data-tour="tour-camera-menu"
-                      className="w-9 h-9 flex items-center justify-center text-ap-gray hover:text-gray-900 hover:bg-ap-gray6 rounded-xl transition-colors">
+                      className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-card-hover rounded-xl transition-colors">
                       <MoreVertical size={16} />
                     </button>
                     {openMenu === cam.id && (
-                      <div ref={menuRef} className="absolute right-0 mt-1 w-36 bg-white rounded-xl shadow-apple-lg border border-ap-separator z-10 overflow-hidden">
+                      <div ref={menuRef} className="absolute right-0 mt-1 w-36 bg-card rounded-xl shadow-apple-lg border border-ap-separator z-10 overflow-hidden">
                         <button onClick={() => { handleDelete(cam.id); setOpenMenu(null); }}
                           className="w-full flex items-center gap-2 px-4 py-3 text-left text-ap-red hover:bg-ap-red/5 transition-colors text-sm font-semibold">
                           <Trash2 size={14} /> Delete
@@ -170,7 +170,7 @@ export default function Dashboard() {
                   {cam.isOnline
                     ? <span className="badge-green text-xs"><Wifi size={11} /> Online</span>
                     : <span className="badge-gray text-xs"><WifiOff size={11} /> Offline</span>}
-                  <span className="text-ap-gray text-xs">{cam._count?.recordings ?? 0} recordings</span>
+                  <span className="text-text-secondary text-xs">{cam._count?.recordings ?? 0} recordings</span>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -197,15 +197,15 @@ export default function Dashboard() {
       {showAdd && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
           <div className="card w-full max-w-md mx-auto p-6 shadow-apple-lg">
-            <h2 className="text-xl font-bold text-gray-900 mb-5">Add New Camera</h2>
+            <h2 className="text-xl font-bold text-text-primary mb-5">Add New Camera</h2>
             <form onSubmit={handleCreate} className="flex flex-col gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-1.5">Camera name</label>
+                <label className="block text-sm font-semibold text-text-primary mb-1.5">Camera name</label>
                 <input className="input" placeholder="e.g. Front Door" value={newCam.name}
                   onChange={(e) => setNewCam({ ...newCam, name: e.target.value })} required />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-1.5">Description (optional)</label>
+                <label className="block text-sm font-semibold text-text-primary mb-1.5">Description (optional)</label>
                 <input className="input" placeholder="e.g. Main entrance" value={newCam.description}
                   onChange={(e) => setNewCam({ ...newCam, description: e.target.value })} />
               </div>

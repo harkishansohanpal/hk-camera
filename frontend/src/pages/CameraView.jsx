@@ -222,15 +222,15 @@ export default function CameraView() {
   }
 
   return (
-    <div className="page-container max-w-3xl animate-fade-in bg-ap-gray6 min-h-screen">
+    <div className="page-container max-w-3xl animate-fade-in bg-page min-h-screen">
       <div className="flex items-center gap-2 mb-4">
         <button onClick={() => navigate('/dashboard')}
-          className="w-10 h-10 flex items-center justify-center text-ap-gray hover:text-gray-900 hover:bg-ap-gray5 rounded-xl transition-colors flex-shrink-0">
+          className="w-10 h-10 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-card-hover rounded-xl transition-colors flex-shrink-0">
           <ArrowLeft size={18} />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold text-gray-900 truncate">{camera?.name ?? 'Camera'}</h1>
-          {camera?.description && <p className="text-ap-gray text-sm truncate">{camera.description}</p>}
+          <h1 className="text-lg font-bold text-text-primary truncate">{camera?.name ?? 'Camera'}</h1>
+          {camera?.description && <p className="text-text-secondary text-sm truncate">{camera.description}</p>}
         </div>
         {isRecording && (
           <div className="flex items-center gap-1.5 text-ap-red text-xs font-semibold flex-shrink-0">
@@ -249,18 +249,18 @@ export default function CameraView() {
         <div className="card p-4 shadow-apple-sm">
           <div className="flex items-center gap-2 mb-3">
             <Shield size={14} className="text-ap-blue" />
-            <span className="text-sm font-semibold text-gray-900">Motion Detection</span>
+            <span className="text-sm font-semibold text-text-primary">Motion Detection</span>
             <button onClick={async () => {
               const next = !camera?.motionDetect; setCamera((c) => ({ ...c, motionDetect: next }));
               await cameraAPI.update(cameraId, { motionDetect: next });
               if (isBroadcasting) { next ? startDetection() : stopDetection(); }
-            }} className={`ml-auto px-3 py-1.5 text-xs rounded-lg font-semibold transition-colors ${camera?.motionDetect ? 'bg-ap-green/10 text-ap-green' : 'bg-ap-gray5 text-ap-gray'}`}>
+            }} className={`ml-auto px-3 py-1.5 text-xs rounded-lg font-semibold transition-colors ${camera?.motionDetect ? 'bg-ap-green/10 text-ap-green' : 'bg-fill-input text-text-secondary'}`}>
               {camera?.motionDetect ? 'ON' : 'OFF'}
             </button>
           </div>
-          <p className="text-xl font-bold text-gray-900">{motionCount}</p>
-          <p className="text-ap-gray text-xs">events this session</p>
-          <div className={`mt-1 text-xs font-semibold ${isDetecting ? 'text-ap-green' : 'text-ap-gray'}`}>
+          <p className="text-xl font-bold text-text-primary">{motionCount}</p>
+          <p className="text-text-secondary text-xs">events this session</p>
+          <div className={`mt-1 text-xs font-semibold ${isDetecting ? 'text-ap-green' : 'text-text-secondary'}`}>
             {isDetecting ? '\u25cf Active' : '\u25cb Inactive'}
           </div>
           <div className="mt-2 flex gap-1.5">
@@ -268,14 +268,14 @@ export default function CameraView() {
               setCamera((c) => ({ ...c, detectionMode: 'PIXEL_DIFF' }));
               await cameraAPI.update(cameraId, { detectionMode: 'PIXEL_DIFF' });
               if (isBroadcasting) { stopMlDetection(); if (camera?.motionDetect) startPixelDiff(); }
-            }} className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-semibold transition-colors ${!isMlMode ? 'bg-ap-blue/10 text-ap-blue' : 'bg-ap-gray5 text-ap-gray'}`}>
+            }} className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-semibold transition-colors ${!isMlMode ? 'bg-ap-blue/10 text-ap-blue' : 'bg-fill-input text-text-secondary'}`}>
               Pixel-Diff
             </button>
             <button onClick={async () => {
               setCamera((c) => ({ ...c, detectionMode: 'ML' }));
               await cameraAPI.update(cameraId, { detectionMode: 'ML' });
               if (isBroadcasting) { stopPixelDiff(); if (camera?.motionDetect) startMlDetection(); }
-            }} className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-semibold transition-colors flex items-center justify-center gap-1 ${isMlMode ? 'bg-ap-blue/10 text-ap-blue' : 'bg-ap-gray5 text-ap-gray'}`}>
+            }} className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-semibold transition-colors flex items-center justify-center gap-1 ${isMlMode ? 'bg-ap-blue/10 text-ap-blue' : 'bg-fill-input text-text-secondary'}`}>
               <Brain size={10} /> ML (YOLO)
             </button>
           </div>
@@ -292,15 +292,15 @@ export default function CameraView() {
         <div className="card p-4 shadow-apple-sm">
           <div className="flex items-center gap-2 mb-3">
             <Video size={14} className="text-ap-blue" />
-            <span className="text-sm font-semibold text-gray-900">Settings</span>
+            <span className="text-sm font-semibold text-text-primary">Settings</span>
           </div>
-          <div className="flex flex-col gap-2 text-xs text-ap-gray">
-            <span>Sensitivity: <strong className="text-gray-900">{camera?.sensitivity ?? 30}%</strong></span>
-            <span>Two-way audio: <strong className="text-gray-900">{camera?.twoWayAudio ? 'Yes' : 'No'}</strong></span>
+          <div className="flex flex-col gap-2 text-xs text-text-secondary">
+            <span>Sensitivity: <strong className="text-text-primary">{camera?.sensitivity ?? 30}%</strong></span>
+            <span>Two-way audio: <strong className="text-text-primary">{camera?.twoWayAudio ? 'Yes' : 'No'}</strong></span>
             <button onClick={async () => {
               const next = !camera?.recordOnMotion; setCamera((c) => ({ ...c, recordOnMotion: next }));
               await cameraAPI.update(cameraId, { recordOnMotion: next });
-            }} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors self-start ${camera?.recordOnMotion ? 'bg-ap-red/10 text-ap-red' : 'bg-ap-gray5 text-ap-gray'}`}>
+            }} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors self-start ${camera?.recordOnMotion ? 'bg-ap-red/10 text-ap-red' : 'bg-fill-input text-text-secondary'}`}>
               <Video size={12} /> {camera?.recordOnMotion ? 'Auto-record ON' : 'Auto-record OFF'}
             </button>
           </div>
@@ -308,7 +308,7 @@ export default function CameraView() {
       </div>
 
       {screenDimmed && <div className="fixed inset-0 z-50 bg-black cursor-pointer flex items-center justify-center" onClick={() => setScreenDimmed(false)}>
-        <p className="text-ap-gray text-xs">Tap to restore screen</p>
+        <p className="text-text-secondary text-xs">Tap to restore screen</p>
       </div>}
       {isAndroid && torchOn && <div className="fixed inset-0 z-50 bg-white pointer-events-none" />}
     </div>

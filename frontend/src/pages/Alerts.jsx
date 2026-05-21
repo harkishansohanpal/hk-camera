@@ -62,8 +62,8 @@ export default function Alerts() {
       ) : alerts.length === 0 ? (
         <div className="card text-center py-16 shadow-apple-sm">
           <BellOff size={36} className="text-ap-gray3 mx-auto mb-3" />
-          <p className="text-gray-900 font-semibold">No alerts yet</p>
-          <p className="text-ap-gray text-sm mt-1">You'll be notified when motion is detected</p>
+          <p className="text-text-secondary font-semibold">No alerts yet</p>
+          <p className="text-text-secondary text-sm mt-1">You'll be notified when motion is detected</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -81,12 +81,12 @@ export default function Alerts() {
                     <span className={`text-xs font-semibold ${style.text}`}>{style.label}</span>
                     {!alert.read && <span className="w-1.5 h-1.5 rounded-full bg-ap-blue flex-shrink-0" />}
                   </div>
-                  <p className="text-gray-900 text-sm mt-0.5">{alert.message}</p>
-                  <p className="text-ap-gray text-xs mt-0.5">{formatDistanceToNow(new Date(alert.createdAt), { addSuffix: true })}</p>
+                  <p className="text-text-primary text-sm mt-0.5">{alert.message}</p>
+                  <p className="text-text-secondary text-xs mt-0.5">{formatDistanceToNow(new Date(alert.createdAt), { addSuffix: true })}</p>
                 </div>
                 {alert.thumbnailUrl && <img src={alert.thumbnailUrl} alt="" className="w-14 h-10 rounded-lg object-cover flex-shrink-0" />}
                 <button onClick={(e) => { e.stopPropagation(); handleDelete(alert.id); }}
-                  className="w-9 h-9 flex items-center justify-center text-ap-gray hover:text-ap-red rounded-xl transition-colors flex-shrink-0">
+                  className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-ap-red rounded-xl transition-colors flex-shrink-0">
                   <Trash2 size={14} />
                 </button>
               </div>

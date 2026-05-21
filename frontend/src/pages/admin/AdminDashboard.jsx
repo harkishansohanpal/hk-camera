@@ -7,7 +7,7 @@ const LEVEL_COLORS = {
   error: 'text-ap-red bg-ap-red/10 border-ap-red/20',
   warn:  'text-ap-orange bg-ap-orange/10 border-ap-orange/20',
   info:  'text-ap-blue bg-ap-blue/10 border-ap-blue/20',
-  debug: 'text-ap-gray bg-ap-gray/10 border-ap-gray/20',
+  debug: 'text-text-secondary bg-ap-gray/10 border-ap-gray/20',
 };
 
 export default function AdminDashboard() {
@@ -35,7 +35,7 @@ export default function AdminDashboard() {
   return (
     <div className="max-w-6xl mx-auto space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-lg font-bold text-gray-900">Dashboard</h1><p className="text-xs text-ap-gray mt-0.5">Recent logs and system activity</p></div>
+        <div><h1 className="text-lg font-bold text-text-primary">Dashboard</h1><p className="text-xs text-text-secondary mt-0.5">Recent logs and system activity</p></div>
         <button onClick={fetchLogs} className="btn-ghost text-xs">
           <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> Refresh
         </button>
@@ -45,10 +45,10 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {meta.levels?.map((l) => (
             <div key={l.level} className="card p-3 shadow-apple-sm">
-              <div className="flex items-center gap-1.5 text-[11px] text-ap-gray mb-1">
+              <div className="flex items-center gap-1.5 text-[11px] text-text-secondary mb-1">
                 {createElement(LEVEL_ICONS[l.level] || Info, { size: 12 })} {l.level.toUpperCase()}
               </div>
-              <p className="text-xl font-bold text-gray-900">{l.count}</p>
+              <p className="text-xl font-bold text-text-primary">{l.count}</p>
             </div>
           ))}
         </div>
@@ -75,7 +75,7 @@ export default function AdminDashboard() {
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-ap-separator text-ap-gray">
+              <tr className="border-b border-ap-separator text-text-secondary">
                 <th className="text-left py-2.5 px-3 font-semibold">Time</th>
                 <th className="text-left py-2.5 px-3 font-semibold">Level</th>
                 <th className="text-left py-2.5 px-3 font-semibold">Tag</th>
@@ -84,20 +84,20 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {logs.length === 0 && <tr><td colSpan={5} className="py-8 text-center text-ap-gray">No logs found</td></tr>}
+              {logs.length === 0 && <tr><td colSpan={5} className="py-8 text-center text-text-secondary">No logs found</td></tr>}
               {logs.map((log) => {
                 const Icon = LEVEL_ICONS[log.level] || Info;
                 return (
-                  <tr key={log.id} className="border-b border-ap-separator hover:bg-ap-gray6/50 transition-colors">
-                    <td className="py-2.5 px-3 text-ap-gray whitespace-nowrap font-mono text-[10px]">{new Date(log.createdAt).toLocaleTimeString()}</td>
+                  <tr key={log.id} className="border-b border-ap-separator hover:bg-card-hover/50 transition-colors">
+                    <td className="py-2.5 px-3 text-text-secondary whitespace-nowrap font-mono text-[10px]">{new Date(log.createdAt).toLocaleTimeString()}</td>
                     <td className="py-2.5 px-3">
                       <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${LEVEL_COLORS[log.level] || LEVEL_COLORS.info}`}>
                         <Icon size={10} /> {log.level.toUpperCase()}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3"><span className="text-gray-900 font-mono">{log.tag}</span></td>
-                    <td className="py-2.5 px-3 text-gray-900 max-w-xs truncate">{log.message}</td>
-                    <td className="py-2.5 px-3 text-ap-gray font-mono text-[10px] max-w-[200px] truncate">{log.meta ? JSON.stringify(log.meta) : '\u2014'}</td>
+                    <td className="py-2.5 px-3"><span className="text-text-primary font-mono">{log.tag}</span></td>
+                    <td className="py-2.5 px-3 text-text-primary max-w-xs truncate">{log.message}</td>
+                    <td className="py-2.5 px-3 text-text-secondary font-mono text-[10px] max-w-[200px] truncate">{log.meta ? JSON.stringify(log.meta) : '\u2014'}</td>
                   </tr>
                 );
               })}

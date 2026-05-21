@@ -49,11 +49,11 @@ export default function Settings() {
       <div className="card-grouped">
         <form onSubmit={saveProfile} className="p-5 space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-1">Display name</label>
+            <label className="block text-sm font-semibold text-text-primary mb-1">Display name</label>
             <input className="input" value={profile.name} onChange={(e) => setProfile({ name: e.target.value })} />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-1">Email</label>
+            <label className="block text-sm font-semibold text-text-primary mb-1">Email</label>
             <input className="input opacity-50 cursor-not-allowed" value={user?.email} disabled />
           </div>
           <button type="submit" className="btn-primary self-start text-sm" disabled={saving}>Save profile</button>
@@ -70,7 +70,7 @@ export default function Settings() {
             { key: 'confirm',         label: 'Confirm new password' },
           ].map(({ key, label }) => (
             <div key={key}>
-              <label className="block text-sm font-semibold text-gray-900 mb-1">{label}</label>
+              <label className="block text-sm font-semibold text-text-primary mb-1">{label}</label>
               <input type="password" className="input" value={password[key]}
                 onChange={(e) => setPassword({ ...password, [key]: e.target.value })} required />
             </div>
@@ -87,7 +87,7 @@ export default function Settings() {
           { key: 'pushAlerts',  label: 'Push alerts',  desc: 'Receive browser push notifications' },
         ].map(({ key, label, desc }) => (
           <label key={key} className="list-row justify-between cursor-pointer">
-            <div><p className="text-sm font-semibold text-gray-900">{label}</p><p className="text-xs text-ap-gray">{desc}</p></div>
+            <div><p className="text-sm font-semibold text-text-primary">{label}</p><p className="text-xs text-text-secondary">{desc}</p></div>
             <input type="checkbox" className="sr-only" checked={notifs[key]} onChange={(e) => setNotifs((n) => ({ ...n, [key]: e.target.checked }))} />
             <div className={`toggle ${notifs[key] ? 'toggle-on' : 'toggle-off'}`}><span className="toggle-knob" /></div>
           </label>
@@ -101,9 +101,9 @@ export default function Settings() {
         <button onClick={() => navigate('/billing')} className="list-row w-full justify-between">
           <div className="flex items-center gap-3">
             <CreditCard size={16} className="text-ap-blue" />
-            <div className="text-left"><p className="text-sm font-semibold text-gray-900">Subscription</p><p className="text-xs text-ap-gray">Manage your plan and payment methods</p></div>
+            <div className="text-left"><p className="text-sm font-semibold text-text-primary">Subscription</p><p className="text-xs text-text-secondary">Manage your plan and payment methods</p></div>
           </div>
-          <ChevronRight size={16} className="text-ap-gray" />
+          <ChevronRight size={16} className="text-text-secondary" />
         </button>
       </div>
 
@@ -112,7 +112,7 @@ export default function Settings() {
       <div className="card-grouped border border-ap-red/20">
         <div className="p-5">
           <div className="flex items-center gap-2 mb-2"><Trash2 size={16} className="text-ap-red" /><h2 className="text-sm font-bold text-ap-red">Delete Account</h2></div>
-          <p className="text-ap-gray text-sm mb-4">Permanently delete your account and all associated cameras and recordings.</p>
+          <p className="text-text-secondary text-sm mb-4">Permanently delete your account and all associated cameras and recordings.</p>
           <button onClick={handleDeleteAccount} className="btn-destructive text-sm">Delete my account</button>
         </div>
       </div>

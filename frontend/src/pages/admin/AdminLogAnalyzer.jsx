@@ -30,7 +30,7 @@ export default function AdminLogAnalyzer() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-4 animate-fade-in">
-      <div><h1 className="text-lg font-bold text-gray-900">Log Analyzer</h1><p className="text-xs text-ap-gray mt-0.5">Ask questions about application logs or get AI-powered summaries</p></div>
+      <div><h1 className="text-lg font-bold text-text-primary">Log Analyzer</h1><p className="text-xs text-ap-gray mt-0.5">Ask questions about application logs or get AI-powered summaries</p></div>
 
       <div className="card p-3 flex flex-wrap items-center gap-2 shadow-apple-sm">
         <select value={filters.level} onChange={(e) => setFilters((f) => ({ ...f, level: e.target.value }))} className="input py-1.5 text-xs w-28">
@@ -54,18 +54,18 @@ export default function AdminLogAnalyzer() {
       {loading && (
         <div className="card p-6 text-center shadow-apple-sm">
           <Loader2 size={24} className="animate-spin text-ap-blue mx-auto mb-2" />
-          <p className="text-xs text-ap-gray">Analyzing logs\u2026</p>
+          <p className="text-xs text-text-secondary">Analyzing logs\u2026</p>
         </div>
       )}
 
       {answer && !loading && (
         <div className="card p-4 shadow-apple-sm">
-          <div className="flex items-center gap-2 mb-3 text-[11px] text-ap-gray">
-            <span>Analysis based on <strong className="text-gray-900">{logCount}</strong> log entries</span>
-            {filters.level && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-ap-gray6 text-ap-gray font-semibold">{createElement(LEVEL_ICONS[filters.level] || Info, { size: 10 })} {filters.level}</span>}
-            {filters.tag && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-ap-gray6 text-ap-gray font-mono text-[10px]">{filters.tag}</span>}
+          <div className="flex items-center gap-2 mb-3 text-[11px] text-text-secondary">
+            <span>Analysis based on <strong className="text-text-primary">{logCount}</strong> log entries</span>
+            {filters.level && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-page text-text-secondary font-semibold">{createElement(LEVEL_ICONS[filters.level] || Info, { size: 10 })} {filters.level}</span>}
+            {filters.tag && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-page text-text-secondary font-mono text-[10px]">{filters.tag}</span>}
           </div>
-          <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-wrap">{answer}</div>
+          <div className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">{answer}</div>
         </div>
       )}
     </div>
