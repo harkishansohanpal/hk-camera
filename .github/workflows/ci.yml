@@ -158,7 +158,13 @@ jobs:
         working-directory: .
 
       - name: Check test counts match docs
-        run: npm run docs:check
+        run: |
+          npm run docs:check 2>&1
+          EC=$?
+          if [ $EC -ne 0 ]; then
+            echo "=== docs:check failed with exit code $EC ==="
+            exit $EC
+          fi
 
   # ── Security audit ──────────────────────────────────────────
   security:

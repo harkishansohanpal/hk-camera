@@ -77,5 +77,7 @@ try {
   }
 } catch (err) {
   console.error('Failed to sync docs:', err.message);
+  if (err.stderr) console.error('STDERR:', err.stderr.toString().slice(0, 2000));
+  if (err.stdout) console.error('STDOUT:', err.stdout.toString().slice(0, 2000));
   process.exit(1);
 }
