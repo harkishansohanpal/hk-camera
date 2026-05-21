@@ -11,7 +11,7 @@ function formatBytes(bytes) {
 }
 
 function formatDuration(secs) {
-  if (!secs) return '—';
+  if (!secs) return '\u2014';
   const m = Math.floor(secs / 60);
   const s = secs % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
@@ -26,9 +26,7 @@ export default function Recordings() {
   const [filter, setFilter]         = useState('');
   const [selectedRecordings, setSelectedRecordings] = useState(new Set());
 
-  useEffect(() => {
-    cameraAPI.list().then(({ data }) => setCameras(data.data));
-  }, []);
+  useEffect(() => { cameraAPI.list().then(({ data }) => setCameras(data.data)); }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -38,18 +36,13 @@ export default function Recordings() {
       .catch(() => toast.error('Failed to load recordings'))
       .finally(() => setLoading(false));
     setSelectedRecordings(new Set());
-      }, [selectedCam]);
-
+  }, [selectedCam]);
 
   async function handleDelete(id) {
     if (!confirm('Delete this recording?')) return;
     await recordingAPI.delete(id);
     setRecordings((prev) => prev.filter((r) => r.id !== id));
-    setSelectedRecordings((prev) => {
-      const newSet = new Set(prev);
-      newSet.delete(id);
-      return newSet;
-    });
+    setSelectedRecordings((prev) => { const n = new Set(prev); n.delete(id); return n; });
     toast.success('Recording deleted');
   }
 
@@ -59,130 +52,86 @@ export default function Recordings() {
     await recordingAPI.deleteBulk(Array.from(selectedRecordings));
     setRecordings((prev) => prev.filter((r) => !selectedRecordings.has(r.id)));
     setSelectedRecordings(new Set());
-        toast.success(`${selectedRecordings.size} recording${selectedRecordings.size > 1 ? 's' : ''} deleted`);
+    toast.success(`${selectedRecordings.size} recording${selectedRecordings.size > 1 ? 's' : ''} deleted`);
   }
 
   function handleSelectRecording(id, checked) {
-    setSelectedRecordings((prev) => {
-      const newSet = new Set(prev);
-      if (checked) {
-        newSet.add(id);
-      } else {
-        newSet.delete(id);
-      }
-      return newSet;
-    });
+    setSelectedRecordings((prev) => { const n = new Set(prev); checked ? n.add(id) : n.delete(id); return n; });
   }
 
-  function handleSelectAll(checked) {
-    if (checked) {
-      setSelectedRecordings(new Set(filtered.map(r => r.id)));
-    } else {
-      setSelectedRecordings(new Set());
-    }
-  }
-
-  const filtered = filter
-    ? recordings.filter((r) => r.trigger === filter)
-    : recordings;
-
+  const filtered = filter ? recordings.filter((r) => r.trigger === filter) : recordings;
   const allSelected = filtered.length > 0 && selectedRecordings.size === filtered.length;
 
   return (
-    <div className="max-w-4xl mx-auto px-0 sm:px-1">
-      <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-white">Recordings</h1>
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          {selectedRecordings.size > 0 && (
-            <button
-              onClick={handleBulkDelete}
-              className="btn-danger flex items-center gap-2 text-xs sm:text-sm"
-            >
-              <Trash2 size={14} />
-              Delete {selectedRecordings.size}
-            </button>
-          )}
-          <select
-            value={selectedCam}
-            onChange={(e) => setSelectedCam(e.target.value)}
-            className="input py-2 text-xs sm:text-sm flex-1 sm:flex-none sm:w-auto"
-          >
-            <option value="">All cameras</option>
-            {cameras.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-          <select value={filter} onChange={(e) => setFilter(e.target.value)} className="input py-2 text-xs sm:text-sm flex-1 sm:flex-none sm:w-auto">
-            <option value="">All triggers</option>
-            <option value="MOTION">Motion</option>
-            <option value="MANUAL">Manual</option>
-            <option value="SCHEDULED">Scheduled</option>
-          </select>
+    <div className="page-container max-w-4xl animate-fade-in">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Recordings</h1>
+          <p className="page-subtitle mt-0.5">{filtered.length} recording{filtered.length !== 1 ? 's' : ''}</p>
         </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        {selectedRecordings.size > 0 && (
+          <button onClick={handleBulkDelete} className="btn-destructive text-sm">
+            <Trash2 size={14} /> Delete {selectedRecordings.size}
+          </button>
+        )}
+        <select value={selectedCam} onChange={(e) => setSelectedCam(e.target.value)} className="input py-2 text-sm flex-1 sm:flex-none sm:w-40">
+          <option value="">All cameras</option>
+          {cameras.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+        <select value={filter} onChange={(e) => setFilter(e.target.value)} className="input py-2 text-sm flex-1 sm:flex-none sm:w-36">
+          <option value="">All triggers</option>
+          <option value="MOTION">Motion</option>
+          <option value="MANUAL">Manual</option>
+          <option value="SCHEDULED">Scheduled</option>
+        </select>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-4 border-hk-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-[3px] border-hk-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="card text-center py-12 sm:py-16">
+        <div className="card text-center py-16">
           <Video size={36} className="text-slate-600 mx-auto mb-3" />
           <p className="text-slate-300 font-medium">No recordings found</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-2 sm:gap-3">
-          <div className="card">
-            <label className="flex items-center gap-2 sm:gap-3 cursor-pointer">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center -ml-1.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={allSelected}
-                  onChange={(e) => handleSelectAll(e.target.checked)}
-                  className="w-4 h-4 text-hk-500 bg-slate-700 border-slate-600 rounded focus:ring-hk-500 focus:ring-2"
-                />
-              </div>
-              <span className="text-xs sm:text-sm text-slate-300 font-medium">Select All ({filtered.length})</span>
-            </label>
-          </div>
+        <div className="flex flex-col gap-2">
+          <label className="card flex items-center gap-3 px-4 py-3 cursor-pointer">
+            <input type="checkbox" checked={allSelected} onChange={(e) => {
+              if (e.target.checked) { setSelectedRecordings(new Set(filtered.map(r => r.id))); }
+              else { setSelectedRecordings(new Set()); }
+            }} className="w-4 h-4 text-hk-500 bg-slate-700 border-slate-600 rounded focus:ring-hk-500 focus:ring-2" />
+            <span className="text-sm text-slate-300 font-medium">Select All ({filtered.length})</span>
+          </label>
 
           {filtered.map((rec) => (
-            <div key={rec.id} className="card flex items-center gap-2 sm:gap-4">
-              <label className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center -ml-1.5 flex-shrink-0 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={selectedRecordings.has(rec.id)}
-                  onChange={(e) => handleSelectRecording(rec.id, e.target.checked)}
-                  className="w-4 h-4 text-hk-500 bg-slate-700 border-slate-600 rounded focus:ring-hk-500 focus:ring-2"
-                />
-              </label>
-
-              <button
-                onClick={() => setPlaying(rec)}
-                className="w-10 h-9 sm:w-14 sm:h-10 bg-slate-700 hover:bg-hk-500/20 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
-              >
-                <Play size={16} className="text-hk-400" />
+            <div key={rec.id} className="card flex items-center gap-3 px-4 py-3">
+              <input type="checkbox" checked={selectedRecordings.has(rec.id)} onChange={(e) => handleSelectRecording(rec.id, e.target.checked)} className="w-4 h-4 text-hk-500 bg-slate-700 border-slate-600 rounded focus:ring-hk-500 focus:ring-2 flex-shrink-0" />
+              <button onClick={() => setPlaying(rec)} className="w-10 h-10 bg-slate-700/60 hover:bg-hk-500/20 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors">
+                <Play size={15} className="text-hk-400" />
               </button>
-
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                  <span className={`text-[10px] sm:text-xs font-medium px-1.5 py-0.5 rounded-full ${
-                    rec.trigger === 'MOTION'    ? 'bg-red-500/20 text-red-400'    :
-                    rec.trigger === 'SCHEDULED' ? 'bg-blue-500/20 text-blue-400'  :
-                    'bg-slate-600/40 text-slate-400'
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                    rec.trigger === 'MOTION' ? 'bg-red-500/15 text-red-400' :
+                    rec.trigger === 'SCHEDULED' ? 'bg-blue-500/15 text-blue-400' :
+                    'bg-slate-600/30 text-slate-400'
                   }`}>
                     {rec.trigger}
                   </span>
-                  <span className="text-slate-400 text-[10px] sm:text-xs">{formatDistanceToNow(new Date(rec.createdAt), { addSuffix: true })}</span>
+                  <span className="text-slate-400 text-xs">{formatDistanceToNow(new Date(rec.createdAt), { addSuffix: true })}</span>
                 </div>
-                <p className="text-slate-400 text-[10px] sm:text-xs mt-0.5">
-                  {formatDuration(rec.duration)} · {formatBytes(rec.size)}
-                </p>
+                <p className="text-slate-500 text-xs mt-0.5">{formatDuration(rec.duration)} \u00b7 {formatBytes(rec.size)}</p>
               </div>
-
-              <div className="flex gap-1 sm:gap-2 flex-shrink-0">
-                <a href={rec.url} download className="p-2 sm:p-2.5 text-slate-400 hover:text-hk-400 transition-colors" title="Download">
+              <div className="flex gap-1 flex-shrink-0">
+                <a href={rec.url} download className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-hk-400 rounded-xl transition-colors" title="Download">
                   <Download size={14} />
                 </a>
-                <button onClick={() => handleDelete(rec.id)} className="p-2 sm:p-2.5 text-slate-400 hover:text-red-400 transition-colors" title="Delete">
+                <button onClick={() => handleDelete(rec.id)} className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-red-400 rounded-xl transition-colors" title="Delete">
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -191,12 +140,11 @@ export default function Recordings() {
         </div>
       )}
 
-      {/* Video player modal */}
       {playing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setPlaying(null)}>
           <div className="w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
             <video src={playing.url} controls autoPlay className="w-full rounded-xl" />
-            <button onClick={() => setPlaying(null)} className="mt-3 btn-ghost text-sm">Close</button>
+            <button onClick={() => setPlaying(null)} className="btn-ghost text-sm mt-3">Close</button>
           </div>
         </div>
       )}

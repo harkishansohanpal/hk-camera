@@ -30,16 +30,16 @@ export default function Register() {
 
   return (
     <div className="min-h-dvh flex items-center justify-center bg-slate-900 px-4">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm animate-fade-in">
         <div className="flex flex-col items-center mb-8">
           <div className="w-14 h-14 bg-hk-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-hk-500/30">
             <Camera size={28} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Create account</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Create account</h1>
           <p className="text-slate-400 text-sm mt-1">Start monitoring in minutes</p>
         </div>
 
-        <div className="card">
+        <div className="card p-6">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {[
               { key: 'name',     label: 'Full name', type: 'text',     placeholder: 'Jane Smith' },
@@ -48,23 +48,16 @@ export default function Register() {
             ].map(({ key, label, type, placeholder }) => (
               <div key={key}>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">{label}</label>
-                <input
-                  type={type}
-                  className="input"
-                  placeholder={placeholder}
-                  value={form[key]}
-                  onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                  required
-                />
+                <input type={type} className="input" placeholder={placeholder} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} required />
               </div>
             ))}
-            <button type="submit" className="btn-primary w-full mt-2" disabled={loading}>
-              {loading ? 'Creating account…' : 'Create account'}
+            <button type="submit" className="btn-primary w-full mt-1" disabled={loading}>
+              {loading ? 'Creating account\u2026' : 'Create account'}
             </button>
           </form>
         </div>
 
-        <p className="text-center text-slate-400 text-sm mt-4">
+        <p className="text-center text-slate-400 text-sm mt-5">
           Already have an account?{' '}
           <Link to="/login" className="text-hk-400 hover:text-hk-300 font-medium">Sign in</Link>
         </p>

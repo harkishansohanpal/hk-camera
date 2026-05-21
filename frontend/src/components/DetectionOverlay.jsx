@@ -48,10 +48,7 @@ function draw(canvas, detections, video, container) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, cw, ch);
 
-  if (!detections || detections.length === 0 || !video.videoWidth) {
-    ctx.restore();
-    return;
-  }
+  if (!detections || detections.length === 0 || !video.videoWidth) { ctx.restore(); return; }
 
   const sx = display.w / video.videoWidth;
   const sy = display.h / video.videoHeight;
@@ -117,19 +114,12 @@ export default function DetectionOverlay({ detections, videoRef, visible = true 
     }
 
     rafRef.current = requestAnimationFrame(tick);
-
-    return () => {
-      cancelAnimationFrame(rafRef.current);
-    };
+    return () => { cancelAnimationFrame(rafRef.current); };
   }, [videoRef]);
 
   return (
     <div ref={containerRef} className="absolute inset-0 w-full h-full">
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full"
-        style={{ pointerEvents: 'none' }}
-      />
+      <canvas ref={canvasRef} className="w-full h-full" style={{ pointerEvents: 'none' }} />
     </div>
   );
 }

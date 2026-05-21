@@ -48,63 +48,56 @@ export default function Alerts() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-0 sm:px-1">
-      <div className="flex items-center justify-between mb-4 sm:mb-6">
+    <div className="page-container max-w-3xl animate-fade-in">
+      <div className="page-header">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-white">Alerts</h1>
-          {unread > 0 && <p className="text-slate-400 text-xs sm:text-sm mt-0.5">{unread} unread</p>}
+          <h1 className="page-title">Alerts</h1>
+          {unread > 0 && <p className="page-subtitle mt-0.5">{unread} unread</p>}
         </div>
         {unread > 0 && (
-          <button onClick={handleMarkAllRead} className="btn-ghost flex items-center gap-1.5 text-xs sm:text-sm">
-            <CheckCheck size={13} /> Mark all read
+          <button onClick={handleMarkAllRead} className="btn-ghost text-sm">
+            <CheckCheck size={14} /> Mark all read
           </button>
         )}
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16 sm:py-20">
-          <div className="w-8 h-8 border-4 border-hk-500 border-t-transparent rounded-full animate-spin" />
+        <div className="flex justify-center py-16">
+          <div className="w-8 h-8 border-[3px] border-hk-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : alerts.length === 0 ? (
-        <div className="card text-center py-12 sm:py-16">
+        <div className="card text-center py-16">
           <BellOff size={36} className="text-slate-600 mx-auto mb-3" />
           <p className="text-slate-300 font-medium">No alerts yet</p>
-          <p className="text-slate-500 text-xs sm:text-sm mt-1">You'll be notified when motion is detected</p>
+          <p className="text-slate-500 text-sm mt-1">You'll be notified when motion is detected</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-1.5 sm:gap-2">
+        <div className="flex flex-col gap-2">
           {alerts.map((alert) => {
             const style = TYPE_STYLES[alert.type] ?? TYPE_STYLES.MOTION;
             return (
               <div
                 key={alert.id}
-                className={`card flex items-start gap-2 sm:gap-4 transition-opacity ${alert.read ? 'opacity-60' : ''}`}
+                className={`card flex items-start gap-3 px-4 py-3 transition-opacity ${alert.read ? 'opacity-60' : ''}`}
                 onClick={() => !alert.read && handleMarkRead(alert.id)}
               >
-                <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${style.bg}`}>
-                  <Shield size={12} className={style.text} />
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${style.bg}`}>
+                  <Shield size={13} className={style.text} />
                 </div>
-
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    <span className={`text-[10px] sm:text-xs font-medium ${style.text}`}>{style.label}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-medium ${style.text}`}>{style.label}</span>
                     {!alert.read && <span className="w-1.5 h-1.5 rounded-full bg-hk-500 flex-shrink-0" />}
                   </div>
-                  <p className="text-slate-300 text-xs sm:text-sm mt-0.5">{alert.message}</p>
-                  <p className="text-slate-500 text-[10px] sm:text-xs mt-0.5 sm:mt-1">
-                    {formatDistanceToNow(new Date(alert.createdAt), { addSuffix: true })}
-                  </p>
+                  <p className="text-slate-300 text-sm mt-0.5">{alert.message}</p>
+                  <p className="text-slate-500 text-xs mt-0.5">{formatDistanceToNow(new Date(alert.createdAt), { addSuffix: true })}</p>
                 </div>
-
                 {alert.thumbnailUrl && (
-                  <img src={alert.thumbnailUrl} alt="thumbnail" className="w-12 h-9 sm:w-16 sm:h-12 rounded-lg object-cover flex-shrink-0" />
+                  <img src={alert.thumbnailUrl} alt="" className="w-14 h-10 rounded-lg object-cover flex-shrink-0" />
                 )}
-
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleDelete(alert.id); }}
-                  className="p-2 sm:p-2.5 text-slate-500 hover:text-red-400 transition-colors flex-shrink-0"
-                >
-                  <Trash2 size={13} />
+                <button onClick={(e) => { e.stopPropagation(); handleDelete(alert.id); }}
+                  className="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-red-400 rounded-xl transition-colors flex-shrink-0">
+                  <Trash2 size={14} />
                 </button>
               </div>
             );

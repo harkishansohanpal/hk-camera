@@ -160,7 +160,6 @@ export default function CameraView() {
   const startRecordingRef = useRef(startRecording);
   useEffect(() => { startRecordingRef.current = startRecording; }, [startRecording]);
 
-  // ── Oriented recording stream (fixes mobile rotation) ──────
   function getOrientedStream() {
     const video = videoRef.current;
     const originalStream = streamRef.current;
@@ -206,7 +205,6 @@ export default function CameraView() {
     }
   }
 
-  // Clean up canvas stream when recording stops
   useEffect(() => {
     if (!isRecording) stopOrientedStream();
   }, [isRecording]);
@@ -341,19 +339,17 @@ export default function CameraView() {
   }
 
   return (
-    <div className="page-container max-w-3xl">
-      <div className="flex items-center gap-2 mb-3 sm:mb-4">
-        <button onClick={() => navigate('/dashboard')} className="w-9 h-9 sm:w-10 sm:h-11 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors flex-shrink-0">
+    <div className="page-container max-w-3xl animate-fade-in">
+      <div className="flex items-center gap-2 mb-4">
+        <button onClick={() => navigate('/dashboard')} className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-xl transition-colors flex-shrink-0">
           <ArrowLeft size={18} />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-base sm:text-xl font-bold text-white truncate">{camera?.name ?? 'Camera'}</h1>
-          {camera?.description && (
-            <p className="text-slate-400 text-xs sm:text-sm truncate">{camera.description}</p>
-          )}
+          <h1 className="text-lg font-bold text-white truncate">{camera?.name ?? 'Camera'}</h1>
+          {camera?.description && <p className="text-slate-400 text-sm truncate">{camera.description}</p>}
         </div>
         {isRecording && (
-          <div className="flex items-center gap-1.5 text-red-400 text-[10px] sm:text-xs font-medium flex-shrink-0">
+          <div className="flex items-center gap-1.5 text-red-400 text-xs font-medium flex-shrink-0">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
             {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, '0')}
           </div>
@@ -370,14 +366,14 @@ export default function CameraView() {
         onMicToggle={() => setMicOn((v) => !v)}
         isRecording={isRecording}
         onRecordToggle={handleRecordToggle}
-        className="aspect-video w-full rounded-lg sm:rounded-xl overflow-hidden"
+        className="aspect-video w-full rounded-xl overflow-hidden"
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 mt-3 sm:mt-6">
-        <div className="card">
-          <div className="flex items-center gap-2 mb-2">
-            <Shield size={14} className="text-hk-400 sm:w-4 sm:h-4" />
-            <span className="text-xs sm:text-sm font-medium text-slate-300">Motion Detection</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+        <div className="card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Shield size={14} className="text-hk-400" />
+            <span className="text-sm font-medium text-slate-300">Motion Detection</span>
             <button
               onClick={async () => {
                 const next = !camera?.motionDetect;
@@ -386,19 +382,19 @@ export default function CameraView() {
                 await cameraAPI.update(cameraId, { motionDetect: next });
                 if (isBroadcasting) { next ? startDetection() : stopDetection(); }
               }}
-              className={`ml-auto px-2.5 py-1.5 sm:px-3 sm:py-2 text-[11px] sm:text-sm rounded font-medium transition-colors ${
+              className={`ml-auto px-3 py-1.5 text-xs rounded-lg font-medium transition-colors ${
                 camera?.motionDetect
-                  ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
-                  : 'bg-slate-700 text-slate-500 hover:bg-slate-600 hover:text-slate-300'
+                  ? 'bg-green-500/15 text-green-400 hover:bg-green-500/25'
+                  : 'bg-slate-700/60 text-slate-400 hover:bg-slate-600'
               }`}
             >
               {camera?.motionDetect ? 'ON' : 'OFF'}
             </button>
           </div>
-          <p className="text-lg sm:text-xl font-bold text-white">{motionCount}</p>
-          <p className="text-slate-500 text-[10px] sm:text-xs">events this session</p>
-          <div className={`mt-1 text-[10px] sm:text-xs font-medium ${isDetecting ? 'text-green-400' : 'text-slate-500'}`}>
-            {isDetecting ? '● Active' : '○ Inactive'}
+          <p className="text-xl font-bold text-white">{motionCount}</p>
+          <p className="text-slate-500 text-xs">events this session</p>
+          <div className={`mt-1 text-xs font-medium ${isDetecting ? 'text-green-400' : 'text-slate-500'}`}>
+            {isDetecting ? '\u25cf Active' : '\u25cb Inactive'}
           </div>
           <div className="mt-2 flex gap-1.5">
             <button
@@ -408,10 +404,8 @@ export default function CameraView() {
                 await cameraAPI.update(cameraId, { detectionMode: mode });
                 if (isBroadcasting) { stopMlDetection(); if (camera?.motionDetect) startPixelDiff(); }
               }}
-              className={`flex-1 px-2 py-1 text-[10px] sm:text-xs rounded font-medium transition-colors ${
-                !isMlMode
-                  ? 'bg-hk-500/20 text-hk-400'
-                  : 'bg-slate-700 text-slate-500 hover:text-slate-300'
+              className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-medium transition-colors ${
+                !isMlMode ? 'bg-hk-500/15 text-hk-400' : 'bg-slate-700/60 text-slate-400 hover:text-slate-200'
               }`}
             >
               Pixel-Diff
@@ -423,10 +417,8 @@ export default function CameraView() {
                 await cameraAPI.update(cameraId, { detectionMode: mode });
                 if (isBroadcasting) { stopPixelDiff(); if (camera?.motionDetect) startMlDetection(); }
               }}
-              className={`flex-1 px-2 py-1 text-[10px] sm:text-xs rounded font-medium transition-colors flex items-center justify-center gap-1 ${
-                isMlMode
-                  ? 'bg-hk-500/20 text-hk-400'
-                  : 'bg-slate-700 text-slate-500 hover:text-slate-300'
+              className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-medium transition-colors flex items-center justify-center gap-1 ${
+                isMlMode ? 'bg-hk-500/15 text-hk-400' : 'bg-slate-700/60 text-slate-400 hover:text-slate-200'
               }`}
             >
               <Brain size={10} />
@@ -435,7 +427,7 @@ export default function CameraView() {
           </div>
           {isMlMode && (
             <div className="mt-1 text-[10px]">
-              {!modelLoaded && !mlError && isMlDetecting && <p className="text-yellow-400">Loading ML model…</p>}
+              {!modelLoaded && !mlError && isMlDetecting && <p className="text-yellow-400">Loading ML model\u2026</p>}
               {modelLoaded && <p className="text-green-400">ML model ready</p>}
               {mlError && <p className="text-red-400">ML model error: {mlError}</p>}
               {mlInferenceError && <p className="text-red-400">ML inference error: {mlInferenceError}</p>}
@@ -443,12 +435,12 @@ export default function CameraView() {
           )}
         </div>
 
-        <div className="card">
-          <div className="flex items-center gap-2 mb-2">
-            <Video size={14} className="text-hk-400 sm:w-4 sm:h-4" />
-            <span className="text-xs sm:text-sm font-medium text-slate-300">Settings</span>
+        <div className="card p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Video size={14} className="text-hk-400" />
+            <span className="text-sm font-medium text-slate-300">Settings</span>
           </div>
-          <div className="flex flex-col gap-1.5 text-[11px] sm:text-xs text-slate-400">
+          <div className="flex flex-col gap-2 text-xs text-slate-400">
             <span>Sensitivity: <strong className="text-white">{camera?.sensitivity ?? 30}%</strong></span>
             <span>Two-way audio: <strong className="text-white">{camera?.twoWayAudio ? 'Yes' : 'No'}</strong></span>
             <button
@@ -457,10 +449,10 @@ export default function CameraView() {
                 setCamera((c) => ({ ...c, recordOnMotion: next }));
                 await cameraAPI.update(cameraId, { recordOnMotion: next });
               }}
-              className={`flex items-center gap-1.5 mt-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-[11px] sm:text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors self-start ${
                 camera?.recordOnMotion
-                  ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
-                  : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+                  ? 'bg-red-500/15 text-red-400 hover:bg-red-500/25'
+                  : 'bg-slate-700/60 text-slate-400 hover:bg-slate-600'
               }`}
             >
               <Video size={12} />
@@ -471,10 +463,7 @@ export default function CameraView() {
       </div>
 
       {screenDimmed && (
-        <div
-          className="fixed inset-0 z-50 bg-black cursor-pointer flex items-center justify-center"
-          onClick={() => setScreenDimmed(false)}
-        >
+        <div className="fixed inset-0 z-50 bg-black cursor-pointer flex items-center justify-center" onClick={() => setScreenDimmed(false)}>
           <p className="text-slate-700 text-xs">Tap to restore screen</p>
         </div>
       )}

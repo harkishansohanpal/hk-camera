@@ -23,7 +23,6 @@ export default function AdminDashboard() {
       if (filters.level) params.level = filters.level;
       if (filters.tag) params.tag = filters.tag;
       params.limit = filters.limit || '100';
-
       const [logRes, metaRes] = await Promise.all([
         adminAPI.getLogs(params),
         adminAPI.getLogMeta(),
@@ -32,35 +31,27 @@ export default function AdminDashboard() {
       setMeta(metaRes.data?.data || null);
     } catch (err) {
       console.error('Failed to fetch logs:', err);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }, [filters]);
 
   useEffect(() => { fetchLogs(); }, [fetchLogs]);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-4">
-      {/* ── Header ───────────────────────────────────────────── */}
+    <div className="max-w-6xl mx-auto space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-bold text-white">Dashboard</h1>
           <p className="text-xs text-slate-400 mt-0.5">Recent logs and system activity</p>
         </div>
-        <button
-          onClick={fetchLogs}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition-colors"
-        >
-          <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-          Refresh
+        <button onClick={fetchLogs} className={`btn-ghost text-xs ${loading ? 'opacity-50' : ''}`}>
+          <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> Refresh
         </button>
       </div>
 
-      {/* ── Quick stats ──────────────────────────────────────── */}
       {meta && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {meta.levels?.map((l) => (
-            <div key={l.level} className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+            <div key={l.level} className="card p-3">
               <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mb-1">
                 {createElement(LEVEL_ICONS[l.level] || Info, { size: 12 })}
                 {l.level.toUpperCase()}
@@ -71,85 +62,59 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ── Filters ──────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2">
-        <select
-          className="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-hk-500"
-          value={filters.level}
-          onChange={(e) => setFilters((f) => ({ ...f, level: e.target.value }))}
-        >
+        <select value={filters.level} onChange={(e) => setFilters((f) => ({ ...f, level: e.target.value }))}
+          className="input py-1.5 text-xs w-28">
           <option value="">All levels</option>
           <option value="error">Error</option>
           <option value="warn">Warn</option>
           <option value="info">Info</option>
           <option value="debug">Debug</option>
         </select>
-        <input
-          placeholder="Tag filter…"
-          className="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-hk-500 w-32"
-          value={filters.tag}
-          onChange={(e) => setFilters((f) => ({ ...f, tag: e.target.value }))}
-        />
-        <select
-          className="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-hk-500"
-          value={filters.limit}
-          onChange={(e) => setFilters((f) => ({ ...f, limit: e.target.value }))}
-        >
+        <input placeholder="Tag filter\u2026" value={filters.tag} onChange={(e) => setFilters((f) => ({ ...f, tag: e.target.value }))}
+          className="input py-1.5 text-xs w-28" />
+        <select value={filters.limit} onChange={(e) => setFilters((f) => ({ ...f, limit: e.target.value }))}
+          className="input py-1.5 text-xs w-20">
           <option value="50">50</option>
           <option value="100">100</option>
           <option value="200">200</option>
         </select>
         {meta && (
-          <select
-            className="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-hk-500"
-            value={filters.tag}
-            onChange={(e) => setFilters((f) => ({ ...f, tag: e.target.value }))}
-          >
+          <select value={filters.tag} onChange={(e) => setFilters((f) => ({ ...f, tag: e.target.value }))}
+            className="input py-1.5 text-xs flex-1 sm:flex-none sm:w-40">
             <option value="">All tags</option>
-            {meta.tags?.map((t) => (
-              <option key={t.tag} value={t.tag}>{t.tag} ({t.count})</option>
-            ))}
+            {meta.tags?.map((t) => <option key={t.tag} value={t.tag}>{t.tag} ({t.count})</option>)}
           </select>
         )}
       </div>
 
-      {/* ── Log table ────────────────────────────────────────── */}
-      <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg overflow-hidden">
+      <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-slate-700/50 text-slate-500">
-                <th className="text-left py-2 px-3 font-medium">Time</th>
-                <th className="text-left py-2 px-3 font-medium">Level</th>
-                <th className="text-left py-2 px-3 font-medium">Tag</th>
-                <th className="text-left py-2 px-3 font-medium">Message</th>
-                <th className="text-left py-2 px-3 font-medium">Meta</th>
+              <tr className="border-b border-slate-700/30 text-slate-500">
+                <th className="text-left py-2.5 px-3 font-medium">Time</th>
+                <th className="text-left py-2.5 px-3 font-medium">Level</th>
+                <th className="text-left py-2.5 px-3 font-medium">Tag</th>
+                <th className="text-left py-2.5 px-3 font-medium">Message</th>
+                <th className="text-left py-2.5 px-3 font-medium">Meta</th>
               </tr>
             </thead>
             <tbody>
-              {logs.length === 0 && (
-                <tr><td colSpan={5} className="py-8 text-center text-slate-500">No logs found</td></tr>
-              )}
+              {logs.length === 0 && <tr><td colSpan={5} className="py-8 text-center text-slate-500">No logs found</td></tr>}
               {logs.map((log) => {
                 const Icon = LEVEL_ICONS[log.level] || Info;
                 return (
                   <tr key={log.id} className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors">
-                    <td className="py-2 px-3 text-slate-400 whitespace-nowrap font-mono text-[10px]">
-                      {new Date(log.createdAt).toLocaleTimeString()}
-                    </td>
-                    <td className="py-2 px-3">
+                    <td className="py-2.5 px-3 text-slate-400 whitespace-nowrap font-mono text-[10px]">{new Date(log.createdAt).toLocaleTimeString()}</td>
+                    <td className="py-2.5 px-3">
                       <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border ${LEVEL_COLORS[log.level] || LEVEL_COLORS.info}`}>
-                        <Icon size={10} />
-                        {log.level.toUpperCase()}
+                        <Icon size={10} /> {log.level.toUpperCase()}
                       </span>
                     </td>
-                    <td className="py-2 px-3">
-                      <span className="text-slate-300 font-mono">{log.tag}</span>
-                    </td>
-                    <td className="py-2 px-3 text-slate-200 max-w-xs truncate">{log.message}</td>
-                    <td className="py-2 px-3 text-slate-500 font-mono text-[10px] max-w-[200px] truncate">
-                      {log.meta ? JSON.stringify(log.meta) : '—'}
-                    </td>
+                    <td className="py-2.5 px-3"><span className="text-slate-300 font-mono">{log.tag}</span></td>
+                    <td className="py-2.5 px-3 text-slate-200 max-w-xs truncate">{log.message}</td>
+                    <td className="py-2.5 px-3 text-slate-500 font-mono text-[10px] max-w-[200px] truncate">{log.meta ? JSON.stringify(log.meta) : '\u2014'}</td>
                   </tr>
                 );
               })}

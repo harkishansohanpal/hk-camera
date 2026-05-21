@@ -273,7 +273,7 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
           </div>
           <button
             onClick={handleSkip}
-            className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0"
+            className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0 min-h-0"
           >
             <SkipForward size={12} />
             Skip
@@ -312,7 +312,7 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
           </button>
           <button
             onClick={handleNext}
-            className="flex items-center gap-1 text-xs font-medium px-4 py-1.5 bg-hk-500 hover:bg-hk-600 text-white rounded-lg transition-colors"
+            className="flex items-center gap-1 text-xs font-medium px-4 py-1.5 bg-hk-500 hover:bg-hk-600 text-white rounded-xl transition-colors"
           >
             {isLast ? 'Done' : 'Next'}
             {!isLast && <ChevronRight size={14} />}

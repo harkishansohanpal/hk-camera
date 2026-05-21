@@ -3,9 +3,9 @@ import { Loader2, WifiOff } from 'lucide-react';
 import { useNightVision } from '../hooks/useNightVision';
 
 const STATUS_LABELS = {
-  idle:         { text: 'Initialising…',       Icon: Loader2, spin: true  },
-  connecting:   { text: 'Connecting…',          Icon: Loader2, spin: true  },
-  waiting:      { text: 'Waiting for camera…',  Icon: Loader2, spin: true  },
+  idle:         { text: 'Initialising\u2026',       Icon: Loader2, spin: true  },
+  connecting:   { text: 'Connecting\u2026',          Icon: Loader2, spin: true  },
+  waiting:      { text: 'Waiting for camera\u2026',  Icon: Loader2, spin: true  },
   disconnected: { text: 'Camera offline',       Icon: WifiOff, spin: false },
   error:        { text: 'Connection error',     Icon: WifiOff, spin: false },
 };
@@ -20,33 +20,18 @@ export default function ViewerStream({ remoteStream, status, className = '', vid
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !remoteStream) return;
-
     video.srcObject = remoteStream;
-    video.muted = true; // must be muted for autoplay to work on mobile
-
+    video.muted = true;
     function tryPlay() {
       video.play().catch((err) => {
-        // NotAllowedError = browser blocked autoplay, retry after short delay
-        if (err.name === 'NotAllowedError') {
-          setTimeout(tryPlay, 300);
-        } else {
-          console.warn('Video play() failed:', err.message);
-        }
+        if (err.name === 'NotAllowedError') { setTimeout(tryPlay, 300); }
+        else { console.warn('Video play() failed:', err.message); }
       });
     }
-
-    // Always try to play immediately (handles case where metadata already loaded)
     tryPlay();
-    
-    // Also listen for metadata in case it hasn't loaded yet
     video.addEventListener('loadedmetadata', tryPlay, { once: true });
-
-    // Re-play when tab/app comes back into focus (iOS pauses video in background)
-    function onVisibilityChange() {
-      if (!document.hidden && video.paused) tryPlay();
-    }
+    function onVisibilityChange() { if (!document.hidden && video.paused) tryPlay(); }
     document.addEventListener('visibilitychange', onVisibilityChange);
-
     return () => {
       document.removeEventListener('visibilitychange', onVisibilityChange);
       video.removeEventListener('loadedmetadata', tryPlay);
@@ -58,42 +43,23 @@ export default function ViewerStream({ remoteStream, status, className = '', vid
 
   return (
     <div className={`relative overflow-hidden bg-black ${className}`}>
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
+      <video ref={videoRef} autoPlay playsInline muted
         className={`w-full h-full object-contain transition-opacity duration-300 ${isConnected ? 'opacity-100' : 'opacity-0'}`}
-        style={{
-          minHeight: '200px',
-          filter: nightVision === 'enhanced' ? 'brightness(2.5) contrast(1.4) saturate(0.6)' : 'none',
-        }}
-      />
+        style={{ minHeight: '200px', filter: nightVision === 'enhanced' ? 'brightness(2.5) contrast(1.4) saturate(0.6)' : 'none' }} />
 
-      {nightVision === 'ir' && (
-        <canvas
-          ref={overlayCanvasRef}
-          className="absolute inset-0 w-full h-full"
-          style={{ objectFit: 'contain' }}
-        />
-      )}
+      {nightVision === 'ir' && <canvas ref={overlayCanvasRef} className="absolute inset-0 w-full h-full" style={{ objectFit: 'contain', pointerEvents: 'none' }} />}
 
       {!isConnected && overlay && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-          <overlay.Icon
-            size={40}
-            className={`text-slate-500 ${overlay.spin ? 'animate-spin' : ''}`}
-          />
+          <overlay.Icon size={40} className={`text-slate-500 ${overlay.spin ? 'animate-spin' : ''}`} />
           <p className="text-slate-400 text-sm">{overlay.text}</p>
         </div>
       )}
 
       {isRecording && (
-        <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-red-500/90 backdrop-blur-sm px-2 py-1 rounded-md">
-          <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-          <span className="text-xs font-bold text-white tracking-wide">
-            REC{recordingDuration > 0 ? ` ${recordingDuration}s` : ''}
-          </span>
+        <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-red-500/90 backdrop-blur-sm px-2.5 py-1 rounded-full">
+          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse-slow" />
+          <span className="text-[10px] font-bold text-white tracking-wide">REC{recordingDuration > 0 ? ` ${recordingDuration}s` : ''}</span>
         </div>
       )}
     </div>
