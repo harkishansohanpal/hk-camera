@@ -60,8 +60,14 @@ try {
   const feTotal = parseTestCount(feOut);
   const beTotal = parseTestCount(beOut);
 
+  process.stdout.write('::notice::feTotal=' + feTotal + ' beTotal=' + beTotal + '\n');
+
   if (!feTotal || !beTotal) {
-    console.error('Could not parse test counts');
+    const feLines = feOut.split('\n').filter(l => l.includes('Tests'));
+    const beLines = beOut.split('\n').filter(l => l.includes('Tests'));
+    process.stdout.write('::error::fe lines with Tests: ' + JSON.stringify(feLines) + '\n');
+    process.stdout.write('::error::be lines with Tests: ' + JSON.stringify(beLines) + '\n');
+    process.stdout.write('::error::Could not parse test counts. feOut length=' + feOut.length + ' beOut length=' + beOut.length + '\n');
     process.exit(1);
   }
 
