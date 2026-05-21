@@ -85,7 +85,7 @@ describe('Regression – Authentication', () => {
 
     const res = await request(app)
       .post('/api/auth/register')
-      .send({ email: mockUser.email, password: 'StrongPass1!', name: mockUser.name, consent: true });
+      .send({ email: mockUser.email, password: 'StrongPass1!', name: mockUser.name, consent: true, turnstileToken: 'test-token' });
 
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
@@ -99,7 +99,7 @@ describe('Regression – Authentication', () => {
 
     const res = await request(app)
       .post('/api/auth/register')
-      .send({ email: mockUser.email, password: 'StrongPass1!', name: mockUser.name, consent: true });
+      .send({ email: mockUser.email, password: 'StrongPass1!', name: mockUser.name, consent: true, turnstileToken: 'test-token' });
 
     expect(res.status).toBe(409);
     expect(res.body.success).toBe(false);

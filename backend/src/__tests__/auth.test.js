@@ -39,8 +39,7 @@ describe('POST /api/auth/register', () => {
 
     const res = await request(app)
       .post('/api/auth/register')
-      .send({ email: mockUser.email, password: 'password123', name: mockUser.name, consent: true });
-
+      .send({ email: mockUser.email, password: 'password123', name: mockUser.name, consent: true, turnstileToken: 'test-token' });
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.data.user.email).toBe(mockUser.email);
@@ -53,7 +52,7 @@ describe('POST /api/auth/register', () => {
 
     const res = await request(app)
       .post('/api/auth/register')
-      .send({ email: mockUser.email, password: 'password123', name: mockUser.name, consent: true });
+      .send({ email: mockUser.email, password: 'password123', name: mockUser.name, consent: true, turnstileToken: 'test-token' });
 
     expect(res.status).toBe(409);
     expect(res.body.success).toBe(false);

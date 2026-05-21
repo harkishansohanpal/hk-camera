@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Camera } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import TurnstileWidget from '../components/TurnstileWidget';
 import toast from 'react-hot-toast';
 
 export default function Register() {
@@ -10,6 +11,7 @@ export default function Register() {
   const [form, setForm]       = useState({ name: '', email: '', password: '' });
   const [consent, setConsent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState(null);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -21,9 +23,13 @@ export default function Register() {
       toast.error('You must accept the Privacy Policy');
       return;
     }
+    if (!turnstileToken) {
+      toast.error('Please complete the verification');
+      return;
+    }
     setLoading(true);
     try {
-      await register({ ...form, consent });
+      await register({ ...form, consent, turnstileToken });
       navigate('/dashboard');
       toast.success('Welcome to HK Camera!');
     } catch (err) {
@@ -68,6 +74,7 @@ export default function Register() {
                 <Link to="/terms" className="text-ap-blue hover:text-blue-700 font-semibold underline">Terms of Service</Link>
               </span>
             </label>
+            <TurnstileWidget onToken={setTurnstileToken} onExpire={() => setTurnstileToken(null)} />
             <button type="submit" className="btn-primary w-full mt-1" disabled={loading}>
               {loading ? 'Creating account\u2026' : 'Create account'}
             </button>

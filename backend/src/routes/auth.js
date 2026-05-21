@@ -3,6 +3,7 @@ const { body } = require('express-validator');
 const { register, login, refresh, logout, me } = require('../controllers/authController');
 const { authenticate } = require('../middleware/auth');
 const validate = require('../middleware/validate');
+const { verifyTurnstile } = require('../middleware/turnstile');
 const { authLimiter } = require('../middleware/rateLimiter');
 
 const router = Router();
@@ -15,8 +16,14 @@ router.post(
     body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
     body('name').trim().notEmpty().withMessage('Name is required'),
     body('consent').isBoolean().custom((v) => v === true).withMessage('You must accept the Privacy Policy'),
+    body('turnstileToken').notEmpty().withMessage('Verification required'),
   ],
   validate,
+  async (req, res, next) => {
+    const valid = await verifyTurnstile(req.body.turnstileToken, req.ip);
+    if (!valid) return res.status(422).json({ success: false, message: 'Verification failed, please try again' });
+    next();
+  },
   register
 );
 

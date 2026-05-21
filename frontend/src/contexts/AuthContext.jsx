@@ -23,8 +23,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   // ── Register ──────────────────────────────────────────────
-  const register = useCallback(async ({ email, password, name, consent }) => {
-    const { data } = await authAPI.register({ email, password, name, consent });
+  const register = useCallback(async ({ email, password, name, consent, turnstileToken }) => {
+    const { data } = await authAPI.register({ email, password, name, consent, turnstileToken });
     localStorage.setItem('accessToken',  data.data.accessToken);
     localStorage.setItem('refreshToken', data.data.refreshToken);
     setUser(data.data.user);
