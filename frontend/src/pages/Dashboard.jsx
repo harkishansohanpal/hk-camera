@@ -72,20 +72,20 @@ export default function Dashboard() {
     <div className="page-container animate-fade-in">
 
       {/* Header */}
-      <div className="page-header flex items-center justify-between">
-        <div>
-          <h1 className="page-title" data-tour="tour-welcome">Dashboard</h1>
+      <div className="page-header flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="page-title truncate" data-tour="tour-welcome">Dashboard</h1>
           <p className="page-subtitle mt-0.5">{cameras.length} camera{cameras.length !== 1 ? 's' : ''}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {tour.dismissed && (
             <button onClick={() => { tour.reset(); tour.start(); }}
-              className="flex items-center gap-1.5 px-3 py-2 bg-card border border-ap-separator text-text-secondary hover:text-text-primary rounded-xl text-xs font-semibold transition-colors">
-              <HelpCircle size={12} /> Tour
+              className="flex items-center justify-center gap-1.5 px-2 sm:px-3 py-2 bg-card border border-ap-separator text-text-secondary hover:text-text-primary rounded-xl text-xs font-semibold transition-colors">
+              <HelpCircle size={14} /><span className="hidden sm:inline">Tour</span>
             </button>
           )}
-          <button onClick={() => setShowAdd(true)} data-tour="tour-add-camera" className="btn-primary text-sm px-5">
-            <Plus size={16} /> Add Camera
+          <button onClick={() => setShowAdd(true)} data-tour="tour-add-camera" className="btn-primary text-sm px-3 sm:px-5 whitespace-nowrap">
+            <Plus size={16} /> <span className="hidden sm:inline">Add </span>Camera
           </button>
         </div>
       </div>

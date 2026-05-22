@@ -49,12 +49,12 @@ export default function Alerts() {
 
   return (
     <div className="page-container max-w-3xl animate-fade-in">
-      <div className="page-header flex items-center justify-between">
-        <div>
-          <h1 className="page-title">Alerts</h1>
+      <div className="page-header flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="page-title truncate">Alerts</h1>
           {unread > 0 && <p className="page-subtitle mt-0.5">{unread} unread</p>}
         </div>
-        {unread > 0 && <button onClick={handleMarkAllRead} className="btn-ghost text-sm"><CheckCheck size={14} /> Mark all read</button>}
+        {unread > 0 && <button onClick={handleMarkAllRead} className="btn-ghost text-sm flex-shrink-0"><CheckCheck size={14} /> Mark all read</button>}
       </div>
 
       {loading ? (
