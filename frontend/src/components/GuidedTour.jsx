@@ -17,7 +17,12 @@ const DEFAULT_STEPS = [
 
 function getTargetEl(step) {
   if (step.position === 'center') return null;
-  return document.querySelector(`[data-tour="${step.target}"]`);
+  const els = document.querySelectorAll(`[data-tour="${step.target}"]`);
+  for (const el of els) {
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) return el;
+  }
+  return els[0] || null;
 }
 
 export function useTour() {
