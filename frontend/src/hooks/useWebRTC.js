@@ -71,9 +71,8 @@ async function optimizeCodecs(pc) {
     // Set higher bitrate limits for better quality
     params.encodings[0] = {
       ...params.encodings[0],
-      maxBitrate: 5000000, // 5 Mbps for quality
+      maxBitrate: 2000000,
       maxFramerate: 30,
-      scaleResolutionDownBy: 1, // Keep full resolution
     };
 
     if (videoSender.setParameters) {
@@ -389,6 +388,18 @@ export function useWebRTC({ role, streamKey, onCommand }) {
         if (s === 'failed') {
           setStatus('error');
           offerInFlightRef.current = false;
+        }
+      };
+
+      // ICE restart on transient failures — faster than full teardown
+      let iceRestartCount = 0;
+      pc.oniceconnectionstatechange = () => {
+        if (!isActive) return;
+        const iceState = pc.iceConnectionState;
+        if ((iceState === 'disconnected' || iceState === 'failed') && iceRestartCount < 3) {
+          iceRestartCount++;
+          logger.info('WebRTC', 'ICE degraded, restarting', { iceState, attempt: iceRestartCount });
+          pc.restartIce();
         }
       };
 

@@ -87,6 +87,7 @@ export default function Viewer() {
     return () => { clearInterval(tick); clearTimeout(timer); };
   }, [status, handleRetry]);
 
+  useEffect(() => { if (status === 'connected') { retryCountRef.current = 0; setRetryCountdown(null); } }, [status]);
   useEffect(() => { if (status !== 'connecting') return; const t = setTimeout(() => handleRetry(), CONNECT_TIMEOUT_MS); return () => clearTimeout(t); }, [status, handleRetry]);
   useEffect(() => { if (status !== 'waiting') return; const interval = setInterval(() => rejoinViewer(), 8000); return () => clearInterval(interval); }, [status, rejoinViewer]);
 
