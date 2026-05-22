@@ -20,7 +20,6 @@ export default function ViewerStream({ remoteStream, status, className = '', vid
     const video = videoRef.current;
     if (!video || !remoteStream) return;
     video.srcObject = remoteStream;
-    video.muted = true;
     function tryPlay() { video.play().catch((err) => { if (err.name === 'NotAllowedError') setTimeout(tryPlay, 300); }); }
     tryPlay();
     video.addEventListener('loadedmetadata', tryPlay, { once: true });
@@ -47,7 +46,7 @@ export default function ViewerStream({ remoteStream, status, className = '', vid
 
   return (
     <div className={`relative overflow-hidden bg-black ${className}`}>
-      <video ref={videoRef} autoPlay playsInline muted
+      <video ref={videoRef} autoPlay playsInline
         className={`w-full h-full object-contain transition-opacity duration-300 ${isConnected ? 'opacity-100' : 'opacity-0'}`}
         style={{ minHeight: '200px', filter: nightVision === 'enhanced' ? 'brightness(2.5) contrast(1.4) saturate(0.6)' : 'none' }} />
       {nightVision === 'ir' && <canvas ref={overlayCanvasRef} className="absolute inset-0 w-full h-full" style={{ pointerEvents: 'none', objectFit: 'contain' }} />}

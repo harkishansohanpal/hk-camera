@@ -11,7 +11,7 @@
  *   3. Viewer sends  `viewer:offer`    → forwarded to camera
  *   4. Camera sends  `camera:answer`   → forwarded to viewer
  *   5. Both sides exchange `ice:candidate` as needed
- *   6. Two-way audio uses the same peer connection
+ *   6. Two-way audio renegotiation uses the same viewer:offer / camera:answer flow
  */
 
 const jwt = require('jsonwebtoken');
@@ -110,10 +110,6 @@ function initSignalingServer(socketIO) {
         io.to(viewerSocketId).emit('ice:candidate', { candidate, from: 'camera' });
       });
 
-      // ── Two-way audio: forward audio offer back to camera ──
-      socket.on('audio:speak', ({ viewerSocketId, data }) => {
-        io.to(viewerSocketId).emit('audio:speak', { data });
-      });
     }
 
     // ── Viewer joins ──────────────────────────────────────────

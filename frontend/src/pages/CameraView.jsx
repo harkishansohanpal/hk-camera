@@ -122,7 +122,7 @@ export default function CameraView() {
     }
   }
 
-  const { startBroadcast, stopBroadcast, status: rtcStatus } = useWebRTC({ role: 'camera', streamKey: camera?.streamKey, onCommand: handleRemoteCommand });
+  const { startBroadcast, stopBroadcast, setMicEnabled, status: rtcStatus } = useWebRTC({ role: 'camera', streamKey: camera?.streamKey, onCommand: handleRemoteCommand });
   const isBroadcasting = rtcStatus === 'connected' || rtcStatus === 'connecting';
   const { startRecording, stopRecording, isRecording, duration } = useMediaRecorder({ cameraId, trigger: 'MANUAL' });
   const startRecordingRef = useRef(startRecording);
@@ -192,7 +192,7 @@ export default function CameraView() {
 
   useEffect(() => { if (!isBroadcasting) return; const iv = setInterval(() => cameraAPI.heartbeat(cameraId).catch(() => {}), 30_000); return () => clearInterval(iv); }, [isBroadcasting, cameraId]);
 
-  async function getLocalStream() { return navigator.mediaDevices.getUserMedia({ video: { facingMode, width: { ideal: 1920, min: 1280 }, height: { ideal: 1080, min: 720 } }, audio: micOn }); }
+  async function getLocalStream() { return navigator.mediaDevices.getUserMedia({ video: { facingMode, width: { ideal: 1920, min: 1280 }, height: { ideal: 1080, min: 720 } }, audio: true }); }
 
   async function handleToggle() {
     if (isBroadcasting) {
@@ -213,7 +213,7 @@ export default function CameraView() {
     setFacingMode(next);
     if (isBroadcasting) {
       streamRef.current?.getTracks().forEach((t) => t.stop());
-      const newStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: next, width: { ideal: 1920, min: 1280 }, height: { ideal: 1080, min: 720 } }, audio: micOn });
+      const newStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: next, width: { ideal: 1920, min: 1280 }, height: { ideal: 1080, min: 720 } }, audio: true });
       setStream(newStream); await startBroadcast(newStream);
     }
   }
@@ -244,9 +244,9 @@ export default function CameraView() {
 
       <CameraStream ref={videoRef} stream={stream} isBroadcasting={isBroadcasting} onToggle={handleToggle}
         onFlip={flipCamera} micOn={micOn} onMicToggle={() => {
-          if (micOn) { setMicOn(false); return; }
+          if (micOn) { setMicOn(false); setMicEnabled(false); return; }
           if (!audioConsentedRef.current) { setAudioConsentWarn(true); return; }
-          setMicOn(true);
+          setMicOn(true); setMicEnabled(true);
         }}
         isRecording={isRecording} onRecordToggle={handleRecordToggle}
         className="aspect-video w-full rounded-2xl overflow-hidden shadow-apple" />

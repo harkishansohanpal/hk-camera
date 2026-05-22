@@ -102,6 +102,10 @@ export function useWebRTC({ role, streamKey, onCommand }) {
   const connectStartRef   = useRef(0);          // timestamp when connectViewer started
   useEffect(() => { onCommandRef.current = onCommand; }, [onCommand]);
 
+  // ── Two-way audio: viewer talk state ──
+  const [isTalking, setIsTalking] = useState(false);
+  const viewerMicStreamRef = useRef(null);
+
   // ── Partial cleanup (close peer connection but keep socket) ────
   const closePeerConnection = useCallback(() => {
     if (pcRef.current) {
@@ -111,6 +115,12 @@ export function useWebRTC({ role, streamKey, onCommand }) {
     offerInFlightRef.current = false;
     pendingCandidates.current = [];
     setRemoteStream(null);
+    // Clean up viewer mic if talking
+    if (viewerMicStreamRef.current) {
+      viewerMicStreamRef.current.getTracks().forEach((t) => t.stop());
+      viewerMicStreamRef.current = null;
+    }
+    setIsTalking(false);
   }, []);
 
   // ── Full cleanup (disconnect socket and peer connection) ────
@@ -129,6 +139,14 @@ export function useWebRTC({ role, streamKey, onCommand }) {
 
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     localStreamRef.current = null;
+
+    // Clean up viewer mic for talk
+    if (viewerMicStreamRef.current) {
+      viewerMicStreamRef.current.getTracks().forEach((t) => t.stop());
+      viewerMicStreamRef.current = null;
+    }
+    setIsTalking(false);
+
     setStatus('disconnected');
   }, [closePeerConnection]);
 
@@ -142,6 +160,20 @@ export function useWebRTC({ role, streamKey, onCommand }) {
     pc.onicecandidate = (e) => { if (e.candidate) onIceCandidate(e.candidate); };
     return pc;
   }
+
+  // ── Camera: dynamically enable/disable mic on all viewer connections ──
+  const setMicEnabled = useCallback((enabled) => {
+    const stream = localStreamRef.current;
+    if (!stream) return;
+    const audioTrack = stream.getAudioTracks()[0];
+    if (!audioTrack) return;
+    viewerPCsRef.current.forEach(({ pc }) => {
+      const audioSender = pc.getSenders().find((s) => s.track?.kind === 'audio');
+      if (audioSender) {
+        audioSender.replaceTrack(enabled ? audioTrack : null).catch(() => {});
+      }
+    });
+  }, []);
 
   // ──────────────────────────────────────────────────────────
   //  VIEWER side
@@ -323,6 +355,23 @@ export function useWebRTC({ role, streamKey, onCommand }) {
       pc.addTransceiver('video', { direction: 'recvonly' });
       pc.addTransceiver('audio', { direction: 'recvonly' });
 
+      // Handle renegotiation for two-way audio (viewer talks)
+      pc.onnegotiationneeded = async () => {
+        if (offerInFlightRef.current || !isActive) return;
+        offerInFlightRef.current = true;
+        try {
+          const newOffer = await pc.createOffer();
+          await pc.setLocalDescription(newOffer);
+          if (socket.connected) {
+            socket.emit('viewer:offer', { offer: newOffer });
+          }
+        } catch (err) {
+          logger.error('WebRTC', 'Renegotiation failed', { error: err.message });
+        } finally {
+          offerInFlightRef.current = false;
+        }
+      };
+
       pc.onconnectionstatechange = () => {
         if (!isActive) return;
         const s = pc.connectionState;
@@ -364,6 +413,42 @@ export function useWebRTC({ role, streamKey, onCommand }) {
     }
   }
 
+  // ── Viewer: start sending mic audio to camera ──
+  const startTalk = useCallback(async () => {
+    if (isTalking) return;
+    const pc = pcRef.current;
+    if (!pc) return;
+    try {
+      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const audioTrack = micStream.getAudioTracks()[0];
+      if (!audioTrack) {
+        micStream.getTracks().forEach((t) => t.stop());
+        return;
+      }
+      viewerMicStreamRef.current = micStream;
+      pc.addTrack(audioTrack);
+      setIsTalking(true);
+    } catch (err) {
+      logger.error('WebRTC', 'Failed to start talk', { error: err.message });
+    }
+  }, [isTalking]);
+
+  // ── Viewer: stop sending mic audio ──
+  const stopTalk = useCallback(() => {
+    if (!isTalking) return;
+    const pc = pcRef.current;
+    if (!pc) return;
+    const audioSender = pc.getSenders().find((s) => s.track?.kind === 'audio');
+    if (audioSender) {
+      pc.removeTrack(audioSender);
+    }
+    if (viewerMicStreamRef.current) {
+      viewerMicStreamRef.current.getTracks().forEach((t) => t.stop());
+      viewerMicStreamRef.current = null;
+    }
+    setIsTalking(false);
+  }, [isTalking]);
+
   // ──────────────────────────────────────────────────────────
   //  CAMERA side (broadcaster) — supports multiple viewers
   // ──────────────────────────────────────────────────────────
@@ -393,13 +478,24 @@ export function useWebRTC({ role, streamKey, onCommand }) {
 
     socket.on('viewer:offer', async ({ viewerSocketId, offer }) => {
       try {
-        const iceServers = await fetchIceServers();
-
-        // Close any existing connection for this specific viewer
+        // Renegotiation: viewer added/removed audio track
         if (viewerPCsRef.current.has(viewerSocketId)) {
-          viewerPCsRef.current.get(viewerSocketId).pc.close();
-          viewerPCsRef.current.delete(viewerSocketId);
+          const { pc, pending } = viewerPCsRef.current.get(viewerSocketId);
+          await pc.setRemoteDescription(new RTCSessionDescription(offer));
+          for (const c of pending) {
+            try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch {}
+          }
+          pending.length = 0;
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          if (socket.connected) {
+            socket.emit('camera:answer', { viewerSocketId, answer });
+          }
+          return;
         }
+
+        // New viewer connection
+        const iceServers = await fetchIceServers();
 
         const pending = [];
 
@@ -505,5 +601,9 @@ export function useWebRTC({ role, streamKey, onCommand }) {
     stopBroadcast,
     sendCommand,
     rejoinViewer,
+    setMicEnabled,
+    startTalk,
+    stopTalk,
+    isTalking,
   };
 }

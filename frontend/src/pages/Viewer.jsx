@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Maximize2, RotateCcw, Zap, ZapOff, Moon, BatteryCharging, Eye, EyeOff, Scan, Circle } from 'lucide-react';
+import { ArrowLeft, Maximize2, RotateCcw, Zap, ZapOff, Moon, BatteryCharging, Eye, EyeOff, Scan, Circle, Mic, MicOff } from 'lucide-react';
 import { useWebRTC, prefetchIceServers } from '../hooks/useWebRTC';
 import { useMotionDetection } from '../hooks/useMotionDetection';
 import { useYoloDetection } from '../hooks/useYoloDetection';
@@ -20,7 +20,6 @@ export default function Viewer() {
   const navigate = useNavigate();
   const videoRef = useRef(null);
 
-  const [muted] = useState(true);
   const [showControls, setShowControls] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -43,7 +42,7 @@ export default function Viewer() {
   const isRetryingRef = useRef(false);
   const { acquire: acquireWL, release: releaseWL } = useWakeLock();
 
-  const { remoteStream, status, cameraId, connectViewer, disconnectViewer, sendCommand, rejoinViewer } = useWebRTC({ role: 'viewer', streamKey });
+  const { remoteStream, status, cameraId, connectViewer, disconnectViewer, sendCommand, rejoinViewer, startTalk, stopTalk, isTalking } = useWebRTC({ role: 'viewer', streamKey });
 
   const { startRecording, stopRecording, isRecording: recorderIsRecording, duration } = useMediaRecorder({
     cameraId, trigger: 'MOTION',
@@ -105,7 +104,6 @@ export default function Viewer() {
   useEffect(() => { setIsRecording(recorderIsRecording); setRecordingDuration(duration); }, [recorderIsRecording, duration]);
   useEffect(() => { if (status !== 'connected') return; const t = setTimeout(() => setShowControls(false), 3000); return () => clearTimeout(t); }, [status]);
 
-  useEffect(() => { const video = videoRef.current; if (!video) return; video.muted = muted; if (!muted && video.paused) video.play().catch(() => {}); }, [muted]);
   useEffect(() => { if (status === 'connected') acquireWL(); else releaseWL(); }, [status, acquireWL, releaseWL]);
   useEffect(() => { if (status !== 'connected') return; const interval = setInterval(() => api.get('/health').catch(() => {}), 60000); return () => clearInterval(interval); }, [status]);
   useEffect(() => { logger.info('Viewer', 'Status transition', { status }); }, [status]);
@@ -212,6 +210,10 @@ export default function Viewer() {
               <button onClick={() => setNightVisionMode((m) => m === 'off' ? 'enhanced' : m === 'enhanced' ? 'ir' : 'off')}
                 className={`flex flex-col items-center justify-center gap-0.5 w-11 h-11 rounded-xl transition-colors ${nightVisionMode !== 'off' ? 'text-ap-green bg-ap-green/10' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
                 <Eye size={16} /><span className="text-[9px] font-semibold">Night</span>
+              </button>
+              <button onClick={() => { isTalking ? stopTalk() : startTalk(); }}
+                className={`flex flex-col items-center justify-center gap-0.5 w-11 h-11 rounded-xl transition-colors ${isTalking ? 'text-ap-green bg-ap-green/10' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
+                {isTalking ? <Mic size={16} /> : <MicOff size={16} />}<span className="text-[9px] font-semibold">Talk</span>
               </button>
               <ControlsPanel capabilities={{}} settings={cameraControlSettings} onControlChange={handleCameraControlChange} onReset={handleCameraControlReset} />
             </div>
