@@ -2,13 +2,13 @@
 
 ## Overview
 
-**112 tests** across four layers: frontend unit (Vitest), backend integration (Jest + Supertest), E2E (Playwright), plus dedicated smoke and regression suites.
+**87 tests** across four layers: frontend unit (Vitest), backend integration (Jest + Supertest), E2E (Playwright), plus dedicated smoke and regression suites.
 
 ---
 
 ## Test Suites
 
-### Frontend Unit Tests (39)
+### Frontend Unit Tests (15)
 
 | File | Tests | What it covers |
 |------|-------|----------------|
@@ -59,14 +59,13 @@ Comprehensive API tests covering all endpoints with various scenarios and edge c
 cd backend && npm run test:regression
 ```
 
-### Backend Integration Tests (57)
+### Backend Integration Tests (56)
 
 | File | Tests | What it covers |
 |------|-------|----------------|
 | `src/__tests__/auth.test.js` | 13 | Register (success, conflict, invalid), login (valid, wrong password, missing user), refresh (rotation, expired, empty body), me (authenticated, no token, expired, user gone), logout |
 | `src/__tests__/cameras.test.js` | 12 | List (auth + unauth), create (success, missing name), get (found, 404, 403 other owner), update, delete, stream-key, rotate stream-key, heartbeat |
 | `src/__tests__/turn.test.js` | 3 | STUN-only fallback, Coturn credentials, unauth rejection |
-| `src/__tests__/health.test.js` | 1 | Uptime + timestamp |
 | `src/__tests__/regression.test.js` | 30 | Health & system (2), authentication (14), camera CRUD (9), TURN credentials (2), subscription plans (3) |
 
 All external services (PostgreSQL, Redis, Stripe, S3, Socket.IO) are mocked. Tests run in `--runInBand` mode to avoid port conflicts.
@@ -99,8 +98,8 @@ cd frontend && npm run test:regression   # regression tests only
 
 Every push runs the full test suite via `.github/workflows/ci.yml`:
 
-1. **Frontend job** — lint (`eslint-plugin-security` rules), `npm audit` (fails on high severity), Vitest unit tests (39), Vite build
-2. **Backend job** — `npm audit` (fails on high severity), Prisma generate, Jest integration + regression tests (57)
+1. **Frontend job** — lint (`eslint-plugin-security` rules), `npm audit` (fails on high severity), Vitest unit tests (15), Vite build
+2. **Backend job** — `npm audit` (fails on high severity), Prisma generate, Jest integration + regression tests (56)
 3. **E2E job** — build, preview server, Playwright E2E (16) + regression (20)
 4. **Smoke job** — build, preview server, smoke tests (4)
 5. **Security job** — HTTP security headers scan (CSP, XFO, HSTS, XCTO)

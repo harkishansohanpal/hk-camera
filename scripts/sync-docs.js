@@ -28,10 +28,12 @@ function parseTestCount(output) {
 
 function updateTestTable(content, suite, count) {
   const re = new RegExp(
-    `(\\|\\s*${suite.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}\\s*\\|\\s*\\w+\\s*\\|\\s*)(\\d+)(\\s*\\|)`,
+    `(\\|\\s*${suite.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}\\s*\\|)([^|]+)(\\|\\s*)(\\*{0,2})(\\d+)(\\*{0,2})(\\s*\\|)`,
     'i'
   );
-  return content.replace(re, (match, prefix, _old, suffix) => `${prefix}${count}${suffix}`);
+  return content.replace(re, (match, prefix, _mid, sep, _boldL, _old, _boldR, suffix) =>
+    `${prefix}${_mid}${sep}${_boldL}${count}${_boldR}${suffix}`
+  );
 }
 
 try {
@@ -63,12 +65,20 @@ try {
     process.exit(1);
   }
 
-  const total = feTotal + beTotal;
   let changed = false;
+
+  function extractRowCount(content, rowLabel) {
+    const escaped = rowLabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`\\|\\s*${escaped}\\s*\\|[^|]*\\|\\s*\\*{0,2}(\\d+)\\*{0,2}\\s*\\|`, 'i');
+    const m = content.match(re);
+    return m ? parseInt(m[1], 10) : 0;
+  }
 
   for (const [name, filepath] of Object.entries(files)) {
     let content = fs.readFileSync(filepath, 'utf-8');
     const original = content;
+    const e2eTotal = extractRowCount(content, 'E2E');
+    const total = feTotal + beTotal + e2eTotal;
 
     content = updateTestTable(content, 'Unit tests', feTotal);
     content = updateTestTable(content, 'Integration', beTotal);

@@ -76,10 +76,10 @@ Open http://localhost:5173 and log in. The seed script prints credentials to the
 
 | Suite | Framework | Count | Location |
 |-------|-----------|-------|----------|
-| Unit tests | Vitest | 39 | `frontend/src/**/*.test.js` |
-| Integration | Jest + Supertest | 57 | `backend/src/__tests__/` |
+| Unit tests | Vitest | 15 | `frontend/src/**/*.test.js` |
+| Integration | Jest + Supertest | 56 | `backend/src/__tests__/` |
 | E2E | Playwright | 16 | `frontend/e2e/` |
-| **Total** | | **112** | |
+| **Total** | | **87** | |
 
 Run tests:
 
