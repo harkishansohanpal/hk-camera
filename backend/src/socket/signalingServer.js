@@ -81,7 +81,7 @@ function initSignalingServer(socketIO) {
 
       // Update DB online status
       prisma.camera.update({ where: { id: socket.cameraId }, data: { isOnline: true, lastSeen: new Date() } })
-        .catch(() => {});
+        .catch((err) => logger.warn('Failed to persist camera online status', { cameraId: socket.cameraId, error: err.message }));
 
       // Notify any waiting viewers
       io.to(`camera:${key}`).emit('camera:online', { cameraId: socket.cameraId });
@@ -92,7 +92,7 @@ function initSignalingServer(socketIO) {
         // Only delete if this socket is still the registered camera (handles stale reconnect races)
         if (cameras.get(key) === socket.id) {
           cameras.delete(key);
-          prisma.camera.update({ where: { id: socket.cameraId }, data: { isOnline: false } }).catch(() => {});
+          prisma.camera.update({ where: { id: socket.cameraId }, data: { isOnline: false } }).catch((err) => logger.warn('Failed to persist camera offline status', { cameraId: socket.cameraId, error: err.message }));
           io.to(`camera:${key}`).emit('camera:offline', { cameraId: socket.cameraId });
           io.to(`user:${socket.userId}`).emit('camera:offline', { cameraId: socket.cameraId });
           logger.info('Signaling', 'Camera disconnected', { cameraId: socket.cameraId, streamKey: key });
@@ -217,17 +217,8 @@ function initSignalingServer(socketIO) {
   logger.info('✅ WebRTC signaling server initialised');
 }
 
-function getIO() {
-  if (!io) throw new Error('Socket.IO not initialised');
-  return io;
-}
-
 function isCameraOnline(streamKey) {
   return cameras.has(streamKey);
 }
 
-function hasCameraViewers(streamKey) {
-  return viewers.get(streamKey)?.size > 0 ?? false;
-}
-
-module.exports = { initSignalingServer, getIO, isCameraOnline, hasCameraViewers };
+module.exports = { initSignalingServer, isCameraOnline };

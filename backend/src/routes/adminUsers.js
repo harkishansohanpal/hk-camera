@@ -1,4 +1,5 @@
 const { Router } = require('express');
+const fs = require('fs');
 const { prisma } = require('../config/database');
 const logger = require('../config/logger');
 
@@ -190,7 +191,6 @@ router.delete('/recordings/:id', async (req, res, next) => {
     const recording = await prisma.recording.findUnique({ where: { id: req.params.id } });
     if (!recording) return res.status(404).json({ success: false, message: 'Recording not found' });
 
-    const fs = require('fs');
     try { fs.unlinkSync(recording.url); } catch { /* file may not exist */ }
 
     await prisma.recording.delete({ where: { id: req.params.id } });

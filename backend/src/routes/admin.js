@@ -1,4 +1,5 @@
 const express = require('express');
+const https = require('https');
 const { prisma } = require('../config/database');
 const logger = require('../config/logger');
 
@@ -157,7 +158,6 @@ async function callAI(prompt) {
     temperature: 0.3,
   });
 
-  const https = require('https');
   return new Promise((resolve, reject) => {
     const url = new URL(`${baseUrl}/chat/completions`);
     const options = {

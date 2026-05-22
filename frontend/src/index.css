@@ -120,14 +120,6 @@
     background-color: var(--color-card);
     box-shadow: var(--shadow-sm);
   }
-  .card-highlighted {
-    @apply card;
-    box-shadow: var(--shadow-sm);
-  }
-  .card-highlighted:hover {
-    box-shadow: var(--shadow-md);
-  }
-
   .card-grouped {
     @apply rounded-2xl overflow-hidden;
     background-color: var(--color-card);

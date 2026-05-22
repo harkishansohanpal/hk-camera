@@ -105,15 +105,9 @@ jest.mock('../config/redis', () => ({
   connectRedis: jest.fn().mockResolvedValue(),
 }));
 
-const mockIO = {
-  to: jest.fn().mockReturnThis(),
-  emit: jest.fn(),
-};
 jest.mock('../socket/signalingServer', () => ({
   initSignalingServer: jest.fn(),
-  getIO: jest.fn(() => mockIO),
   isCameraOnline: jest.fn(() => false),
-  hasCameraViewers: jest.fn(() => false),
 }));
 
 jest.mock('bcryptjs', () => ({

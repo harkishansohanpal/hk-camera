@@ -1,8 +1,6 @@
 import { useState, useCallback, useRef, useLayoutEffect } from 'react';
 import { ChevronRight, ChevronLeft, SkipForward } from 'lucide-react';
 
-const DISMISSED_KEY = 'hk-camera-tour-dismissed';
-
 const DEFAULT_STEPS = [
   { target: 'tour-welcome', title: 'Welcome to HK Camera', content: 'Let\'s take a 60-second tour to get you started. You can skip at any time.', position: 'center' },
   { target: 'tour-stats', title: 'At a Glance', content: 'See your total cameras, how many are online, and your recent alert count \u2014 all in one row.', position: 'bottom' },
@@ -23,16 +21,6 @@ function getTargetEl(step) {
     if (rect.width > 0 && rect.height > 0) return el;
   }
   return els[0] || null;
-}
-
-export function useTour() {
-  const [active, setActive] = useState(false);
-  const [dismissed, setDismissed] = useState(() => localStorage.getItem(DISMISSED_KEY) === 'true');
-  const start = useCallback(() => setActive(true), []);
-  const finish = useCallback(() => setActive(false), []);
-  const dismissForever = useCallback(() => { setDismissed(true); localStorage.setItem(DISMISSED_KEY, 'true'); }, []);
-  const reset = useCallback(() => { localStorage.removeItem(DISMISSED_KEY); setDismissed(false); }, []);
-  return { active, dismissed, start, finish, reset, dismissForever };
 }
 
 export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss }) {

@@ -43,7 +43,7 @@ export default function Viewer() {
   const isRetryingRef = useRef(false);
   const { acquire: acquireWL, release: releaseWL } = useWakeLock();
 
-  const { remoteStream, status, cameraId, connectViewer, disconnectViewer, sendCommand, rejoinViewer, connectionMetrics } = useWebRTC({ role: 'viewer', streamKey });
+  const { remoteStream, status, cameraId, connectViewer, disconnectViewer, sendCommand, rejoinViewer } = useWebRTC({ role: 'viewer', streamKey });
 
   const { startRecording, stopRecording, isRecording: recorderIsRecording, duration } = useMediaRecorder({
     cameraId, trigger: 'MOTION',
@@ -108,7 +108,7 @@ export default function Viewer() {
   useEffect(() => { const video = videoRef.current; if (!video) return; video.muted = muted; if (!muted && video.paused) video.play().catch(() => {}); }, [muted]);
   useEffect(() => { if (status === 'connected') acquireWL(); else releaseWL(); }, [status, acquireWL, releaseWL]);
   useEffect(() => { if (status !== 'connected') return; const interval = setInterval(() => api.get('/health').catch(() => {}), 60000); return () => clearInterval(interval); }, [status]);
-  useEffect(() => { logger.info('Viewer', 'Status transition', { status, rtt: connectionMetrics?.rtt }); }, [status]);
+  useEffect(() => { logger.info('Viewer', 'Status transition', { status }); }, [status]);
 
   function handleFullscreen() {
     const videoEl = videoRef.current;
@@ -151,7 +151,7 @@ export default function Viewer() {
           <span className={`font-semibold capitalize text-sm ${status === 'connected' ? 'text-ap-green' : status === 'connecting' ? 'text-ap-yellow' : isBad ? 'text-ap-red' : 'text-ap-gray'}`}>
             {status === 'connected' ? 'LIVE' : status}
           </span>
-          {status === 'connected' && connectionMetrics?.rtt != null && <span className="text-[10px] text-white/40 ml-0.5 font-mono">{connectionMetrics.rtt}ms</span>}
+          
         </div>
         <button onClick={handleFullscreen} className="w-11 h-11 flex items-center justify-center text-white/60 hover:text-white rounded-xl transition-colors" title="Fullscreen">
           <Maximize2 size={22} />

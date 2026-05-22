@@ -10,7 +10,6 @@ export const adminAPI = {
   toggleLegalHold:   (userId, enabled) => api.put(`/admin/users/${userId}/legal-hold`, { enabled }),
   exportUser:        (userId)  => api.put(`/admin/users/${userId}/export`),
   deleteRecording:   (id)      => api.delete(`/admin/recordings/${id}`),
-  deleteCamera:      (id)      => api.delete(`/admin/cameras/${id}`),
 };
 
 export default adminAPI;

@@ -88,14 +88,4 @@ async function sendRecordingCompleteAlert(user, camera, recording) {
   });
 }
 
-// ── Camera offline alert ──────────────────────────────────────
-async function sendCameraOfflineAlert(user, camera) {
-  if (!user.emailAlerts) return;
-  await sendEmail({
-    to: user.email,
-    subject: `⚠️ Camera offline – ${escapeHtml(camera.name)}`,
-    html: `<p>Your camera <strong>${escapeHtml(camera.name)}</strong> went offline at ${escapeHtml(new Date().toLocaleString())}.</p>`,
-  });
-}
-
-module.exports = { sendMotionAlert, sendRecordingCompleteAlert, sendCameraOfflineAlert };
+module.exports = { sendMotionAlert, sendRecordingCompleteAlert };

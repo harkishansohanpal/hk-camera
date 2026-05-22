@@ -1,5 +1,6 @@
 const { prisma } = require('../config/database');
 const { isCameraOnline } = require('../socket/signalingServer');
+const { v4: uuidv4 } = require('uuid');
 const logger = require('../config/logger');
 
 // ── GET /api/cameras ──────────────────────────────────────────
@@ -80,7 +81,6 @@ async function getStreamKey(req, res, next) {
 // ── POST /api/cameras/:cameraId/stream-key/rotate ────────────
 async function rotateStreamKey(req, res, next) {
   try {
-    const { v4: uuidv4 } = require('uuid');
     const camera = await prisma.camera.update({
       where: { id: req.params.cameraId },
       data: { streamKey: uuidv4() },

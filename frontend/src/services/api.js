@@ -85,14 +85,11 @@ export const cameraAPI = {
   get:             (id)       => api.get(`/cameras/${id}`),
   update:          (id, data) => api.patch(`/cameras/${id}`, data),
   delete:          (id)       => api.delete(`/cameras/${id}`),
-  getStreamKey:    (id)       => api.get(`/cameras/${id}/stream-key`),
-  rotateStreamKey: (id)       => api.post(`/cameras/${id}/stream-key/rotate`),
   heartbeat:       (id)       => api.post(`/cameras/${id}/heartbeat`),
 };
 
 // ── Recordings ────────────────────────────────────────────────
 export const recordingAPI = {
-  list:   (cameraId, params) => api.get(`/cameras/${cameraId}/recordings`, { params }),
   listAll: (params)          => api.get('/recordings', { params }),
   get:    (id)               => api.get(`/recordings/${id}`),
   delete: (id)               => api.delete(`/recordings/${id}`),

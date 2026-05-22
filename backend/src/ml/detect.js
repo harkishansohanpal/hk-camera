@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 const ort = require('onnxruntime-node');
 
 const MODEL_PATH = path.resolve(__dirname, '..', '..', 'models', 'yolo11m.onnx');
@@ -48,7 +49,6 @@ async function loadModel() {
 }
 
 async function preprocess(buffer) {
-  const sharp = require('sharp');
   const resized = await sharp(buffer)
     .resize(INPUT_SIZE, INPUT_SIZE, { fit: 'fill' })
     .raw()
@@ -139,4 +139,4 @@ async function detect(buffer, { confidenceThreshold = 80, imgWidth, imgHeight } 
   return parseDetections(output, confidenceThreshold, imgWidth, imgHeight);
 }
 
-module.exports = { detect, loadModel };
+module.exports = { detect };
