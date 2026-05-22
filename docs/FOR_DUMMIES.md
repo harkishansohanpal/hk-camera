@@ -1,292 +1,782 @@
-# HK Camera For Dummies
+# Build Your Own HK Camera For Dummies
 
-**By Harkishan "I Break Things" Sohanpal &mdash; and probably you**
+**A totally serious guide to building a real-time camera streaming platform without losing your mind**
 
 ---
 
 ## About This Book
 
-You bought (or built) a camera system. Now what? This book assumes you know how to turn on a phone and&mdash;this is a stretch&mdash;use a web browser. Everything else is gravy.
+You want to build what HK Camera does: turn a phone into a live-streaming security camera, watch it from a browser, detect motion, record clips, all in real-time. This book walks through the entire architecture, the hard-won lessons, and the gotchas that'll make you question your career choices.
+
+**Assumed knowledge:** You know JavaScript, React, Node.js, and have heard of WebRTC. You may or may not have blocked WebRTC from your memory. That's fine. We'll fix that.
 
 ---
 
-## Part I: What Even Is This?
+## Part I: The Big Picture
 
-### Chapter 1: HK Camera in 30 Seconds
+### Chapter 1: What Are We Building?
 
-HK Camera turns an old phone into a security camera. Point it at something. Watch it from somewhere else. That's it.
+```
+┌─────────────────────┐       WebSocket + WebRTC       ┌──────────────────────┐
+│   Camera (Phone)    │ ◄────────────────────────────► │   Viewer (Browser)   │
+│  - Captures video   │                                 │  - Displays video    │
+│  - Sends via WebRTC │                                 │  - Records clips     │
+│  - Detects motion   │                                 │  - Sends commands    │
+│  - Receives commands│                                 │  - Torch / zoom etc  │
+└─────────┬───────────┘                                 └──────────┬───────────┘
+          │                                                        │
+          │              ┌──────────────────────────┐              │
+          └──────────────►   Signaling Server (WS)   ◄──────────────┘
+                         │  - Socket.IO              │
+                         │  - Routes messages         │
+                         │  - Tracks online status    │
+                         │  - Forwards offers/answers │
+                         └────────────┬───────────────┘
+                                      │
+                         ┌────────────▼───────────────┐
+                         │   REST API (Express)        │
+                         │  - CRUD cameras/users       │
+                         │  - Auth (JWT)               │
+                         │  - TURN credentials         │
+                         │  - Admin routes             │
+                         └────────────────────────────┘
+```
 
-**You are here:** Because someone said "we need cameras" and you got voluntold.
+**The core insight:** Video never touches the server. The server just helps the camera and viewer find each other (signaling) and then gets out of the way. The video flows peer-to-peer via WebRTC. This means your server can be a tiny $5 VPS and still support HD streaming.
 
-**What you will need:**
-- A phone that still works (cracked screen: fine. Water damage: less fine.)
-- Wi-Fi (the camera streams video, not vibes)
-- The patience of a minor deity
+### Chapter 2: Tech Stack (Why We Picked What We Picked)
 
-### Chapter 2: The Players
+| Piece | Choice | Why |
+|-------|--------|-----|
+| Backend runtime | Node.js + Express | Everyone knows it. Huge ecosystem. Async I/O is perfect for signaling. |
+| Real-time transport | Socket.IO | WebSocket with fallbacks, rooms, auto-reconnection. Saves thousands of lines of boilerplate. |
+| WebRTC | Native browser APIs | No libraries. The browser APIs are surprisingly good (once you understand them). |
+| Database | PostgreSQL via Prisma ORM | Reliable, migrations are smooth, Prisma gives type safety without TypeScript. |
+| Cache | Redis | For rate limiting, session management, future scalability. |
+| Frontend | React (Vite) | Fast dev server, simple build, good tree-shaking. |
+| Deployment | Cloudflare Pages (frontend) + Fly.io (backend) | Edge CDN + global VMs. Cheap. Easy. |
+| TURN | Cloudflare TURN + Coturn fallback | Cloudflare gives free TURN up to 10 TB. Coturn self-hosted as backup. |
+| Bot protection | Cloudflare Turnstile | Free, no captcha, privacy-friendly. |
+| CI/CD | GitHub Actions | Runs tests, lints, audits, deploys on push to master. |
 
-| Person | What They Do |
-|--------|-------------|
-| **You (The Viewer)** | Sit on a couch, watch the feed, feel like James Bond |
-| **The Camera Phone** | Sits in a corner, gets dusty, judges you |
-| **The Server** | A computer somewhere (maybe in the cloud, maybe in your closet) that passes video between the camera and you |
-| **Harkishan** | Wrote the code. Blame him. |
-
-> **Warning:** If the server goes down, your camera is just a very expensive paperweight. Keep the server alive. Feed it. Water it. Give it a name.
-
----
-
-## Part II: Setting Things Up (Without Crying)
-
-### Chapter 3: Making an Account
-
-1. Go to the website.
-2. Click **Register**.
-3. Type your email. Type a password. **Write the password down.** (Everyone forgets. Everyone.)
-4. Check the box that says you read the Privacy Policy. (You didn't. That's fine. We didn't either.)
-5. Click Register.
-6. Check your email. Click the link. (Or don't, if we forgot to implement email verification. Check GitHub.)
-
-> **Remember:** Your password is like your toothbrush. Don't share it. Change it every few months. Don't use the one from your email.
-
-### Chapter 4: Adding a Camera
-
-1. Log in.
-2. Click **Add Camera**.
-3. Give it a name like "Front Door" or "That Spot The Dog Keeps Digging Up".
-4. Click Create.
-5. A magic string of letters and numbers appears. This is your **Stream Key**. It's like a secret handshake for your camera.
-6. **WRITE THIS DOWN.** You will need it.
-
-> **Technical Stuff:** The stream key is a UUID. It's 32 characters of hexadecimal. It looks like `a1b2c3d4-e5f6-7890-abcd-ef1234567890`. If you lose it, you can rotate it from the settings page. The old one stops working instantly. Use this power wisely.
-
-### Chapter 5: Going Live
-
-1. Open the camera page on your phone.
-2. Point the camera at something interesting. (A plant. A door. Your cat. Your cat judging you.)
-3. Tap **Go Live**.
-4. The button turns red and starts pulsing. This means it's working. (Or it's about to explode. 50/50.)
-
-> **Tip:** If the button stays gray, check:
-> - Is Wi-Fi on? (Yes, we know you checked. Check again.)
-> - Is the camera not being used by another app? (Close TikTok.)
-> - Did you grant camera permissions? (iOS will ask. Say yes.)
+> **Technical Stuff:** You can swap any of these. The architecture is decoupled. PostgreSQL can be SQLite for local dev. Fly.io can be any VPS. The key is the signaling pattern, not the specific tools.
 
 ---
 
-## Part III: Watching
+## Part II: The Signaling Server (The Brain)
 
-### Chapter 6: Viewing Your Camera
+### Chapter 3: What Is Signaling?
 
-1. Open the Dashboard on any device.
-2. Look for the green **Live** badge next to your camera.
-3. If it's green, click **View Live**.
-4. If it's gray, your camera is offline. Go poke it.
+Before two browsers can send video to each other, they need to:
+1. **Find each other** — "Hey, camera X exists and wants to connect"
+2. **Agree on how to talk** — "I support H.264 and VP9. Pick one."
+3. **Exchange network info** — "I'm at 192.168.1.5 and here's my public IP too"
+4. **Actually connect** — ICE does its magic
 
-> **Remember:** Green = good. Gray = go poke it.
+Steps 1-3 are **signaling**. Step 4 is **WebRTC**. The server only participates in 1-3. After that, video flows directly.
 
-### Chapter 7: The Viewer Experience
+**File:** `backend/src/socket/signalingServer.js`
 
-When you click View Live, several things happen in the span of a few seconds:
+### Chapter 4: Authentication — Two Types of Users
 
-1. Your browser nervously asks the server "is the camera there?"
-2. The server says "yeah, hold on"
-3. Your browser and the camera do a little dance called **WebRTC handshake**
-4. If they agree on how to talk (codecs, bitrate, whose turn it is to buy coffee), video appears
+The signaling server supports two auth methods in one middleware:
 
-**Status messages you might see:**
+```js
+// Socket.IO middleware — runs on every connection attempt
+io.use(async (socket, next) => {
+  const { token, streamKey } = socket.handshake.auth;
 
-| Message | Translation |
-|---------|-------------|
-| `connecting` | "I'm trying, geez" |
-| `waiting` | "Camera is asleep. Wake it up." |
-| `connected` | "We have video! Stop panicking." |
-| `disconnected` | "Something broke. Try again." |
-| `error` | "Something really broke. Maybe check the server?" |
+  if (streamKey) {
+    // Camera: authenticate by stream key (a UUID)
+    const camera = await prisma.camera.findUnique({ where: { streamKey } });
+    if (!camera) return next(new Error('Invalid stream key'));
+    socket.cameraId  = camera.id;
+    socket.streamKey = streamKey;
+    socket.role      = 'camera';
+    socket.userId    = camera.user.id;
+  } else if (token) {
+    // Viewer: authenticate by JWT
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    socket.userId = payload.sub;
+    socket.role   = 'viewer';
+  } else {
+    return next(new Error('Authentication required'));
+  }
+  next();
+});
+```
 
-> **Warning:** If you see `disconnected` or `error`, don't panic. Click **Retry Now**. If that doesn't work, refresh the page. If that doesn't work, restart the camera. If that doesn't work, restart the server. If that doesn't work, take a walk and try again later.
+> **Remember:** Cameras use stream keys (no session, no expiry, designed for headless devices). Viewers use JWTs (short-lived, session-based). They're different auth models for different use cases. Don't mix them up.
 
-### Chapter 8: Why Does It Say "Waiting" and Never Change?
+### Chapter 5: The Two Maps That Run Everything
 
-Ah, you've found the classic. Here's the diagnosis tree:
+The entire signaling server runs on two in-memory Maps:
 
-1. **Did the camera stop broadcasting?** Go check the camera page. Is the red "Go Live" button still red? If not, tap it.
-2. **Did the server restart?** Yes, we know. The viewer gets stuck. This is a known issue. We're working on it. (Actually, we just pushed a fix for this exact thing. Update your deployment.)
-3. **Is your Wi-Fi having an existential crisis?** Unplug your router. Count to 10. Plug it back in. This fixes approximately 73% of all problems.
-4. **Did you open the viewer before the camera started?** The viewer joins a room. If the camera isn't there yet, it waits. The camera eventually broadcasts "I'm here!" and the viewer should jump on it. If it doesn't... see point 2.
+```js
+const cameras = new Map(); // streamKey → socket.id
+const viewers = new Map(); // streamKey → Set<socket.id>
+```
+
+**`cameras`** — Maps a stream key to the camera's socket ID. Only one camera per stream key at a time.
+**`viewers`** — Maps a stream key to a Set of viewer socket IDs. Multiple viewers can watch one camera.
+
+> **Warning:** These Maps are in-memory. If the server restarts, they're gone. This means every camera has to reconnect. Existing viewers will lose their connection and need to retry. This is a known limitation. For production, you'd persist this state in Redis.
+
+### Chapter 6: The Camera Connect/Disconnect Dance
+
+**Camera connects:**
+```js
+// signalingServer.js
+cameras.set(key, socket.id);
+socket.join(`camera:${key}`);
+prisma.camera.update({ where: { id: socket.cameraId }, data: { isOnline: true } });
+io.to(`camera:${key}`).emit('camera:online', { cameraId: socket.cameraId });
+```
+
+**Camera disconnects:**
+```js
+socket.on('disconnect', () => {
+  // GUARD: only if this socket is still the registered camera
+  if (cameras.get(key) === socket.id) {
+    cameras.delete(key);
+    prisma.camera.update({ where: { id: socket.cameraId }, data: { isOnline: false } });
+    io.to(`camera:${key}`).emit('camera:offline', { cameraId: socket.cameraId });
+  }
+});
+```
+
+> **Technical Stuff:** The guard `cameras.get(key) === socket.id` is critical. It prevents a race where:
+> 1. Camera disconnects (event queued)
+> 2. Camera reconnects with new socket → `cameras.set(key, newSocketId)`
+> 3. Old disconnect handler runs → guard fails → no spurious `camera:offline`
+>
+> Without this guard, a quick stop/start would broadcast a false offline event, confusing viewers.
+
+### Chapter 7: The Viewer Join Flow
+
+When a viewer wants to watch:
+
+```js
+socket.on('viewer:join', async ({ streamKey }) => {
+  // 1. Look up camera in DB
+  const camera = await prisma.camera.findUnique({ where: { streamKey } });
+  if (!camera) { socket.emit('error', { message: 'Camera not found' }); return; }
+
+  // 2. Verify ownership (or access control)
+  if (camera.userId !== socket.userId) { socket.emit('error', { message: 'Access denied' }); return; }
+
+  // 3. Join the camera room
+  socket.join(`camera:${streamKey}`);
+
+  // 4. Track the viewer
+  viewers.get(streamKey)?.add(socket.id);
+
+  // 5. Tell the viewer if camera is online
+  socket.emit('camera:status', { online: cameras.has(streamKey), cameraId: camera.id });
+
+  // 6. If camera is online, tell the camera a viewer is ready
+  if (cameras.has(streamKey)) {
+    io.to(cameras.get(streamKey)).emit('viewer:joined', { viewerSocketId: socket.id });
+  }
+});
+```
+
+**Key insight:** The `viewer:join` event is idempotent. A viewer can emit it multiple times (e.g., when retrying). The server handles it gracefully — joining an already-joined room is a no-op for Socket.IO.
+
+### Chapter 8: The Offer/Answer Relay
+
+This is the core WebRTC signaling pattern:
+
+```
+Viewer                          Server                        Camera
+  │                               │                              │
+  │── viewer:offer { offer } ────►│                              │
+  │                               │── forward to camera ────────►│
+  │                               │                              │── createAnswer()
+  │                               │◄── camera:answer { answer } ──│
+  │◄── forward to viewer ────────│                              │
+  │                               │                              │
+  │── ice:candidate { cand } ────►│                              │
+  │                               │── forward to camera ────────►│
+  │                               │◄── ice:candidate { cand } ───│
+  │◄── forward to viewer ────────│                              │
+```
+
+**Server-side relay** (signalingServer.js):
+
+```js
+// Viewer sends offer → forward to camera
+socket.on('viewer:offer', ({ offer }) => {
+  const cameraSocketId = cameras.get(socket.streamKey);
+  if (!cameraSocketId) { socket.emit('error', { message: 'Camera offline' }); return; }
+  io.to(cameraSocketId).emit('viewer:offer', { viewerSocketId: socket.id, offer });
+});
+
+// Camera sends answer → forward to viewer
+socket.on('camera:answer', ({ viewerSocketId, answer }) => {
+  io.to(viewerSocketId).emit('camera:answer', { answer });
+});
+
+// ICE candidates flow both ways
+socket.on('ice:candidate', ({ candidate, viewerSocketId }) => {
+  io.to(viewerSocketId).emit('ice:candidate', { candidate, from: 'camera' });
+});
+```
+
+> **Remember:** The server is a dumb pipe for WebRTC messages. It doesn't inspect offers or candidates. It just forwards them. This is by design — the less the server does, the less can break.
 
 ---
 
-## Part IV: Advanced Moves (For People Who Read Manuals)
+## Part III: The Frontend — useWebRTC Hook (The Heart)
 
-### Chapter 9: Two-Way Audio
+### Chapter 9: Why a Shared Hook?
 
-You can talk through the camera. The person on the other end can hear you. This is great for:
-- Telling the delivery person where to leave the package
-- Telling your dog to get off the couch
-- Freaking out your cat
+Both the Camera page and the Viewer page need to:
+- Open a Socket.IO connection
+- Handle WebRTC peer connections
+- Exchange offers/answers/ICE
+- Track connection state
 
-> **Warning:** Some states require both parties to consent to audio recording. That's between you and your lawyer. We just move the bits. See our Terms of Service for the scary legal text.
+Duplicating this logic would be madness. Instead, there's one hook:
 
-### Chapter 10: Motion Detection
+```js
+const { status, remoteStream, startBroadcast, stopBroadcast,
+        connectViewer, disconnectViewer, rejoinViewer, sendCommand }
+  = useWebRTC({ role: 'camera'|'viewer', streamKey, onCommand });
+```
 
-The camera can detect things moving in front of it. It uses one of two methods:
+**File:** `frontend/src/hooks/useWebRTC.js`
 
-**Pixel-Diff Mode:** Compares pixels between frames. Something changed? Motion detected. Simple. Works on everything. Can be fooled by trees, shadows, and your cat walking past.
+### Chapter 10: The Viewer Side
 
-**ML Mode (YOLOv8):** Uses artificial intelligence to detect actual people, animals, and vehicles. Smarter. Doesn't trigger on every leaf blowing in the wind. Requires a modern phone. May take a few seconds to load the model on the first run.
+```js
+const connectViewer = useCallback(async () => {
+  setStatus('connecting');
+  closePeerConnection(); // Clean slate
 
-> **Technical Stuff:** YOLOv8 runs entirely on your phone. No video is sent to the cloud for analysis. We don't see what your camera sees. We couldn't even if we wanted to. (We don't want to. We have enough problems.)
+  const socket = io(SOCKET_URL, {
+    auth: { token: localStorage.getItem('accessToken') },
+    transports: ['websocket'],
+    reconnection: false, // We manage reconnection ourselves
+  });
 
-### Chapter 11: Night Vision
+  let isActive = true;
 
-Three modes:
+  socket.on('connect', () => {
+    socket.emit('viewer:join', { streamKey });
+  });
 
-| Mode | How It Works | Best For |
-|------|-------------|----------|
-| Off | Normal vision in the dark | Nothing. It's dark. |
-| Enhanced | Brightens the existing image | Dimly lit rooms |
-| IR (Android only) | Uses Camera2 API to boost ISO and exposure | Pitch black |
+  socket.on('camera:status', async ({ online, cameraId }) => {
+    if (!isActive) return;
+    if (online) {
+      await initiateOffer(socket, isActive);
+    } else {
+      setStatus('waiting');
+    }
+  });
 
-> **Technical Stuff:** IR mode uses the Camera2 API on Android devices. It cranks the ISO to 1600 and the exposure to 66ms. The result looks like a 90s camcorder. You can almost hear the static.
+  socket.on('camera:online', async () => {
+    if (!isActive) return;
+    closePeerConnection();   // <-- Reset stale state
+    await initiateOffer(socket, isActive);
+  });
+
+  socket.on('camera:offline', () => {
+    if (isActive) {
+      closePeerConnection();
+      setStatus('waiting');
+    }
+  });
+
+  socket.on('camera:answer', async ({ answer }) => {
+    const pc = pcRef.current;
+    if (!pc) return;
+    await pc.setRemoteDescription(new RTCSessionDescription(answer));
+    // Flush buffered ICE candidates
+    for (const c of pendingCandidates.current) {
+      await pc.addIceCandidate(new RTCIceCandidate(c));
+    }
+  });
+
+  return () => { isActive = false; /* cleanup listeners */ };
+}, [streamKey]);
+```
+
+**The `isActive` pattern:** A closure variable that goes `false` when the component unmounts or the socket disconnects. Every handler checks it before acting. This prevents stale closures from modifying state after cleanup.
+
+> **Warning:** The `isActive` flag is one-way. Once `false`, it stays `false`. If the socket disconnects and reconnects, a new `connectViewer` call creates a new socket and a new `isActive`. The old one is dead. Garbage collected. Gone.
+
+### Chapter 11: The Camera Side
+
+```js
+const startBroadcast = useCallback(async (mediaStream) => {
+  setStatus('connecting');
+
+  // Dispose old socket if any
+  socketRef.current?.disconnect();
+
+  const socket = io(SOCKET_URL, {
+    auth: { streamKey },
+    transports: ['websocket'],
+  });
+
+  socket.on('connect', () => setStatus('connected'));
+
+  // Handle multiple viewers — one PC per viewer
+  socket.on('viewer:offer', async ({ viewerSocketId, offer }) => {
+    const iceServers = await fetchIceServers();
+
+    // Close existing connection for this specific viewer (if re-offer)
+    if (viewerPCsRef.current.has(viewerSocketId)) {
+      viewerPCsRef.current.get(viewerSocketId).pc.close();
+    }
+
+    const pc = createPeerConnection(iceServers, (candidate) => {
+      socket.emit('ice:candidate', { viewerSocketId, candidate });
+    });
+
+    mediaStream.getTracks().forEach(track => pc.addTrack(track, mediaStream));
+    await pc.setRemoteDescription(new RTCSessionDescription(offer));
+
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    socket.emit('camera:answer', { viewerSocketId, answer });
+  });
+}, [streamKey]);
+```
+
+> **Technical Stuff:** The camera uses a Map of peer connections (`viewerPCsRef`), one per viewer. This allows multiple viewers to watch simultaneously. Each viewer gets their own WebRTC session. Yes, this means the camera uploads video N times for N viewers. For a phone on cellular, this kills the data plan. On Wi-Fi, it's fine for 2-3 viewers.
+
+### Chapter 12: The initiateOffer Function
+
+This is where things get real:
+
+```js
+async function initiateOffer(socket, isActive) {
+  if (offerInFlightRef.current) return; // Guard against double offers
+  offerInFlightRef.current = true;
+
+  try {
+    // Close old PC
+    pcRef.current?.close();
+
+    // Fetch ICE servers (TURN/STUN) — cached for 24h
+    const iceServers = await fetchIceServers();
+
+    // Create new PC
+    const pc = createPeerConnection(iceServers, (candidate) => {
+      socket.emit('ice:candidate', { candidate });
+    });
+
+    pc.ontrack = (e) => setRemoteStream(e.streams[0]);
+
+    pc.onconnectionstatechange = () => {
+      const s = pc.connectionState;
+      if (s === 'connected')  setStatus('connected');
+      if (s === 'disconnected') setStatus('disconnected');
+      if (s === 'failed')     setStatus('error');
+    };
+
+    pc.addTransceiver('video', { direction: 'recvonly' });
+    pc.addTransceiver('audio', { direction: 'recvonly' });
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    socket.emit('viewer:offer', { offer });
+  } catch (err) {
+    offerInFlightRef.current = false;
+    setStatus('error');
+  }
+}
+```
+
+**The `offerInFlightRef` guard:** Prevents double offers when `camera:status` and `camera:online` arrive at the same time. One sets the flag, the other sees it's set and skips. Without this, you get two parallel offers, two answers, two peer connections — chaos.
+
+> **Remember:** The `offerInFlightRef` kept us up at night. We originally had a bug where it would get stuck `true` if an offer failed mid-way, and then every subsequent `camera:online` would be silently skipped. The fix: always call `closePeerConnection()` before `initiateOffer()` in the `camera:online` handler, which resets the flag. This is why code review matters.
+
+### Chapter 13: ICE Candidate Buffering
+
+Here's a subtle issue: ICE candidates can arrive before the remote description is set. If you try to add a candidate without a remote description, the browser throws.
+
+**Solution:** Buffer candidates until the remote description is set:
+
+```js
+const pendingCandidates = useRef([]);
+
+// When candidate arrives:
+if (!pc.remoteDescription) {
+  pendingCandidates.current.push(candidate);
+} else {
+  await pc.addIceCandidate(new RTCIceCandidate(candidate));
+}
+
+// When remote description is set:
+for (const c of pendingCandidates.current) {
+  await pc.addIceCandidate(new RTCIceCandidate(c));
+}
+pendingCandidates.current = [];
+```
 
 ---
 
-## Part V: When Things Go Wrong
+## Part IV: Retry Logic (Staying Alive)
 
-### Chapter 12: The Camera Won't Start
+### Chapter 14: The Viewer Retry State Machine
 
-**Symptoms:** You tap "Go Live" and nothing happens. The button stays gray.
+```
+        ┌─────────┐
+        │  idle   │
+        └────┬────┘
+             │ connectViewer()
+             ▼
+        ┌───────────┐
+        │ connecting │ ← timeout 15s → handleRetry()
+        └─────┬─────┘
+              │
+    ┌─────────┼─────────┐
+    ▼         ▼         ▼
+┌───────┐ ┌────────┐ ┌───────┐
+│connected│ │ waiting│ │ error │
+└───────┘ └───┬────┘ └───┬───┘
+              │          │
+              │ camera:  │
+              │ online   │ handleRetry() ──► disconnectViewer()
+              │          │                     │ 500ms delay
+              ▼          │                     ▼
+         initiateOffer() │               connectViewer()
+                          │
+                    [back to
+                     connecting]
+```
 
-**Causes and cures:**
+**Viewer.jsx implements this with two effects:**
 
-1. **No camera permission.** iOS: Settings > HK Camera > Camera > ON. Android: Settings > Apps > HK Camera > Permissions > Camera > ON.
-2. **Camera already in use.** Close other apps that might be using the camera. (Yes, that includes FaceTime.)
-3. **The web page doesn't support HTTP.** Camera access requires HTTPS (or localhost). If you're visiting over plain HTTP, the browser will refuse. This is a security feature, not a bug.
-4. **You're on a phone that HATES JavaScript.** Some older browsers don't support `getUserMedia`. Upgrade your browser or your phone. (Or both.)
+```js
+// Retry on disconnect/error (exponential backoff)
+useEffect(() => {
+  if (status !== 'disconnected' && status !== 'error') return;
+  const delay = RETRY_DELAYS[Math.min(retryCount, RETRY_DELAYS.length - 1)];
+  // RETRY_DELAYS = [1, 2, 5, 15, 30, 60] seconds
+  const timer = setTimeout(() => handleRetry(), delay * 1000);
+  return () => clearTimeout(timer);
+}, [status]);
 
-### Chapter 13: The Video Is Laggy
+// Re-check camera status while waiting (every 8s)
+useEffect(() => {
+  if (status !== 'waiting') return;
+  const interval = setInterval(() => rejoinViewer(), 8000);
+  return () => clearInterval(interval);
+}, [status]);
+```
 
-**Symptoms:** Video is choppy, pixelated, or 5 seconds behind reality.
+`rejoinViewer` just re-emits `viewer:join`. The server responds with the current `camera:status`. If the camera is back, the offer flow starts. If not, the viewer stays in `waiting`.
 
-**Causes and cures:**
-
-1. **Wi-Fi is weak.** Move the camera closer to the router. Or move the router closer to the camera. (Pro tip: moving the camera is easier.)
-2. **Too many devices on the network.** Someone is streaming 4K Netflix. Tell them to stop. (They won't.)
-3. **The server is far away.** If your server is in Virginia and you're in Australia, there's a 200ms round trip. The video has to travel through many tubes. Be patient.
-4. **Too many viewers.** Each viewer adds load. If you have 50 people watching your front door, something is wrong with your life choices.
-
-### Chapter 14: The Button Went Red But Nobody Can See It
-
-**Symptoms:** The camera says "Live" but the Dashboard says "Offline."
-
-**Diagnosis:** The Dashboard doesn't use sockets. It uses REST. It fetched the camera list when the page loaded. If the camera went live after that, the Dashboard doesn't know about it.
-
-**Fix:** We actually just deployed a fix for this. The Dashboard now opens a socket connection and listens for `camera:online` events. But if you're reading the OLD version of this document because you haven't updated your deployment:
-
-> **Tip:** Refresh the Dashboard page. It's not elegant, but it works.
-
-### Chapter 15: The Viewer Shows "Waiting" Forever After A Camera Restart
-
-**Symptoms:** Camera was streaming. Camera stopped. Camera started again. Viewer is stuck on "waiting."
-
-**Diagnosis:** This was a real bug. The viewer's reconnection logic had a guard that checked "is an offer already in flight?" If the answer was yes (because a previous offer attempt never completed), it silently skipped reconnection forever.
-
-**Fix:** We fixed it. The viewer now always resets stale state and retries when the camera comes back online.
-
-> **Remember:** If this happens AFTER our fix, you might be running old code. Re-deploy. If it still happens, file a GitHub issue and @ Harkishan. He'll probably fix it before morning coffee.
-
----
-
-## Part VI: The Legal Stuff (Boring But Important)
-
-### Chapter 16: Privacy
-
-- Cameras record video. You control what they see.
-- Video is NOT sent to us. It goes directly from your phone to your viewer's browser. The server only helps set up the connection.
-- If you enable motion alerts, a thumbnail is sent to our server so we can notify you. That's it.
-- We use cookies. Essential ones for the site to work. Non-essential ones (theme preference, tour state) only with your consent.
-- If you're in Europe, the GDPR stuff applies. See our Privacy Policy. (The real one, in `Privacy.jsx`, not this funny document.)
-
-### Chapter 17: Audio Recording Laws
-
-This is not legal advice. This is a friendly heads-up:
-
-- **11 US states** require all parties to consent to audio recording: California, Connecticut, Florida, Illinois, Maryland, Massachusetts, Michigan, Montana, New Hampshire, Oregon, Pennsylvania, and Washington. (Yes, we know that's 12. Two-party consent states disagree on who's included.)
-- If you enable the microphone on your camera, it's YOUR responsibility to know the laws in your area.
-- We show a warning modal the first time you toggle the mic. We can't stop you from breaking the law, but we can say "we told you so."
-
-### Chapter 18: DMCA
-
-If someone's copyrighted content appears in your camera feed and they want it taken down:
-- Email our designated agent at `dmca@hkcamera.app`
-- Include: your contact info, a description of the work, the specific recording URL, a statement of good faith belief, and your signature (electronic is fine)
-- We'll take it down and terminate repeat infringers
-
-> **Warning:** Filing a false DMCA notice is perjury. Don't do it. Karma is real.
+> **Technical Stuff:** The `waiting` state is distinct from `disconnected`. `waiting` means "the socket is fine, but the camera isn't here." `disconnected` means "the socket itself died." Different causes, different recovery strategies.
 
 ---
 
-## Part VII: Appendices
+## Part V: The REST API
 
-### Appendix A: The Keyboard Shortcut You'll Actually Use
+### Chapter 15: What the REST API Does
 
-| Action | Shortcut |
-|--------|----------|
-| Refresh the page | `Cmd/Ctrl + R` |
-| Fix everything | See Appendix B |
+While signaling handles real-time communication, the REST API handles everything else:
 
-### Appendix B: The Universal Fix
+| Endpoint | Purpose |
+|----------|---------|
+| `POST /api/auth/register` | Create account |
+| `POST /api/auth/login` | Get JWT |
+| `POST /api/auth/refresh` | Refresh JWT |
+| `GET /api/cameras` | List cameras (patches `isOnline` from in-memory Map) |
+| `POST /api/cameras` | Create camera |
+| `GET /api/cameras/:id` | Get camera details |
+| `PATCH /api/cameras/:id` | Update camera settings |
+| `DELETE /api/cameras/:id` | Delete camera |
+| `POST /api/cameras/:id/heartbeat` | Camera liveness check (every 30s) |
+| `GET /api/turn-credentials` | Get TURN/STUN servers for WebRTC |
+| `GET /api/admin/users` | Admin: user lookup |
+| `PATCH /api/admin/users/suspend` | Admin: suspend user |
+| `PATCH /api/admin/users/unsuspend` | Admin: unsuspend user |
 
-1. Refresh the page.
-2. Wait 10 seconds.
-3. If still broken, restart the camera.
-4. If still broken, restart the server.
-5. If still broken, restart the router.
-6. If still broken, restart yourself. (Go outside. Touch grass. Come back.)
+**The critical detail** — `isOnline` patching:
 
-### Appendix C: Glossary
+```js
+// cameraController.js
+const patched = cameras.map(c => ({
+  ...c,
+  isOnline: isCameraOnline(c.streamKey) // checks the in-memory Map, NOT the DB
+}));
+```
+
+The database has an `isOnline` column, but it's updated asynchronously (fire-and-forget). The source of truth is the in-memory Map in the signaling server. The REST API consults the Map before returning camera data.
+
+> **Remember:** The DB `isOnline` column is eventually consistent with the Map. There's a window where a camera has connected but the DB hasn't updated yet. The Map is always correct. This is intentional — DB writes can fail silently (`.catch(() => {})`), but the Map is transactional.
+
+---
+
+## Part VI: WebRTC Deep Dive
+
+### Chapter 16: What Actually Happens in a WebRTC Connection
+
+1. **Gather candidates:** Both sides figure out how they can be reached (local IP, public IP, TURN relay)
+2. **Offer/Answer:** One side (the viewer) creates an SDP offer describing what codecs it supports. The other side (the camera) responds with its answer.
+3. **ICE:** Both sides try every candidate pair until one works
+4. **Send media:** Once connected, video flows directly (or via TURN if needed)
+
+**The SDP (Session Description Protocol):**
+```
+v=0
+o=- 123456 2 IN IP4 0.0.0.0
+s=-
+t=0 0
+a=group:BUNDLE 0 1
+m=video 9 UDP/TLS/RTP/SAVPF 96 97 98
+a=rtpmap:96 H264/90000
+a=rtpmap:97 VP8/90000
+a=rtpmap:98 VP9/90000
+a=recvonly
+```
+
+Don't worry about parsing this. The browser does it for you. Just know that it describes:
+- What media is being exchanged (video, audio)
+- What codecs are supported (H.264, VP8, VP9)
+- Which direction (sendrecv, recvonly, sendonly)
+- Network info (candidates)
+
+### Chapter 17: Why TURN Matters
+
+**STUN:** Helps devices discover their public IP and port. Works if both devices can talk directly (no NAT issues).
+
+**TURN:** Relays traffic through a server when direct connection fails. Needed when:
+- Both devices are behind symmetric NATs
+- One device is on a corporate VPN
+- You're behind a firewall that blocks UDP
+
+**Without TURN, ~15% of connections fail.** With TURN, it's ~99%.
+
+**Cloudflare TURN** is free for up to 10 TB/month. HK Camera uses it by default:
+
+```js
+async function fetchIceServers() {
+  const { data } = await turnAPI.getCredentials();
+  return data.data.iceServers; // [{ urls: 'turn:...', username: '...', credential: '...' }]
+}
+```
+
+The credentials are cached in a module-level variable for 24 hours. This prevents hammering the backend on every reconnect attempt.
+
+> **Technical Stuff:** TURN credentials are time-limited (default 24h). The server generates them with a shared secret. The client caches them and refreshes when expired. The cache is module-level, shared across all hook instances, so multiple viewers don't each fetch their own.
+
+---
+
+## Part VII: Deployment
+
+### Chapter 18: The CI/CD Pipeline
+
+Every push to `master` triggers:
+
+```
+┌─────────┐   ┌──────────┐   ┌───────┐
+│ Lint    │──►│ Tests    │──►│ Build │
+│ eslint  │   │ vitest + │   │ vite  │
+│ audit   │   │ jest     │   │       │
+└─────────┘   └─────┬────┘   └───┬───┘
+                    │            │
+                    ▼            ▼
+              ┌─────────┐  ┌──────────┐
+              │ Deploy  │  │  Deploy  │
+              │ Frontend│  │ Backend  │
+              │ Pages   │  │ Fly.io   │
+              └────┬────┘  └────┬─────┘
+                   │            │
+                   ▼            ▼
+              ┌─────────────────────┐
+              │  Smoke Tests (E2E)  │
+              │  against production │
+              └─────────────────────┘
+```
+
+**Frontend:** `npm run build` → `wrangler pages deploy` → Cloudflare Pages
+**Backend:** `flyctl deploy` → Fly.io with Docker
+
+> **Warning:** Deploying automatically to production on every push to master is brave. Make sure your tests actually cover the critical paths. HK Camera runs 96 tests (39 frontend, 57 backend) including integration tests with a real test database.
+
+### Chapter 19: Environment Variables That Matter
+
+```bash
+# Backend
+DATABASE_URL=postgresql://user:pass@host:5432/db
+JWT_SECRET=replace_me_with_something_long_and_random
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA  # Test key (always passes)
+ADMIN_PASSWORD=change_me                                  # For admin seed script
+STORAGE_STRATEGY=local                                     # or 's3'
+
+# Frontend
+VITE_API_URL=https://your-backend.fly.dev
+VITE_SOCKET_URL=https://your-backend.fly.dev
+VITE_TURNSTILE_SITE_KEY=1x00000000000000000AA  # Test key (use real one in prod)
+```
+
+> **Tip:** Turnstile test keys always pass verification. Use them in dev. In production, get real keys from the Cloudflare Dashboard. They're free.
+
+---
+
+## Part VIII: The Bugs We Fixed (So You Don't Have To)
+
+### Chapter 20: The Stale Dashboard Bug
+
+**Symptoms:** Camera goes live but the Dashboard shows it as offline. User has to refresh.
+
+**Root cause:** Dashboard only fetched camera data once on mount via REST. No socket connection. Never received real-time events.
+
+**Fix:** 
+1. Added `user:{userId}` rooms on the signaling server
+2. On camera connect/disconnect, broadcast to both `camera:{streamKey}` AND `user:{ownerId}`
+3. Dashboard opens a socket with `reconnection: true`, listens for `camera:online`/`camera:offline`
+
+```js
+// Dashboard.jsx
+useEffect(() => {
+  const socket = io(SOCKET_URL, {
+    auth: { token: localStorage.getItem('accessToken') },
+    reconnection: true,
+  });
+  socket.on('camera:online', ({ cameraId }) => {
+    setCameras(prev => prev.map(c => c.id === cameraId ? { ...c, isOnline: true } : c));
+  });
+  socket.on('camera:offline', ({ cameraId }) => {
+    setCameras(prev => prev.map(c => c.id === cameraId ? { ...c, isOnline: false } : c));
+  });
+  return () => socket.disconnect();
+}, []);
+```
+
+### Chapter 21: The Viewer Stuck After Camera Restart Bug
+
+**Symptoms:** Camera stops and restarts. Viewer stays on "waiting" forever.
+
+**Root cause:** `handleCameraOnline` had `if (!offerInFlightRef.current)` guard. If a previous offer attempt was stuck (flag never reset), every subsequent `camera:online` was silently ignored.
+
+**Fix:** Always reset stale state before reconnecting:
+
+```js
+const handleCameraOnline = async () => {
+  if (!isActive) return;
+  closePeerConnection(); // Reset offerInFlightRef, close old PC
+  await initiateOffer(socket, isActive);
+};
+```
+
+Also applied the same fix to `handleCameraStatus` — calling `closePeerConnection()` before `initiateOffer()` ensures a clean slate regardless of what state the previous attempt left behind.
+
+### Chapter 22: The Stale Camera Disconnect Bug
+
+**Symptoms:** Camera reconnects quickly, then all viewers get a spurious offline event.
+
+**Root cause:** The old socket's `disconnect` event handler ran after the new socket had already registered. It deleted the camera from the Map even though the new socket was active.
+
+**Fix:** The guard on every camera disconnect handler:
+
+```js
+if (cameras.get(key) === socket.id) {
+  // Only clean up if this socket is still the registered one
+}
+```
+
+If a new camera has already connected (and updated `cameras.set(key, newSocketId)`), the old socket's handler sees a mismatch and does nothing.
+
+---
+
+## Part IX: Appendices
+
+### Appendix A: The Complete File Map
+
+```
+hk-camera/
+├── backend/
+│   ├── src/
+│   │   ├── socket/
+│   │   │   └── signalingServer.js   ← The brain. All WebSocket signaling.
+│   │   ├── routes/
+│   │   │   ├── auth.js              ← Register, login, refresh
+│   │   │   ├── cameras.js           ← CRUD, heartbeat, stream key
+│   │   │   ├── turn.js              ← TURN credentials
+│   │   │   ├── adminUsers.js        ← User management
+│   │   │   └── admin.js             ← Admin dashboard stats
+│   │   ├── middleware/
+│   │   │   ├── auth.js              ← JWT verification + suspended check
+│   │   │   └── turnstile.js         ← Cloudflare Turnstile verification
+│   │   ├── controllers/
+│   │   │   ├── authController.js
+│   │   │   └── cameraController.js  ← isOnline patching from Map
+│   │   ├── prisma/
+│   │   │   ├── schema.prisma        ← User, Camera, Recording, Alert models
+│   │   │   ├── seed.js              ← Creates admin + demo accounts
+│   │   │   └── migrations/
+│   │   └── index.js                 ← Express + Socket.IO bootstrap
+│   ├── Dockerfile
+│   └── fly.toml
+├── frontend/
+│   ├── src/
+│   │   ├── hooks/
+│   │   │   ├── useWebRTC.js         ← THE hook. Both camera and viewer.
+│   │   │   ├── useMotionDetection.js ← Pixel-diff motion
+│   │   │   ├── useYoloDetection.js   ← ML-based detection
+│   │   │   └── useMediaRecorder.js   ← Record video to server
+│   │   ├── pages/
+│   │   │   ├── Dashboard.jsx        ← Camera list + stats
+│   │   │   ├── CameraView.jsx       ← Broadcast page
+│   │   │   ├── Viewer.jsx           ← Watch + controls + retry logic
+│   │   │   └── ...
+│   │   ├── components/
+│   │   │   ├── CameraStream.jsx     ← Camera preview + Go Live button
+│   │   │   ├── ViewerStream.jsx     ← Remote video + status overlay
+│   │   │   └── ...
+│   │   └── services/
+│   │       └── api.js               ← Axios client
+│   └── e2e/
+│       ├── auth-flow.spec.js        ← Register, login, tour, logout
+│       └── ...
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── SETUP.md
+│   ├── DEPLOYMENT.md
+│   └── FOR_DUMMIES.md               ← You are here
+└── .github/workflows/
+    ├── ci.yml                       ← Tests + lint on every PR/push
+    └── deploy.yml                   ← Deploy on push to master
+```
+
+### Appendix B: Glossary
 
 | Term | Meaning |
 |------|---------|
-| **WebRTC** | A way for browsers to talk to each other without a middleman. Magic, basically. |
-| **Stream Key** | A secret key that proves your camera is YOUR camera. Guard it with your life. (Or at least don't post it on GitHub.) |
-| **TURN Server** | A helper that relays video when direct connections fail. Like a chaperone for data packets. |
-| **STUN Server** | A helper that figures out how two devices can talk directly. Less useful than TURN when firewalls are involved. |
-| **Codec** | The language video speaks. VP9, H.264, etc. Like English vs Spanish, but for cameras. |
-| **ICE Candidate** | A proposed way for two devices to connect. Like giving someone your address, except the address keeps changing. |
-| **Offer/Answer** | The WebRTC handshake. "Here's how I want to connect." "OK, here's how I accept." |
-| **YOLOv8** | "You Only Look Once, version 8." An AI model that detects objects in images. Not nearly as fun as it sounds. |
+| **Signaling** | The process of setting up a WebRTC connection — finding peers, exchanging offers/answers, sharing ICE candidates |
+| **WebRTC** | Browser API for peer-to-peer audio/video communication. No plugins. No servers (after signaling). |
+| **SDP** | Session Description Protocol. A text format describing media capabilities (codecs, resolutions, directions). |
+| **ICE** | Interactive Connectivity Establishment. The process of finding the best network path between two peers. |
+| **TURN** | Traversal Using Relays around NAT. A server that relays traffic when direct P2P fails. |
+| **STUN** | Session Traversal Utilities for NAT. A server that tells a client its own public IP and port. |
+| **Offer/Answer** | The SDP exchange pattern: Viewer creates an offer, Camera creates an answer. |
+| **ICE Candidate** | A potential network path: IP + port + protocol (UDP/TCP). Both sides gather and exchange candidates. |
+| **PeerConnection** | The JS object that manages the entire WebRTC session. `RTCPeerConnection`. |
+| **Transceiver** | A sender/receiver pair for a media type. `addTransceiver('video', { direction: 'recvonly' })`. |
+| **Stream Key** | A UUID that identifies a camera. Like a password. Keep it secret. |
+| **Turnstile** | Cloudflare's bot detection. Privacy-friendly captcha alternative. |
+
+### Appendix C: Further Reading
+
+- **WebRTC MDN docs** — https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API
+- **Socket.IO docs** — https://socket.io/docs/v4/
+- **Prisma docs** — https://www.prisma.io/docs
+- **Cloudflare TURN** — https://developers.cloudflare.com/calls/turn/
+- **The original WebRTC spec** — https://www.w3.org/TR/webrtc/
+- **ICE RFC 8445** — https://datatracker.ietf.org/doc/html/rfc8445 (for insomniacs)
 
 ### Appendix D: About the Author
 
-**Harkishan Sohanpal** wrote this code because existing camera solutions were either:
-- Too expensive
-- Too complicated
-- Too subscription-based
-- Too creepy (looking at you, cloud-based AI analysis of everything)
+**Harkishan Sohanpal** spent approximately 4,000 hours building HK Camera so you don't have to. He learned that WebRTC is simultaneously the most impressive and most infuriating browser API ever created. He also learned that `pc.close()` doesn't always fire `connectionstatechange`, that ICE candidates can arrive before the remote description, and that the answer to "should I use a library for WebRTC?" is "no, but you'll wish you had."
 
-He has since spent approximately 4,000 hours debugging WebRTC, writing migration scripts, and adding GDPR consent banners. He regrets nothing. (He regrets everything.)
-
----
-
-## Index
-
-- Adding a camera, 4
-- Audio consent, 17, 9
-- Camera won't start, 12
-- Dashboard not updating, 14
-- Fixes, universal, Appendix B
-- Glossary, Appendix C
-- Going live, 5
-- Legal stuff, 16-18
-- Motion detection, 10
-- Night vision, 11
-- Privacy policy, 16
-- Streaming issues, 13
-- Viewer stuck on waiting, 15, 8
-- WebRTC explained, Appendix C
-- YOLOv8, 10, Appendix C
+Every bug fixed in this guide was paid for in blood, sweat, and sleepless nights. You're welcome.
 
 ---
 
