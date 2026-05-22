@@ -80,8 +80,8 @@ export default function Dashboard() {
         <div className="flex items-center gap-2 flex-shrink-0">
           {tour.dismissed && (
             <button onClick={() => { tour.reset(); tour.start(); }}
-              className="flex items-center justify-center gap-1.5 px-2 sm:px-3 py-2 bg-card border border-ap-separator text-text-secondary hover:text-text-primary rounded-xl text-xs font-semibold transition-colors">
-              <HelpCircle size={14} /><span className="hidden sm:inline">Tour</span>
+              className="flex items-center justify-center gap-1.5 px-2 py-2 bg-card border border-ap-separator text-text-secondary hover:text-text-primary rounded-xl text-xs font-semibold transition-colors">
+              <HelpCircle size={14} /> Tour
             </button>
           )}
           <button onClick={() => setShowAdd(true)} data-tour="tour-add-camera" className="btn-primary text-sm px-3 sm:px-5 whitespace-nowrap">
