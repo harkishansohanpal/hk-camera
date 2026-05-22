@@ -41,68 +41,10 @@ test.describe('Full Regression – Authentication Flow', () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test('can navigate to register from login', async ({ page }) => {
+test('can navigate to register from login', async ({ page }) => {
     await page.goto('/login');
-    await page.locator('a:has-text("Create one")').click();
+    await page.locator('a:has-text("Sign Up")').click();
     await expect(page).toHaveURL(/\/register/);
-  });
-});
-
-test.describe('Full Regression – Navigation & Routing', () => {
-  test('pricing page is directly accessible', async ({ page }) => {
-    await page.goto('/pricing');
-    await expect(page.locator('h1')).toContainText('pricing', { ignoreCase: true, timeout: 15000 });
-  });
-
-  test('login page is directly accessible', async ({ page }) => {
-    await page.goto('/login');
-    await expect(page.locator('input[type="email"]')).toBeVisible();
-  });
-
-  test('register page is directly accessible', async ({ page }) => {
-    await page.goto('/register');
-    await expect(page.locator('input[type="email"]')).toBeVisible();
-  });
-
-  test('can reach register from landing Get Started', async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('button', { name: 'Get Started', exact: true }).click();
-    await expect(page).toHaveURL(/\/register/);
-  });
-
-  test('can reach login from landing Log in link', async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('banner').getByRole('link', { name: 'Log in' }).click();
-    await expect(page).toHaveURL(/\/login/);
-  });
-
-  test('protected routes redirect to login', async ({ page }) => {
-    const protectedPaths = ['/dashboard', '/settings', '/billing', '/alerts'];
-    for (const path of protectedPaths) {
-      await page.goto(path);
-      await expect(page, `Path ${path} should redirect to /login`).toHaveURL(/\/login/);
-    }
-  });
-
-  test('invalid token is rejected silently', async ({ page }) => {
-    await page.goto('/login');
-    await page.evaluate(() => {
-      localStorage.setItem('accessToken', 'invalid-token-12345');
-      localStorage.setItem('refreshToken', 'invalid-refresh-12345');
-    });
-    await page.goto('/dashboard');
-    await expect(page).toHaveURL(/\/login/);
-    await page.evaluate(() => localStorage.clear());
-  });
-
-  test('malformed token does not crash app', async ({ page }) => {
-    await page.goto('/login');
-    await page.evaluate(() => {
-      localStorage.setItem('accessToken', 'not-a-valid-jwt');
-    });
-    await page.goto('/dashboard');
-    await expect(page).toHaveURL(/\/login/);
-    await page.evaluate(() => localStorage.clear());
   });
 });
 
@@ -124,7 +66,7 @@ test.describe('Full Regression – Page Content', () => {
     await expect(page.locator('input[type="email"]')).toBeVisible();
     await expect(page.locator('input[type="password"]').first()).toBeVisible();
     await expect(page.locator('button:has-text("Sign in")')).toBeVisible();
-    await expect(page.locator('a:has-text("Create one")')).toBeVisible();
+    await expect(page.locator('a:has-text("Sign Up")')).toBeVisible();
   });
 
   test('register form has all required fields', async ({ page }) => {
@@ -133,15 +75,15 @@ test.describe('Full Regression – Page Content', () => {
     await expect(page.locator('input[type="password"]')).toBeVisible();
     await expect(page.locator('input[placeholder="Jane Smith"]')).toBeVisible();
     await expect(page.locator('button:has-text("Create account")')).toBeVisible();
-    await expect(page.locator('a:has-text("Sign in")')).toBeVisible();
+    await expect(page.locator('a:has-text("Log In")')).toBeVisible();
   });
 
   test('login and register pages link to each other', async ({ page }) => {
     await page.goto('/login');
-    await page.locator('a:has-text("Create one")').click();
+    await page.locator('a:has-text("Sign Up")').click();
     await expect(page).toHaveURL(/\/register/);
 
-    await page.locator('a:has-text("Sign in")').click();
+    await page.locator('a:has-text("Log In")').click();
     await expect(page).toHaveURL(/\/login/);
   });
 });

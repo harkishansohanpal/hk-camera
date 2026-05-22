@@ -30,7 +30,7 @@ test.describe('Authentication Flow', () => {
 
   test('can navigate between login and register', async ({ page }) => {
     await page.goto('/register');
-    await page.locator('a:has-text("Sign in")').click();
+    await page.locator('a:has-text("Log In")').click();
     await expect(page).toHaveURL(/\/login/);
   });
 
