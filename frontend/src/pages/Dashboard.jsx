@@ -176,7 +176,7 @@ export default function Dashboard() {
                   </button>
                   <button onClick={() => navigate(`/cameras/${cam.id}`)}
                     data-tour="tour-broadcast"
-                    className="flex-1 btn-secondary text-sm">
+                    className="flex-1 text-sm font-semibold px-4 py-2 rounded-xl transition-all bg-ap-red text-white hover:brightness-90">
                     <Radio size={15} /> Go Live
                   </button>
                 </div>
