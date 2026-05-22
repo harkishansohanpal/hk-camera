@@ -189,16 +189,18 @@ export function useWebRTC({ role, streamKey, onCommand }) {
         setStatus('waiting');
       } else {
         logger.info('WebRTC', 'Camera online, initiating offer');
+        closePeerConnection();
         await initiateOffer(socket, isActive);
       }
     };
 
     const handleCameraOnline = async () => {
       if (!isActive) return;
-      if (!offerInFlightRef.current) {
-        logger.debug('WebRTC', 'camera:online received, initiating offer');
-        await initiateOffer(socket, isActive);
-      }
+      // Always reset stale state when camera comes back online — don't
+      // silently skip if a previous offer attempt is stuck in-flight.
+      closePeerConnection();
+      logger.debug('WebRTC', 'camera:online received, initiating offer');
+      await initiateOffer(socket, isActive);
     };
 
     const handleCameraOffline = () => {

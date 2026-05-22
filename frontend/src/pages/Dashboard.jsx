@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Camera, Wifi, WifiOff, Trash2, Eye, AlertTriangle, MoreVertical, Radio } from 'lucide-react';
+import { io } from 'socket.io-client';
 import { cameraAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { useTour } from '../contexts/TourContext';
 import GuidedTour from '../components/GuidedTour';
+
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || '';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -27,6 +30,28 @@ export default function Dashboard() {
   }
 
   useEffect(() => { loadCameras(); }, []);
+
+  // Subscribe to real-time camera online/offline events
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
+
+    const socket = io(SOCKET_URL, {
+      auth: { token },
+      transports: ['websocket'],
+      reconnection: true,
+    });
+
+    socket.on('camera:online', ({ cameraId }) => {
+      setCameras((prev) => prev.map((c) => c.id === cameraId ? { ...c, isOnline: true } : c));
+    });
+
+    socket.on('camera:offline', ({ cameraId }) => {
+      setCameras((prev) => prev.map((c) => c.id === cameraId ? { ...c, isOnline: false } : c));
+    });
+
+    return () => { socket.disconnect(); };
+  }, []);
 
   useEffect(() => {
     if (!loading && !tourFired.current && !tour.dismissed) {

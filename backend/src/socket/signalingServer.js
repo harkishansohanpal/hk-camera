@@ -65,6 +65,11 @@ function initSignalingServer(socketIO) {
   io.on('connection', (socket) => {
     logger.debug(`Socket connected [${socket.role}]`, { socketId: socket.id, userId: socket.userId });
 
+    // Auto-join JWT-authenticated sockets to their user room for real-time camera status
+    if (socket.role === 'viewer') {
+      socket.join(`user:${socket.userId}`);
+    }
+
     // ── Camera joins ──────────────────────────────────────────
     if (socket.role === 'camera') {
       const key = socket.streamKey;
@@ -80,6 +85,8 @@ function initSignalingServer(socketIO) {
 
       // Notify any waiting viewers
       io.to(`camera:${key}`).emit('camera:online', { cameraId: socket.cameraId });
+      // Notify the camera owner's Dashboard and other pages in real-time
+      io.to(`user:${socket.userId}`).emit('camera:online', { cameraId: socket.cameraId });
 
       socket.on('disconnect', () => {
         // Only delete if this socket is still the registered camera (handles stale reconnect races)
@@ -87,6 +94,7 @@ function initSignalingServer(socketIO) {
           cameras.delete(key);
           prisma.camera.update({ where: { id: socket.cameraId }, data: { isOnline: false } }).catch(() => {});
           io.to(`camera:${key}`).emit('camera:offline', { cameraId: socket.cameraId });
+          io.to(`user:${socket.userId}`).emit('camera:offline', { cameraId: socket.cameraId });
           logger.info('Signaling', 'Camera disconnected', { cameraId: socket.cameraId, streamKey: key });
         }
       });
