@@ -147,7 +147,7 @@ export default function Layout() {
       <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${!isViewer ? 'lg:ml-68' : ''}`}>
         {!isViewer && (
           <header className="nav-bar lg:hidden flex items-center gap-2 px-3 py-1.5" style={{ zIndex: 30 }}>
-            <button onClick={() => setSidebarOpen(true)}
+            <button onClick={() => setSidebarOpen(true)} data-tour="tour-nav"
               className="w-10 h-10 flex items-center justify-center text-text-secondary hover:text-text-primary rounded-xl transition-colors flex-shrink-0">
               <Menu size={20} />
             </button>
