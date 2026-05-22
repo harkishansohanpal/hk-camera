@@ -78,6 +78,12 @@ export default function Layout() {
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           </button>
+          {tour.dismissed && (
+            <button onClick={() => { tour.reset(); tour.start(); }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-text-secondary hover:text-text-primary hover:bg-card-hover transition-colors mb-0.5">
+              <HelpCircle size={18} /> Tour
+            </button>
+          )}
           <button onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-text-secondary hover:text-ap-red transition-colors">
             <LogOut size={18} /> Log Out
