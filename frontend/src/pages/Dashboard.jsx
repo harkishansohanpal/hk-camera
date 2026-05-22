@@ -74,7 +74,7 @@ export default function Dashboard() {
       {/* Tour trigger */}
       {tour.dismissed && (
         <button onClick={() => { tour.reset(); tour.start(); }}
-          className="fixed bottom-4 right-4 z-50 flex items-center gap-1.5 px-3 py-2 bg-card shadow-apple text-text-secondary hover:text-text-primary rounded-xl text-xs transition-colors border border-ap-separator">
+          className="fixed bottom-20 left-4 sm:bottom-4 sm:right-4 z-50 flex items-center gap-1.5 px-3 py-2 bg-card shadow-apple text-text-secondary hover:text-text-primary rounded-xl text-xs transition-colors border border-ap-separator">
           <HelpCircle size={12} /> Tour
         </button>
       )}
