@@ -15,7 +15,7 @@ const CameraStream = forwardRef(function CameraStream(
       ) : (
         <div className="w-full h-full flex flex-col items-center justify-center gap-2 min-h-[200px]">
           <CameraOff size={32} className="text-white/30" />
-          <p className="text-white/40 text-sm">Camera not started</p>
+          <p className="text-white/40 text-sm">Tap 'Stream' to start your camera</p>
         </div>
       )}
       {isBroadcasting && (
@@ -29,7 +29,7 @@ const CameraStream = forwardRef(function CameraStream(
         {onMicToggle && <button onClick={onMicToggle} className={`w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-sm text-white active:scale-95 transition-transform ${micOn ? 'bg-white/20' : 'bg-ap-red/80'}`}>{micOn ? <Mic size={16} /> : <MicOff size={16} />}</button>}
         {onRecordToggle && <button onClick={onRecordToggle} className={`w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-sm text-white active:scale-95 transition-transform ${isRecording ? 'bg-ap-red/80' : 'bg-white/20'}`}>{isRecording ? <VideoOff size={16} /> : <Video size={16} />}</button>}
         <button onClick={onToggle} className={`ml-auto flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-xs shadow-lg active:scale-95 transition-all ${isBroadcasting ? 'bg-ap-red text-white' : 'bg-ap-red/90 text-white'}`}>
-          <Camera size={14} /> {isBroadcasting ? 'Stop' : 'Go Live'}
+          <Camera size={14} /> {isBroadcasting ? 'Stop' : 'Stream'}
         </button>
       </div>
     </div>

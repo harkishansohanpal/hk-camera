@@ -75,7 +75,7 @@ export default function CameraView() {
       await startBroadcast(newStream);
     } catch (err) {
       console.error('[NV] Camera2 night vision failed:', err);
-      toast.error('Night vision setup failed: ' + err.message);
+      toast.error('Night vision failed: ' + err.message);
     }
   }
 
@@ -205,7 +205,7 @@ export default function CameraView() {
       logger.info('CameraView', 'Starting broadcast', { cameraId });
       const localStream = await getLocalStream(); setStream(localStream); await startBroadcast(localStream);
       toast.success('Streaming started');
-    } catch (err) { logger.error('CameraView', 'Failed to start broadcast', { error: err.message, cameraId }); toast.error('Could not access camera: ' + err.message); }
+    } catch (err) { logger.error('CameraView', 'Failed to start broadcast', { error: err.message, cameraId }); toast.error('Could not start camera: ' + err.message); }
   }
 
   async function flipCamera() {
@@ -265,9 +265,9 @@ export default function CameraView() {
             </button>
           </div>
           <p className="text-xl font-bold text-text-primary">{motionCount}</p>
-          <p className="text-text-secondary text-xs">events this session</p>
+          <p className="text-text-secondary text-xs">events</p>
           <div className={`mt-1 text-xs font-semibold ${isDetecting ? 'text-ap-green' : 'text-text-secondary'}`}>
-            {isDetecting ? '\u25cf Active' : '\u25cb Inactive'}
+            {isDetecting ? '\u25cf On' : '\u25cb Off'}
           </div>
           <div className="mt-2 flex gap-1.5">
             <button onClick={async () => {
@@ -275,22 +275,22 @@ export default function CameraView() {
               await cameraAPI.update(cameraId, { detectionMode: 'PIXEL_DIFF' });
               if (isBroadcasting) { stopMlDetection(); if (camera?.motionDetect) startPixelDiff(); }
             }} className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-semibold transition-colors ${!isMlMode ? 'bg-ap-blue/10 text-ap-blue' : 'bg-fill-input text-text-secondary'}`}>
-              Pixel-Diff
+              Standard
             </button>
             <button onClick={async () => {
               setCamera((c) => ({ ...c, detectionMode: 'ML' }));
               await cameraAPI.update(cameraId, { detectionMode: 'ML' });
               if (isBroadcasting) { stopPixelDiff(); if (camera?.motionDetect) startMlDetection(); }
             }} className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-semibold transition-colors flex items-center justify-center gap-1 ${isMlMode ? 'bg-ap-blue/10 text-ap-blue' : 'bg-fill-input text-text-secondary'}`}>
-              <Brain size={10} /> ML (YOLO)
+              <Brain size={10} /> Smart
             </button>
           </div>
           {isMlMode && (
             <div className="mt-1 text-[10px]">
-              {!modelLoaded && !mlError && isMlDetecting && <p className="text-ap-orange">Loading ML model\u2026</p>}
-              {modelLoaded && <p className="text-ap-green">ML model ready</p>}
-              {mlError && <p className="text-ap-red">ML model error: {mlError}</p>}
-              {mlInferenceError && <p className="text-ap-red">ML inference error: {mlInferenceError}</p>}
+              {!modelLoaded && !mlError && isMlDetecting && <p className="text-ap-orange">Loading model\u2026</p>}
+              {modelLoaded && <p className="text-ap-green">Model ready</p>}
+              {mlError && <p className="text-ap-red">Model error: {mlError}</p>}
+              {mlInferenceError && <p className="text-ap-red">Detection error: {mlInferenceError}</p>}
             </div>
           )}
         </div>
@@ -307,7 +307,7 @@ export default function CameraView() {
               const next = !camera?.recordOnMotion; setCamera((c) => ({ ...c, recordOnMotion: next }));
               await cameraAPI.update(cameraId, { recordOnMotion: next });
             }} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors self-start ${camera?.recordOnMotion ? 'bg-ap-red/10 text-ap-red' : 'bg-fill-input text-text-secondary'}`}>
-              <Video size={12} /> {camera?.recordOnMotion ? 'Auto-record ON' : 'Auto-record OFF'}
+              <Video size={12} /> {camera?.recordOnMotion ? 'Auto-Record On' : 'Auto-Record Off'}
             </button>
           </div>
         </div>
@@ -324,10 +324,10 @@ export default function CameraView() {
             <div className="w-10 h-10 bg-ap-orange/10 rounded-xl flex items-center justify-center mb-3">
               <MicOff size={18} className="text-ap-orange" />
             </div>
-            <h3 className="text-base font-bold text-text-primary mb-2">Audio Recording Notice</h3>
+            <h3 className="text-base font-bold text-text-primary mb-2">Audio Recording</h3>
             <p className="text-xs text-text-secondary leading-relaxed mb-4">
-              Some states and countries require consent from all parties before recording audio. By enabling the microphone, you confirm you have the legal right to record audio in your jurisdiction. See our{' '}
-              <Link to="/terms" className="text-ap-blue hover:text-blue-600 font-semibold">Terms of Service</Link> for details.
+              Some places require permission before recording audio. By turning on the microphone, you confirm you have the right to record audio where you are. See our{' '}
+              <Link to="/terms" className="text-ap-blue hover:text-blue-600 font-semibold">Terms</Link> for details.
             </p>
             <div className="flex gap-2">
               <button onClick={() => setAudioConsentWarn(false)} className="flex-1 btn-secondary text-sm">Cancel</button>

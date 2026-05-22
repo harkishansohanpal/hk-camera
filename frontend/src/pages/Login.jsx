@@ -18,7 +18,7 @@ export default function Login() {
       await login(form);
       navigate('/dashboard');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed');
+      toast.error(err.response?.data?.message || 'Could not sign in. Check your email and password.');
     } finally {
       setLoading(false);
     }
@@ -32,7 +32,7 @@ export default function Login() {
             <Camera size={28} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-text-primary tracking-tight">HK Camera</h1>
-          <p className="text-text-secondary text-sm mt-1">Sign in to your account</p>
+          <p className="text-text-secondary text-sm mt-1">Welcome back</p>
         </div>
 
         <div className="card p-6 shadow-apple">
@@ -61,8 +61,8 @@ export default function Login() {
         </div>
 
         <p className="text-center text-text-secondary text-sm mt-5">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-ap-blue hover:text-blue-700 font-semibold">Create one</Link>
+          No account?{' '}
+          <Link to="/register" className="text-ap-blue hover:text-blue-700 font-semibold">Sign Up</Link>
         </p>
       </div>
     </div>

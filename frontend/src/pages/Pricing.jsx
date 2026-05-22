@@ -15,7 +15,7 @@ export default function Pricing() {
   useEffect(() => {
     subscriptionAPI.listPlans()
       .then(({ data }) => setPlans(data.data))
-      .catch(() => toast.error('Failed to load plans'))
+      .catch(() => toast.error('Could not load plans'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -26,7 +26,7 @@ export default function Pricing() {
       const { data } = await subscriptionAPI.createCheckout(priceId);
       window.location.href = data.data.url;
     } catch (err) {
-      toast.error(err?.response?.data?.message || 'Failed to start checkout');
+      toast.error(err?.response?.data?.message || 'Could not start checkout');
     } finally {
       setCheckoutLoading(null);
     }
@@ -40,8 +40,8 @@ export default function Pricing() {
         </button>
 
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold tracking-tight mb-4">Simple, <span className="text-ap-blue">transparent</span> pricing</h1>
-          <p className="text-text-secondary text-lg max-w-xl mx-auto">All plans include real-time streaming and motion detection. Upgrade as your needs grow.</p>
+          <h1 className="text-4xl font-bold tracking-tight mb-4">Simple Pricing</h1>
+          <p className="text-text-secondary text-lg max-w-xl mx-auto">Every plan includes live streaming and motion detection. Pick the one that fits.</p>
         </div>
 
         {loading ? (
@@ -50,7 +50,7 @@ export default function Pricing() {
           </div>
         ) : plans.length === 0 ? (
           <div className="text-center py-20 text-text-secondary">
-            <p className="text-lg">Unable to load plans right now. Please try again later.</p>
+            <p className="text-lg">Could not load plans. Try again later.</p>
           </div>
         ) : (
         <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">

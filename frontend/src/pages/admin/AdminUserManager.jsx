@@ -17,34 +17,34 @@ export default function AdminUserManager() {
       const { data } = await adminAPI.lookupUser(email);
       setUser(data.data);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'User not found');
+      toast.error(err.response?.data?.message || 'Could not find user');
     } finally { setLoading(false); }
   }
 
   async function handleSuspend() {
-    if (!suspendReason.trim()) { toast.error('Suspension reason required'); return; }
+    if (!suspendReason.trim()) { toast.error('Please enter a reason'); return; }
     try {
       await adminAPI.suspendUser(user.id, suspendReason);
-      toast.success('User suspended');
+      toast.success('Saved');
       setUser((u) => ({ ...u, suspended: true, suspendedAt: new Date().toISOString(), suspensionReason: suspendReason }));
-    } catch { toast.error('Failed to suspend'); }
+    } catch { toast.error('Could not suspend'); }
   }
 
   async function handleUnsuspend() {
     try {
       await adminAPI.unsuspendUser(user.id);
-      toast.success('User unsuspended');
+      toast.success('Saved');
       setUser((u) => ({ ...u, suspended: false, suspendedAt: null, suspensionReason: null }));
-    } catch { toast.error('Failed to unsuspend'); }
+    } catch { toast.error('Could not unsuspend'); }
   }
 
   async function handleLegalHold() {
     const next = !user.legalHold;
     try {
       await adminAPI.toggleLegalHold(user.id, next);
-      toast.success(next ? 'Legal hold enabled' : 'Legal hold disabled');
+      toast.success('Saved');
       setUser((u) => ({ ...u, legalHold: next }));
-    } catch { toast.error('Failed to toggle legal hold'); }
+    } catch { toast.error('Could not update'); }
   }
 
   async function handleExport() {
@@ -55,8 +55,8 @@ export default function AdminUserManager() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = `user-${user.id}-export.json`; a.click();
       URL.revokeObjectURL(url);
-      toast.success('Data exported');
-    } catch { toast.error('Export failed'); }
+      toast.success('Downloaded');
+    } catch { toast.error('Could not download'); }
     finally { setExporting(false); }
   }
 
@@ -64,7 +64,7 @@ export default function AdminUserManager() {
     if (!confirm('Delete this recording?')) return;
     try {
       await adminAPI.deleteRecording(recordingId);
-      toast.success('Recording deleted');
+      toast.success('Deleted');
       setUser((u) => ({
         ...u,
         cameras: u.cameras.map((c) => ({
@@ -72,28 +72,28 @@ export default function AdminUserManager() {
           recordings: c.recordings.filter((r) => r.id !== recordingId),
         })),
       }));
-    } catch { toast.error('Failed to delete recording'); }
+    } catch { toast.error('Could not delete'); }
   }
 
   return (
     <div className="max-w-6xl mx-auto space-y-4 animate-fade-in">
       <div>
-        <h1 className="text-lg font-bold text-text-primary">User Management</h1>
-        <p className="text-xs text-text-secondary mt-0.5">Look up users, suspend accounts, manage legal holds, and export data</p>
+        <h1 className="text-lg font-bold text-text-primary">Users</h1>
+        <p className="text-xs text-text-secondary mt-0.5">Find users, suspend accounts, and manage data</p>
       </div>
 
       <form onSubmit={handleLookup} className="flex gap-2">
         <input type="email" placeholder="User email\u2026" value={email} onChange={(e) => setEmail(e.target.value)} required
           className="input flex-1 text-sm" />
         <button type="submit" className="btn-primary text-sm" disabled={loading}>
-          <Search size={14} /> {loading ? 'Searching\u2026' : 'Look Up'}
+          <Search size={14} /> {loading ? 'Searching\u2026' : 'Search'}
         </button>
       </form>
 
       {!user && !loading && (
         <div className="card p-8 text-center">
           <Search size={24} className="mx-auto mb-3 text-ap-gray3" />
-          <p className="text-sm text-text-secondary">Search for a user by email to manage their account</p>
+          <p className="text-sm text-text-secondary">Enter an email to find a user</p>
         </div>
       )}
 
@@ -119,20 +119,20 @@ export default function AdminUserManager() {
               </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div><span className="text-text-secondary">Created</span><p className="text-text-primary font-semibold">{new Date(user.createdAt).toLocaleDateString()}</p></div>
-              <div><span className="text-text-secondary">Privacy consent</span><p className="text-text-primary font-semibold">{user.consentGivenAt ? new Date(user.consentGivenAt).toLocaleDateString() : '\u2014'}</p></div>
-              <div><span className="text-text-secondary">Terms consent</span><p className="text-text-primary font-semibold">{user.termsConsentAt ? new Date(user.termsConsentAt).toLocaleDateString() : '\u2014'}</p></div>
-              <div><span className="text-text-secondary">Consent IP</span><p className="text-text-primary font-semibold">{user.consentIp || '\u2014'}</p></div>
+              <div><span className="text-text-secondary">Joined</span><p className="text-text-primary font-semibold">{new Date(user.createdAt).toLocaleDateString()}</p></div>
+              <div><span className="text-text-secondary">Privacy agreed</span><p className="text-text-primary font-semibold">{user.consentGivenAt ? new Date(user.consentGivenAt).toLocaleDateString() : '\u2014'}</p></div>
+              <div><span className="text-text-secondary">Terms agreed</span><p className="text-text-primary font-semibold">{user.termsConsentAt ? new Date(user.termsConsentAt).toLocaleDateString() : '\u2014'}</p></div>
+              <div><span className="text-text-secondary">IP address</span><p className="text-text-primary font-semibold">{user.consentIp || '\u2014'}</p></div>
             </div>
 
             <div className="flex flex-wrap gap-2 pt-2 border-t border-ap-separator">
               {user.suspended ? (
-                <button onClick={handleUnsuspend} className="btn-secondary text-xs">
-                  <Unlock size={12} /> Unsuspend Account
+                  <button onClick={handleUnsuspend} className="btn-secondary text-xs">
+                  <Unlock size={12} /> Unsuspend
                 </button>
               ) : (
                 <>
-                  <input type="text" placeholder="Suspension reason\u2026" value={suspendReason}
+                  <input type="text" placeholder="Reason\u2026" value={suspendReason}
                     onChange={(e) => setSuspendReason(e.target.value)} className="input py-1.5 text-xs w-48" />
                   <button onClick={handleSuspend} className="btn-destructive text-xs">
                     <ShieldOff size={12} /> Suspend
@@ -140,10 +140,10 @@ export default function AdminUserManager() {
                 </>
               )}
               <button onClick={handleLegalHold} className={`text-xs ${user.legalHold ? 'btn-destructive' : 'btn-secondary'}`}>
-                <Lock size={12} /> {user.legalHold ? 'Remove Legal Hold' : 'Enable Legal Hold'}
+                <Lock size={12} /> {user.legalHold ? 'Legal Hold Off' : 'Legal Hold On'}
               </button>
               <button onClick={handleExport} disabled={exporting} className="btn-secondary text-xs">
-                <Download size={12} /> {exporting ? 'Exporting\u2026' : 'Export All Data'}
+                <Download size={12} /> {exporting ? 'Exporting\u2026' : 'Export All'}
               </button>
               {user.suspended && user.suspensionReason && (
                 <div className="w-full flex items-center gap-2 text-xs text-ap-orange bg-ap-orange/5 rounded-lg px-3 py-2">
@@ -189,7 +189,7 @@ export default function AdminUserManager() {
 
           {user.alerts.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-sm font-bold text-text-primary">Recent Alerts ({user.alerts.length})</h3>
+              <h3 className="text-sm font-bold text-text-primary">Alerts ({user.alerts.length})</h3>
               <div className="card p-3 shadow-apple-sm max-h-48 overflow-y-auto space-y-1">
                 {user.alerts.map((a) => (
                   <div key={a.id} className="flex items-center justify-between text-xs py-1 px-2 rounded-lg even:bg-fill-input">

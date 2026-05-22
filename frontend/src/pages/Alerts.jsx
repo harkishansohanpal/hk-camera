@@ -21,7 +21,7 @@ export default function Alerts() {
       const { data } = await alertAPI.list({ limit: 50 });
       setAlerts(data.data);
       setUnread(data.unreadCount);
-    } catch { toast.error('Failed to load alerts'); }
+    } catch { toast.error('Could not load alerts'); }
     finally { setLoading(false); }
   }
 
@@ -37,7 +37,7 @@ export default function Alerts() {
     await alertAPI.markAllRead();
     setAlerts((prev) => prev.map((a) => ({ ...a, read: true })));
     setUnread(0);
-    toast.success('All alerts marked as read');
+    toast.success('All marked as read');
   }
 
   async function handleDelete(id) {
@@ -54,7 +54,7 @@ export default function Alerts() {
           <h1 className="page-title truncate">Alerts</h1>
           {unread > 0 && <p className="page-subtitle mt-0.5">{unread} unread</p>}
         </div>
-        {unread > 0 && <button onClick={handleMarkAllRead} className="btn-ghost text-sm flex-shrink-0"><CheckCheck size={14} /> Mark all read</button>}
+        {unread > 0 && <button onClick={handleMarkAllRead} className="btn-ghost text-sm flex-shrink-0"><CheckCheck size={14} /> Mark All Read</button>}
       </div>
 
       {loading ? (
@@ -63,7 +63,7 @@ export default function Alerts() {
         <div className="card text-center py-16 shadow-apple-sm">
           <BellOff size={36} className="text-ap-gray3 mx-auto mb-3" />
           <p className="text-text-secondary font-semibold">No alerts yet</p>
-          <p className="text-text-secondary text-sm mt-1">You'll be notified when motion is detected</p>
+          <p className="text-text-secondary text-sm mt-1">You'll get notified when something happens</p>
         </div>
       ) : (
         <div className="space-y-2">

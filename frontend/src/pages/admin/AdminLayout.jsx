@@ -19,7 +19,7 @@ export default function AdminLayout() {
             </div>
             <NavLink to="/admin" className="text-sm font-bold text-text-primary tracking-tight">Admin</NavLink>
           </div>
-          <p className="text-[10px] text-text-secondary mt-1">Production Support</p>
+          <p className="text-[10px] text-text-secondary mt-1">Admin Panel</p>
         </div>
         <nav className="flex-1 p-2 space-y-0.5">
           {links.map(({ to, icon: Icon, label, end }) => (
@@ -35,7 +35,7 @@ export default function AdminLayout() {
         </nav>
         <div className="p-3 border-t border-ap-separator">
           <NavLink to="/dashboard" className="flex items-center gap-2 text-[11px] text-text-secondary hover:text-text-primary transition-colors">
-            <ArrowLeft size={12} /> Back to app
+            <ArrowLeft size={12} /> Back to App
           </NavLink>
         </div>
       </aside>

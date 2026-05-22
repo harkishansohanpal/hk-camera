@@ -76,12 +76,12 @@ export default function Layout() {
           <button onClick={toggleTheme}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-text-secondary hover:text-text-primary hover:bg-card-hover transition-colors mb-0.5">
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            {theme === 'dark' ? 'Light' : 'Dark'}
           </button>
           {tour.dismissed && (
             <button onClick={() => { tour.reset(); tour.start(); }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-text-secondary hover:text-text-primary hover:bg-card-hover transition-colors mb-0.5">
-              <HelpCircle size={18} /> Tour
+              <HelpCircle size={18} /> Guide
             </button>
           )}
           <button onClick={handleLogout}
@@ -138,7 +138,7 @@ export default function Layout() {
           <button onClick={() => { setSidebarOpen(false); toggleTheme(); }}
             className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-text-secondary hover:text-text-primary hover:bg-card-hover transition-colors mb-0.5">
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            {theme === 'dark' ? 'Light' : 'Dark'}
           </button>
           <button onClick={() => { setSidebarOpen(false); handleLogout(); }}
             className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-text-secondary hover:text-ap-red transition-colors">
@@ -164,7 +164,7 @@ export default function Layout() {
             {tour.dismissed && (
               <button onClick={() => { tour.reset(); tour.start(); }}
                 className="flex items-center gap-1 px-2.5 py-1.5 bg-card border border-ap-separator text-text-secondary hover:text-text-primary rounded-xl text-xs font-semibold transition-colors flex-shrink-0">
-                <HelpCircle size={12} /> Tour
+                <HelpCircle size={12} /> Guide
               </button>
             )}
           </header>

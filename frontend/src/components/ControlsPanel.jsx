@@ -5,7 +5,7 @@ const whiteBalanceOptions = [
   { value: 'cloudy', label: 'Cloudy' }, { value: 'tungsten', label: 'Tungsten' }, { value: 'fluorescent', label: 'Fluorescent' },
 ];
 
-export default function CameraControlsPanel({ capabilities, settings, onControlChange, onReset }) {
+export default function ControlsPanel({ capabilities, settings, onControlChange, onReset }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -15,7 +15,7 @@ export default function CameraControlsPanel({ capabilities, settings, onControlC
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8v-2m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6-8v-2m0 2a2 2 0 100 4m0-4a2 2 0 110 4" />
         </svg>
-        <span className="text-[9px] font-semibold">Camera</span>
+        <span className="text-[9px] font-semibold">Controls</span>
       </button>
       {isOpen && (
         <div className="absolute bottom-full right-0 mb-2 bg-black/95 backdrop-blur-xl rounded-xl p-4 w-80 max-w-[calc(100vw-2rem)] max-h-[60vh] shadow-xl border border-white/10 z-50 overflow-y-auto">
@@ -37,7 +37,7 @@ export default function CameraControlsPanel({ capabilities, settings, onControlC
               <input type="range" min="0" max="100" value={settings.focus}
                 onChange={(e) => onControlChange('focus', parseInt(e.target.value))}
                 className="w-full h-1.5 bg-white/20 rounded-full appearance-none cursor-pointer accent-ap-blue" />
-              <p className="text-[10px] text-white/30 mt-1">0 = near, 100 = far</p>
+              <p className="text-[10px] text-white/30 mt-1">0 = close, 100 = far</p>
             </div>
             <div>
               <label className="text-xs font-medium text-white block mb-1">White Balance</label>

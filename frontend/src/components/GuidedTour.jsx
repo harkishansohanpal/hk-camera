@@ -2,15 +2,15 @@ import { useState, useCallback, useRef, useLayoutEffect } from 'react';
 import { ChevronRight, ChevronLeft, SkipForward } from 'lucide-react';
 
 const DEFAULT_STEPS = [
-  { target: 'tour-welcome', title: 'Welcome to HK Camera', content: 'Let\'s take a 60-second tour to get you started. You can skip at any time.', position: 'center' },
-  { target: 'tour-stats', title: 'At a Glance', content: 'See your total cameras, how many are online, and your recent alert count \u2014 all in one row.', position: 'bottom' },
-  { target: 'tour-add-camera', title: 'Add a Camera', content: 'Tap here to add a new security camera. After adding, you\'ll get a secret code to connect your phone.', position: 'left' },
-  { target: 'tour-broadcast', title: 'Go Live from Your Phone', content: 'Open the app on your phone and tap "Go Live" on the camera card. Enter the code shown on the screen to start streaming live video.', position: 'top' },
-  { target: 'tour-camera-list', title: 'Your Cameras', content: 'All your cameras appear here. Each card shows the name, online status, and recording count.', position: 'top' },
-  { target: 'tour-view-live', title: 'View Live Feed', content: 'Tap "View Live" to watch the camera stream in real-time from any device.', position: 'top' },
-  { target: 'tour-camera-menu', title: 'Camera Settings', content: 'Manage each camera \u2014 rename it, turn detection on or off, or delete it.', position: 'left' },
-  { target: 'tour-nav', title: 'Navigation', content: 'Use the menu (top-left corner on your phone, sidebar on desktop) to access Recordings, Alerts, Settings, and more at any time.', position: 'right' },
-  { target: 'tour-end', title: 'You\'re All Set!', content: 'Add a camera, then open your phone\'s browser and tap "Go Live" with the code shown to start streaming.', position: 'center' },
+  { target: 'tour-welcome', title: 'Welcome!', content: 'Quick tour to help you get started. Skip anytime.', position: 'center' },
+  { target: 'tour-stats', title: 'Overview', content: 'See how many cameras you have, which ones are on, and recent alerts.', position: 'bottom' },
+  { target: 'tour-add-camera', title: 'Add a Camera', content: 'Tap here to add a camera. You\'ll get a code to connect your phone.', position: 'left' },
+  { target: 'tour-broadcast', title: 'Stream from Your Phone', content: 'Open the app on your phone and tap \'Stream\' on the camera card. Enter the code to start streaming live video.', position: 'top' },
+  { target: 'tour-camera-list', title: 'Your Cameras', content: 'All your cameras show up here. Each one shows the name, status, and recording count.', position: 'top' },
+  { target: 'tour-view-live', title: 'Watch Live', content: 'Tap \'Watch\' to see live video from any device.', position: 'top' },
+  { target: 'tour-camera-menu', title: 'Manage', content: 'Tap the menu to rename, turn detection on/off, or delete a camera.', position: 'left' },
+  { target: 'tour-nav', title: 'Navigation', content: 'Use the menu to get to Recordings, Alerts, Settings, and more.', position: 'right' },
+  { target: 'tour-end', title: 'You\'re Ready!', content: 'Add a camera, open your phone\'s browser, and tap \'Stream\' to start.', position: 'center' },
 ];
 
 function getTargetEl(step) {
@@ -121,7 +121,7 @@ export default function GuidedTour({ steps = DEFAULT_STEPS, onFinish, onDismiss 
         <label className="flex items-center gap-2 mb-4 cursor-pointer group">
           <input type="checkbox" checked={dontShowAgain} onChange={(e) => setDontShowAgain(e.target.checked)}
             className="w-3.5 h-3.5 rounded border-ap-gray4 bg-card text-ap-blue focus:ring-ap-blue/30 cursor-pointer flex-shrink-0" />
-          <span className="text-[11px] text-text-secondary group-hover:text-text-primary transition-colors select-none">Don't show this on startup from next time</span>
+          <span className="text-[11px] text-text-secondary group-hover:text-text-primary transition-colors select-none">Don't show on start</span>
         </label>
         <div className="flex items-center justify-between">
           <button onClick={handleBack} disabled={isFirst}

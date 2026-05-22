@@ -3,11 +3,11 @@ import { Loader2, WifiOff } from 'lucide-react';
 import { useNightVision } from '../hooks/useNightVision';
 
 const STATUS_LABELS = {
-  idle:         { text: 'Initialising\u2026',   Icon: Loader2, spin: true },
+  idle:         { text: 'Starting\u2026',   Icon: Loader2, spin: true },
   connecting:   { text: 'Connecting\u2026',      Icon: Loader2, spin: true },
   waiting:      { text: 'Waiting for camera\u2026', Icon: Loader2, spin: true },
-  disconnected: { text: 'Camera offline',   Icon: WifiOff, spin: false },
-  error:        { text: 'Connection error', Icon: WifiOff, spin: false },
+  disconnected: { text: 'Camera Offline',   Icon: WifiOff, spin: false },
+  error:        { text: 'Could Not Connect', Icon: WifiOff, spin: false },
 };
 
 export default function ViewerStream({ remoteStream, status, className = '', videoRef: externalRef, isRecording = false, recordingDuration = 0, nightVision = 'off' }) {

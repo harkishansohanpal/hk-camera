@@ -31,7 +31,7 @@ export default function Recordings() {
   useEffect(() => {
     setLoading(true);
     const params = { limit: 50, ...(selectedCam && { cameraId: selectedCam }) };
-    recordingAPI.listAll(params).then(({ data }) => setRecordings(data.data)).catch(() => toast.error('Failed to load recordings')).finally(() => setLoading(false));
+    recordingAPI.listAll(params).then(({ data }) => setRecordings(data.data)).catch(() => toast.error('Could not load recordings')).finally(() => setLoading(false));
     setSelectedRecordings(new Set());
   }, [selectedCam]);
 
@@ -66,11 +66,11 @@ export default function Recordings() {
           <button onClick={handleBulkDelete} className="btn-destructive text-sm"><Trash2 size={14} /> Delete {selectedRecordings.size}</button>
         )}
         <select value={selectedCam} onChange={(e) => setSelectedCam(e.target.value)} className="input py-2 text-sm flex-1 sm:flex-none sm:w-40">
-          <option value="">All cameras</option>
+          <option value="">All Cameras</option>
           {cameras.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
         <select value={filter} onChange={(e) => setFilter(e.target.value)} className="input py-2 text-sm flex-1 sm:flex-none sm:w-36">
-          <option value="">All triggers</option>
+          <option value="">All Types</option>
           <option value="MOTION">Motion</option>
           <option value="MANUAL">Manual</option>
           <option value="SCHEDULED">Scheduled</option>
@@ -82,7 +82,7 @@ export default function Recordings() {
       ) : filtered.length === 0 ? (
         <div className="card text-center py-16 shadow-apple-sm">
           <Video size={36} className="text-ap-gray3 mx-auto mb-3" />
-          <p className="text-text-secondary font-semibold">No recordings found</p>
+          <p className="text-text-secondary font-semibold">No recordings yet</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">

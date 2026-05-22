@@ -20,11 +20,11 @@ export default function Register() {
       return;
     }
     if (!consent) {
-      toast.error('You must accept the Privacy Policy');
+      toast.error('Please accept the Privacy Policy and Terms');
       return;
     }
     if (!turnstileToken) {
-      toast.error('Please complete the verification');
+      toast.error('Please complete the security check');
       return;
     }
     setLoading(true);
@@ -33,7 +33,7 @@ export default function Register() {
       navigate('/dashboard');
       toast.success('Welcome to HK Camera!');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Registration failed');
+      toast.error(err.response?.data?.message || 'Could not create account. Try again.');
     } finally {
       setLoading(false);
     }
@@ -46,16 +46,16 @@ export default function Register() {
           <div className="w-14 h-14 bg-ap-blue rounded-2xl flex items-center justify-center mb-4 shadow-apple shadow-ap-blue/20">
             <Camera size={28} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-text-primary tracking-tight">Create account</h1>
-          <p className="text-text-secondary text-sm mt-1">Start monitoring in minutes</p>
+          <h1 className="text-2xl font-bold text-text-primary tracking-tight">Create Account</h1>
+          <p className="text-text-secondary text-sm mt-1">Get started in minutes</p>
         </div>
 
         <div className="card p-6 shadow-apple">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {[
-              { key: 'name',     label: 'Full name', type: 'text',     placeholder: 'Jane Smith' },
+              { key: 'name',     label: 'Full Name', type: 'text',     placeholder: 'Jane Smith' },
               { key: 'email',    label: 'Email',     type: 'email',    placeholder: 'jane@example.com' },
-              { key: 'password', label: 'Password',  type: 'password', placeholder: 'Min 8 characters' },
+              { key: 'password', label: 'Password',  type: 'password', placeholder: 'At least 8 characters' },
             ].map(({ key, label, type, placeholder }) => (
               <div key={key}>
                 <label className="block text-sm font-semibold text-text-primary mb-1.5">{label}</label>
@@ -71,7 +71,7 @@ export default function Register() {
                 I agree to the{' '}
                 <Link to="/privacy" className="text-ap-blue hover:text-blue-700 font-semibold underline">Privacy Policy</Link>{' '}
                 and{' '}
-                <Link to="/terms" className="text-ap-blue hover:text-blue-700 font-semibold underline">Terms of Service</Link>
+                <Link to="/terms" className="text-ap-blue hover:text-blue-700 font-semibold underline">Terms</Link>
               </span>
             </label>
             <TurnstileWidget onToken={setTurnstileToken} onExpire={() => setTurnstileToken(null)} />
@@ -83,7 +83,7 @@ export default function Register() {
 
         <p className="text-center text-text-secondary text-sm mt-5">
           Already have an account?{' '}
-          <Link to="/login" className="text-ap-blue hover:text-blue-700 font-semibold">Sign in</Link>
+          <Link to="/login" className="text-ap-blue hover:text-blue-700 font-semibold">Log In</Link>
         </p>
       </div>
     </div>

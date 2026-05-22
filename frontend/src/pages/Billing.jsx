@@ -15,13 +15,13 @@ export default function Billing() {
 
   async function handlePortal() {
     try { const { data } = await subscriptionAPI.createPortal(); window.location.href = data.data.url; }
-    catch (err) { toast.error('Failed to open billing portal'); }
+    catch (err) { toast.error('Could not open billing page'); }
   }
 
   async function handleCancel() {
-    if (!confirm('Cancel your subscription? You will lose access at the end of the billing period.')) return;
-    try { await subscriptionAPI.cancel(); toast.success('Subscription will cancel at period end'); setSub((s) => ({ ...s, cancelAtPeriodEnd: true })); }
-    catch (err) { toast.error('Failed to cancel subscription'); }
+    if (!confirm('Cancel your plan? You\'ll lose access at the end of the billing period.')) return;
+    try { await subscriptionAPI.cancel(); toast.success('Your plan will be canceled at the end of this billing period'); setSub((s) => ({ ...s, cancelAtPeriodEnd: true })); }
+    catch (err) { toast.error('Could not cancel plan'); }
   }
 
   if (loading) {
@@ -40,9 +40,9 @@ export default function Billing() {
       {!sub ? (
         <div className="card text-center py-12 shadow-apple">
           <CreditCard size={40} className="text-ap-gray3 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-text-primary mb-2">No active subscription</h2>
-          <p className="text-text-secondary text-sm mb-6">You are on the Free plan. Upgrade to unlock more features.</p>
-          <button onClick={() => navigate('/pricing')} className="btn-primary text-sm px-5">View Plans</button>
+          <h2 className="text-lg font-semibold text-text-primary mb-2">No Active Plan</h2>
+          <p className="text-text-secondary text-sm mb-6">You're on the Free plan. Upgrade for more.</p>
+          <button onClick={() => navigate('/pricing')} className="btn-primary text-sm px-5">See Plans</button>
         </div>
       ) : (
         <>
@@ -71,9 +71,9 @@ export default function Billing() {
           </div>
 
           <div className="flex flex-col gap-3 pt-6">
-            <button onClick={handlePortal} className="btn-secondary text-sm"><ExternalLink size={16} /> Manage in Stripe</button>
+            <button onClick={handlePortal} className="btn-secondary text-sm"><ExternalLink size={16} /> Manage Payment</button>
             {!sub.cancelAtPeriodEnd && sub.status === 'ACTIVE' && (
-              <button onClick={handleCancel} className="btn-destructive text-sm"><XCircle size={16} /> Cancel Subscription</button>
+              <button onClick={handleCancel} className="btn-destructive text-sm"><XCircle size={16} /> Cancel Plan</button>
             )}
           </div>
         </>

@@ -7,7 +7,7 @@ import { useYoloDetection } from '../hooks/useYoloDetection';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
 import { useWakeLock } from '../hooks/useWakeLock';
 import { logger } from '../lib/logger';
-import CameraControlsPanel from '../components/CameraControlsPanel';
+import ControlsPanel from '../components/ControlsPanel';
 import ViewerStream from '../components/ViewerStream';
 import DetectionOverlay from '../components/DetectionOverlay';
 import api from '../services/api';
@@ -174,9 +174,9 @@ export default function Viewer() {
         {isBad && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-30 bg-black/50" onClick={(e) => e.stopPropagation()}>
             <button onClick={doManualRetry} className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold px-6 py-3 rounded-2xl border border-white/10 backdrop-blur-sm transition-colors">
-              <RotateCcw size={16} /> Retry Now
+              <RotateCcw size={16} /> Retry
             </button>
-            {retryCountdown != null && retryCountdown > 0 && <p className="text-white/50 text-xs">Auto-retry in {retryCountdown}s</p>}
+            {retryCountdown != null && retryCountdown > 0 && <p className="text-white/50 text-xs">Retrying in {retryCountdown}s</p>}
           </div>
         )}
 
@@ -187,15 +187,15 @@ export default function Viewer() {
             <div className="mx-2 mb-2 bg-black/80 backdrop-blur-xl rounded-2xl p-2.5 flex items-center justify-around gap-1 border border-white/5 shadow-lg">
               <button onClick={() => { const n = !torchOn; setTorchOn(n); sendCommand('TORCH', { on: n }); }}
                 className={`flex flex-col items-center justify-center gap-0.5 w-11 h-11 rounded-xl transition-colors ${torchOn ? 'text-ap-yellow bg-ap-yellow/10' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
-                {torchOn ? <Zap size={16} /> : <ZapOff size={16} />}<span className="text-[9px] font-semibold">Torch</span>
+                {torchOn ? <Zap size={16} /> : <ZapOff size={16} />}<span className="text-[9px] font-semibold">Light</span>
               </button>
               <button onClick={() => { const n = !screenDim; setScreenDim(n); sendCommand('SCREEN_DIM', { on: n }); }}
                 className={`flex flex-col items-center justify-center gap-0.5 w-11 h-11 rounded-xl transition-colors ${screenDim ? 'text-ap-blue bg-ap-blue/10' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
-                <Moon size={16} /><span className="text-[9px] font-semibold">Screen</span>
+                <Moon size={16} /><span className="text-[9px] font-semibold">Dim</span>
               </button>
               <button onClick={() => { const n = !backgroundMode; setBackgroundMode(n); sendCommand('BACKGROUND', { on: n }); }}
                 className={`flex flex-col items-center justify-center gap-0.5 w-11 h-11 rounded-xl transition-colors ${backgroundMode ? 'text-ap-green bg-ap-green/10' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
-                <BatteryCharging size={16} /><span className="text-[9px] font-semibold">BG</span>
+                <BatteryCharging size={16} /><span className="text-[9px] font-semibold">Battery</span>
               </button>
               <button onClick={() => setMotionEnabled((v) => !v)}
                 className={`flex flex-col items-center justify-center gap-0.5 w-11 h-11 rounded-xl transition-colors ${motionEnabled ? 'text-ap-blue bg-ap-blue/10' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
@@ -207,13 +207,13 @@ export default function Viewer() {
               </button>
               <button onClick={() => { showDetectionsRef.current = !showDetections; setShowDetections((v) => !v); }}
                 className={`flex flex-col items-center justify-center gap-0.5 w-11 h-11 rounded-xl transition-colors ${showDetections ? 'text-ap-blue bg-ap-blue/10' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
-                <Scan size={16} /><span className="text-[9px] font-semibold">{modelLoaded ? 'Detect' : 'ML\u2026'}</span>
+                <Scan size={16} /><span className="text-[9px] font-semibold">{modelLoaded ? 'Detect' : 'Loading\u2026'}</span>
               </button>
               <button onClick={() => setNightVisionMode((m) => m === 'off' ? 'enhanced' : m === 'enhanced' ? 'ir' : 'off')}
                 className={`flex flex-col items-center justify-center gap-0.5 w-11 h-11 rounded-xl transition-colors ${nightVisionMode !== 'off' ? 'text-ap-green bg-ap-green/10' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
-                <Eye size={16} /><span className="text-[9px] font-semibold">{nightVisionMode === 'ir' ? 'IR' : nightVisionMode === 'enhanced' ? 'NV' : 'Night'}</span>
+                <Eye size={16} /><span className="text-[9px] font-semibold">Night</span>
               </button>
-              <CameraControlsPanel capabilities={{}} settings={cameraControlSettings} onControlChange={handleCameraControlChange} onReset={handleCameraControlReset} />
+              <ControlsPanel capabilities={{}} settings={cameraControlSettings} onControlChange={handleCameraControlChange} onReset={handleCameraControlReset} />
             </div>
           </div>
         )}

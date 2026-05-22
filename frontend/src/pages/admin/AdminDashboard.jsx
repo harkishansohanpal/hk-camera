@@ -35,7 +35,7 @@ export default function AdminDashboard() {
   return (
     <div className="max-w-6xl mx-auto space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-lg font-bold text-text-primary">Dashboard</h1><p className="text-xs text-text-secondary mt-0.5">Recent logs and system activity</p></div>
+        <div><h1 className="text-lg font-bold text-text-primary">Dashboard</h1><p className="text-xs text-text-secondary mt-0.5">Recent activity</p></div>
         <button onClick={fetchLogs} className="btn-ghost text-xs">
           <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> Refresh
         </button>
@@ -57,9 +57,9 @@ export default function AdminDashboard() {
       <div className="flex flex-wrap items-center gap-2">
         <select value={filters.level} onChange={(e) => setFilters((f) => ({ ...f, level: e.target.value }))}
           className="input py-1.5 text-xs w-28">
-          <option value="">All levels</option><option value="error">Error</option><option value="warn">Warn</option><option value="info">Info</option><option value="debug">Debug</option>
+          <option value="">All</option><option value="error">Error</option><option value="warn">Warn</option><option value="info">Info</option><option value="debug">Debug</option>
         </select>
-        <input placeholder="Tag filter\u2026" value={filters.tag} onChange={(e) => setFilters((f) => ({ ...f, tag: e.target.value }))} className="input py-1.5 text-xs w-28" />
+        <input placeholder="Filter by tag\u2026" value={filters.tag} onChange={(e) => setFilters((f) => ({ ...f, tag: e.target.value }))} className="input py-1.5 text-xs w-28" />
         <select value={filters.limit} onChange={(e) => setFilters((f) => ({ ...f, limit: e.target.value }))} className="input py-1.5 text-xs w-20">
           <option value="50">50</option><option value="100">100</option><option value="200">200</option>
         </select>
@@ -80,11 +80,11 @@ export default function AdminDashboard() {
                 <th className="text-left py-2.5 px-3 font-semibold">Level</th>
                 <th className="text-left py-2.5 px-3 font-semibold">Tag</th>
                 <th className="text-left py-2.5 px-3 font-semibold">Message</th>
-                <th className="text-left py-2.5 px-3 font-semibold">Meta</th>
+                <th className="text-left py-2.5 px-3 font-semibold">Details</th>
               </tr>
             </thead>
             <tbody>
-              {logs.length === 0 && <tr><td colSpan={5} className="py-8 text-center text-text-secondary">No logs found</td></tr>}
+              {logs.length === 0 && <tr><td colSpan={5} className="py-8 text-center text-text-secondary">No logs yet</td></tr>}
               {logs.map((log) => {
                 const Icon = LEVEL_ICONS[log.level] || Info;
                 return (
