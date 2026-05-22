@@ -71,23 +71,23 @@ export default function Dashboard() {
   return (
     <div className="page-container animate-fade-in">
 
-      {/* Tour trigger */}
-      {tour.dismissed && (
-        <button onClick={() => { tour.reset(); tour.start(); }}
-          className="fixed bottom-20 left-4 sm:bottom-4 sm:right-4 z-50 flex items-center gap-1.5 px-3 py-2 bg-card shadow-apple text-text-secondary hover:text-text-primary rounded-xl text-xs transition-colors border border-ap-separator">
-          <HelpCircle size={12} /> Tour
-        </button>
-      )}
-
       {/* Header */}
       <div className="page-header flex items-center justify-between">
         <div>
           <h1 className="page-title" data-tour="tour-welcome">Dashboard</h1>
           <p className="page-subtitle mt-0.5">{cameras.length} camera{cameras.length !== 1 ? 's' : ''}</p>
         </div>
-        <button onClick={() => setShowAdd(true)} data-tour="tour-add-camera" className="btn-primary text-sm px-5">
-          <Plus size={16} /> Add Camera
-        </button>
+        <div className="flex items-center gap-2">
+          {tour.dismissed && (
+            <button onClick={() => { tour.reset(); tour.start(); }}
+              className="flex items-center gap-1.5 px-3 py-2 bg-card border border-ap-separator text-text-secondary hover:text-text-primary rounded-xl text-xs font-semibold transition-colors">
+              <HelpCircle size={12} /> Tour
+            </button>
+          )}
+          <button onClick={() => setShowAdd(true)} data-tour="tour-add-camera" className="btn-primary text-sm px-5">
+            <Plus size={16} /> Add Camera
+          </button>
+        </div>
       </div>
 
       {/* Stats - iOS Widget Style */}
