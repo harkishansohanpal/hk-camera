@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Camera, Wifi, WifiOff, Trash2, Eye, AlertTriangle, HelpCircle, MoreVertical, Radio } from 'lucide-react';
+import { Plus, Camera, Wifi, WifiOff, Trash2, Eye, AlertTriangle, MoreVertical, Radio } from 'lucide-react';
 import { cameraAPI } from '../services/api';
 import toast from 'react-hot-toast';
-import GuidedTour, { useTour } from '../components/GuidedTour';
+import { useTour } from '../contexts/TourContext';
+import GuidedTour from '../components/GuidedTour';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -78,12 +79,6 @@ export default function Dashboard() {
           <p className="page-subtitle mt-0.5">{cameras.length} camera{cameras.length !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          {tour.dismissed && (
-            <button onClick={() => { tour.reset(); tour.start(); }}
-              className="flex items-center justify-center gap-1.5 px-2 py-2 bg-card border border-ap-separator text-text-secondary hover:text-text-primary rounded-xl text-xs font-semibold transition-colors">
-              <HelpCircle size={14} /> Tour
-            </button>
-          )}
           <button onClick={() => setShowAdd(true)} data-tour="tour-add-camera" className="btn-primary text-sm px-3 sm:px-5 whitespace-nowrap">
             <Plus size={16} /> <span className="hidden sm:inline">Add </span>Camera
           </button>

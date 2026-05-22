@@ -2,10 +2,11 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import {
   Camera, LayoutDashboard, Video, Bell, Settings, CreditCard,
-  LogOut, Menu, X, Sun, Moon,
+  LogOut, Menu, X, Sun, Moon, HelpCircle,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useTour } from '../contexts/TourContext';
 import toast from 'react-hot-toast';
 
 const NAV_ITEMS = [
@@ -19,6 +20,7 @@ const NAV_ITEMS = [
 export default function Layout() {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const tour = useTour();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -149,10 +151,16 @@ export default function Layout() {
               className="w-10 h-10 flex items-center justify-center text-text-secondary hover:text-text-primary rounded-xl transition-colors flex-shrink-0">
               <Menu size={20} />
             </button>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
               <Camera size={18} className="flex-shrink-0" style={{ color: 'var(--ap-blue)' }} />
               <span className="font-bold text-text-primary text-base">HK Camera</span>
             </div>
+            {tour.dismissed && (
+              <button onClick={() => { tour.reset(); tour.start(); }}
+                className="flex items-center gap-1 px-2.5 py-1.5 bg-card border border-ap-separator text-text-secondary hover:text-text-primary rounded-xl text-xs font-semibold transition-colors flex-shrink-0">
+                <HelpCircle size={12} /> Tour
+              </button>
+            )}
           </header>
         )}
 

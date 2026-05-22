@@ -23,12 +23,14 @@ import AdminLogAnalyzer from './pages/admin/AdminLogAnalyzer';
 import AdminUserManager from './pages/admin/AdminUserManager';
 
 import CookieBanner from './components/CookieBanner';
+import { TourProvider } from './contexts/TourContext';
 
 export default function App() {
   return (
     <AuthProvider>
-      <CookieBanner />
-      <Routes>
+      <TourProvider>
+        <CookieBanner />
+        <Routes>
         {/* Public */}
         <Route path="/"         element={<Landing />} />
         <Route path="/pricing"  element={<Pricing />} />
@@ -62,6 +64,7 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </TourProvider>
     </AuthProvider>
   );
 }
