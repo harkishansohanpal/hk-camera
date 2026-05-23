@@ -122,7 +122,7 @@ export default function CameraView() {
     }
   }
 
-  const { startBroadcast, stopBroadcast, setMicEnabled, status: rtcStatus } = useWebRTC({ role: 'camera', streamKey: camera?.streamKey, onCommand: handleRemoteCommand });
+  const { startBroadcast, stopBroadcast, setMicEnabled, status: rtcStatus } = useWebRTC({ streamKey: camera?.streamKey, onCommand: handleRemoteCommand });
   const isBroadcasting = rtcStatus === 'connected' || rtcStatus === 'connecting';
   const { startRecording, stopRecording, isRecording, duration } = useMediaRecorder({ cameraId, trigger: 'MANUAL' });
   const startRecordingRef = useRef(startRecording);

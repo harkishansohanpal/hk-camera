@@ -29,7 +29,7 @@ let _cachedIce = null;
 let _cacheExpiry = 0;
 let _fetchPromise = null;   // deduplicate concurrent fetches
 
-export async function prefetchIceServers(timeoutMs = 5000) {
+export async function prefetchIceServers() {
   const now = Date.now();
   if (_cachedIce && _cacheExpiry - now > 5 * 60 * 1000) {
     return _cachedIce;
@@ -53,8 +53,8 @@ export async function prefetchIceServers(timeoutMs = 5000) {
   return _fetchPromise;
 }
 
-async function fetchIceServers(timeoutMs = 5000) {
-  return prefetchIceServers(timeoutMs);
+async function fetchIceServers() {
+  return prefetchIceServers();
 }
 
 // ── Codec optimization for high-quality video ──
@@ -78,12 +78,12 @@ async function optimizeCodecs(pc) {
     if (videoSender.setParameters) {
       await videoSender.setParameters(params).catch(() => {});
     }
-    } catch (err) {
+  } catch (err) {
     logger.warn('WebRTC', 'Could not optimize codecs', { error: err.message });
   }
 }
 
-export function useWebRTC({ role, streamKey, onCommand }) {
+export function useWebRTC({ streamKey, onCommand }) {
   const [status, setStatus]             = useState('idle');
   const [remoteStream, setRemoteStream] = useState(null);
   const [cameraId, setCameraId]         = useState(null);
@@ -204,6 +204,111 @@ export function useWebRTC({ role, streamKey, onCommand }) {
     // Use a flag to prevent handler execution after disconnect
     let isActive = true;
 
+    const initiateOffer = async (socket, isActive) => {
+      if (offerInFlightRef.current) return;
+      if (!isActive) return;
+
+      const offerStartTime = Date.now();
+      logger.info('WebRTC', 'initiateOffer called');
+      offerInFlightRef.current = true;
+
+      try {
+        if (pcRef.current) {
+          pcRef.current.close();
+          pcRef.current = null;
+        }
+        pendingCandidates.current = [];
+
+        logger.debug('WebRTC', 'fetchIceServers starting');
+        const iceStart = Date.now();
+        const iceServers = await fetchIceServers();
+        logger.debug('WebRTC', 'fetchIceServers completed', { tookMs: Date.now() - iceStart });
+
+        const pc = createPeerConnection(iceServers, (candidate) => {
+          if (socket.connected) {
+            socket.emit('ice:candidate', { candidate });
+          }
+        });
+        pcRef.current = pc;
+
+        pc.ontrack = (e) => {
+          const stream = e.streams?.[0] ?? new MediaStream([e.track]);
+          setRemoteStream(stream);
+        };
+
+        pc.addTransceiver('video', { direction: 'recvonly' });
+        pc.addTransceiver('audio', { direction: 'recvonly' });
+
+        // Handle renegotiation for two-way audio (viewer talks)
+        pc.onnegotiationneeded = async () => {
+          if (offerInFlightRef.current || !isActive) return;
+          offerInFlightRef.current = true;
+          try {
+            const newOffer = await pc.createOffer();
+            await pc.setLocalDescription(newOffer);
+            if (socket.connected) {
+              socket.emit('viewer:offer', { offer: newOffer });
+            }
+          } catch (err) {
+            logger.error('WebRTC', 'Renegotiation failed', { error: err.message });
+          } finally {
+            offerInFlightRef.current = false;
+          }
+        };
+
+        pc.onconnectionstatechange = () => {
+          if (!isActive) return;
+          const s = pc.connectionState;
+          logger.info('WebRTC', 'PC connection state change', { state: s });
+          if (s === 'connected') {
+            const elapsed = Date.now() - connectStartRef.current;
+            logger.info('WebRTC', 'Peer connection established', { tookMs: elapsed });
+            setStatus('connected');
+            offerInFlightRef.current = false;
+          }
+          if (s === 'disconnected') {
+            setStatus('disconnected');
+            offerInFlightRef.current = false;
+          }
+          if (s === 'failed') {
+            setStatus('error');
+            offerInFlightRef.current = false;
+          }
+        };
+
+        // ICE restart on transient failures — faster than full teardown
+        let iceRestartCount = 0;
+        pc.oniceconnectionstatechange = () => {
+          if (!isActive) return;
+          const iceState = pc.iceConnectionState;
+          if ((iceState === 'disconnected' || iceState === 'failed') && iceRestartCount < 3) {
+            iceRestartCount++;
+            logger.info('WebRTC', 'ICE degraded, restarting', { iceState, attempt: iceRestartCount });
+            pc.restartIce();
+          }
+        };
+
+        logger.debug('WebRTC', 'Creating offer');
+        const offerStart = Date.now();
+        const offer = await pc.createOffer();
+        logger.debug('WebRTC', 'Offer created', { tookMs: Date.now() - offerStart });
+
+        await pc.setLocalDescription(offer);
+
+        if (!socket.connected) {
+          throw new Error('Socket disconnected before sending offer');
+        }
+
+        logger.info('WebRTC', 'Emitting viewer:offer');
+        socket.emit('viewer:offer', { offer });
+        logger.info('WebRTC', 'Total initiateOffer time', { tookMs: Date.now() - offerStartTime });
+      } catch (err) {
+        logger.error('WebRTC', 'Failed to initiate offer', { error: err.message });
+        offerInFlightRef.current = false;
+        setStatus('error');
+      }
+    };
+
     const handleConnect = () => {
       if (isActive) {
         logger.info('WebRTC', 'Socket connected, emitting viewer:join', { streamKey });
@@ -220,7 +325,6 @@ export function useWebRTC({ role, streamKey, onCommand }) {
         setStatus('waiting');
       } else {
         logger.info('WebRTC', 'Camera online, initiating offer');
-        closePeerConnection();
         await initiateOffer(socket, isActive);
       }
     };
@@ -229,7 +333,6 @@ export function useWebRTC({ role, streamKey, onCommand }) {
       if (!isActive) return;
       // Always reset stale state when camera comes back online — don't
       // silently skip if a previous offer attempt is stuck in-flight.
-      closePeerConnection();
       logger.debug('WebRTC', 'camera:online received, initiating offer');
       await initiateOffer(socket, isActive);
     };
@@ -237,7 +340,6 @@ export function useWebRTC({ role, streamKey, onCommand }) {
     const handleCameraOffline = () => {
       if (isActive) {
         logger.info('WebRTC', 'Camera went offline');
-        closePeerConnection();
         setStatus('waiting');
       }
     };
@@ -317,112 +419,7 @@ export function useWebRTC({ role, streamKey, onCommand }) {
       socket.off('connect_error', handleConnectError);
       socket.off('disconnect', handleDisconnect);
     };
-  }, [streamKey, cleanup]);
-
-  async function initiateOffer(socket, isActive) {
-    if (offerInFlightRef.current) return;
-    if (!isActive) return;
-
-    const offerStartTime = Date.now();
-    logger.info('WebRTC', 'initiateOffer called');
-    offerInFlightRef.current = true;
-
-    try {
-      if (pcRef.current) {
-        pcRef.current.close();
-        pcRef.current = null;
-      }
-      pendingCandidates.current = [];
-
-      logger.debug('WebRTC', 'fetchIceServers starting');
-      const iceStart = Date.now();
-      const iceServers = await fetchIceServers();
-      logger.debug('WebRTC', 'fetchIceServers completed', { tookMs: Date.now() - iceStart });
-
-      const pc = createPeerConnection(iceServers, (candidate) => {
-        if (socket.connected) {
-          socket.emit('ice:candidate', { candidate });
-        }
-      });
-      pcRef.current = pc;
-
-      pc.ontrack = (e) => {
-        const stream = e.streams?.[0] ?? new MediaStream([e.track]);
-        setRemoteStream(stream);
-      };
-
-      pc.addTransceiver('video', { direction: 'recvonly' });
-      pc.addTransceiver('audio', { direction: 'recvonly' });
-
-      // Handle renegotiation for two-way audio (viewer talks)
-      pc.onnegotiationneeded = async () => {
-        if (offerInFlightRef.current || !isActive) return;
-        offerInFlightRef.current = true;
-        try {
-          const newOffer = await pc.createOffer();
-          await pc.setLocalDescription(newOffer);
-          if (socket.connected) {
-            socket.emit('viewer:offer', { offer: newOffer });
-          }
-        } catch (err) {
-          logger.error('WebRTC', 'Renegotiation failed', { error: err.message });
-        } finally {
-          offerInFlightRef.current = false;
-        }
-      };
-
-      pc.onconnectionstatechange = () => {
-        if (!isActive) return;
-        const s = pc.connectionState;
-        logger.info('WebRTC', 'PC connection state change', { state: s });
-        if (s === 'connected') {
-          const elapsed = Date.now() - connectStartRef.current;
-          logger.info('WebRTC', 'Peer connection established', { tookMs: elapsed });
-          setStatus('connected');
-          offerInFlightRef.current = false;
-        }
-        if (s === 'disconnected') {
-          setStatus('disconnected');
-          offerInFlightRef.current = false;
-        }
-        if (s === 'failed') {
-          setStatus('error');
-          offerInFlightRef.current = false;
-        }
-      };
-
-      // ICE restart on transient failures — faster than full teardown
-      let iceRestartCount = 0;
-      pc.oniceconnectionstatechange = () => {
-        if (!isActive) return;
-        const iceState = pc.iceConnectionState;
-        if ((iceState === 'disconnected' || iceState === 'failed') && iceRestartCount < 3) {
-          iceRestartCount++;
-          logger.info('WebRTC', 'ICE degraded, restarting', { iceState, attempt: iceRestartCount });
-          pc.restartIce();
-        }
-      };
-
-      logger.debug('WebRTC', 'Creating offer');
-      const offerStart = Date.now();
-      const offer = await pc.createOffer();
-      logger.debug('WebRTC', 'Offer created', { tookMs: Date.now() - offerStart });
-
-      await pc.setLocalDescription(offer);
-
-      if (!socket.connected) {
-        throw new Error('Socket disconnected before sending offer');
-      }
-
-      logger.info('WebRTC', 'Emitting viewer:offer');
-      socket.emit('viewer:offer', { offer });
-      logger.info('WebRTC', 'Total initiateOffer time', { tookMs: Date.now() - offerStartTime });
-    } catch (err) {
-      logger.error('WebRTC', 'Failed to initiate offer', { error: err.message });
-      offerInFlightRef.current = false;
-      setStatus('error');
-    }
-  }
+  }, [streamKey, closePeerConnection]);
 
   // ── Viewer: start sending mic audio to camera ──
   const startTalk = useCallback(async () => {

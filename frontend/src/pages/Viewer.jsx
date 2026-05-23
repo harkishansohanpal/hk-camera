@@ -42,7 +42,7 @@ export default function Viewer() {
   const isRetryingRef = useRef(false);
   const { acquire: acquireWL, release: releaseWL } = useWakeLock();
 
-  const { remoteStream, status, cameraId, connectViewer, disconnectViewer, sendCommand, rejoinViewer, startTalk, stopTalk, isTalking } = useWebRTC({ role: 'viewer', streamKey });
+  const { remoteStream, status, cameraId, connectViewer, disconnectViewer, sendCommand, rejoinViewer, startTalk, stopTalk, isTalking } = useWebRTC({ streamKey });
 
   const { startRecording, stopRecording, isRecording: recorderIsRecording, duration } = useMediaRecorder({
     cameraId, trigger: 'MOTION',
