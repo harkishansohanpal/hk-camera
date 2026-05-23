@@ -162,7 +162,26 @@ export function startKeepAlive() {
   return () => clearInterval(id);
 }
 
+function isTokenExpired(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return Date.now() >= payload.exp * 1000;
+  } catch {
+    return true;
+  }
+}
+
+/** Refresh auth tokens via the refresh endpoint. Updates the module-level `auth` object. */
+export async function refreshAuth() {
+  if (!auth) throw new Error('No auth to refresh. Call createTestUser first.');
+  if (!isTokenExpired(auth.accessToken)) return; // still valid
+  const data = await apiRetry('POST', '/api/auth/refresh', { refreshToken: auth.refreshToken });
+  auth.accessToken = data.accessToken;
+  auth.refreshToken = data.refreshToken;
+}
+
 export async function setupAuth(page) {
+  await refreshAuth();
   const tk = auth;
   await page.addInitScript(`
     localStorage.setItem('accessToken', ${JSON.stringify(tk.accessToken)});
