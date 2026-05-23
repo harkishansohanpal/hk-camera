@@ -3,6 +3,13 @@ name: Stress Tests
 on:
   workflow_dispatch:
     inputs:
+      target:
+        description: 'Environment to test against'
+        type: choice
+        options:
+          - local
+          - prod
+        default: 'local'
       duration:
         description: 'Monitor duration per scenario (ms)'
         default: '300000'
@@ -55,22 +62,26 @@ jobs:
             backend/package-lock.json
             frontend/package-lock.json
 
-      # ── Backend ──────────────────────────────────────────────
+      # ── Backend (local only) ──────────────────────────────────
       - name: Install backend deps
+        if: ${{ github.event.inputs.target != 'prod' }}
         working-directory: backend
         run: npm ci
 
       - name: Generate Prisma client
+        if: ${{ github.event.inputs.target != 'prod' }}
         working-directory: backend
         run: npx prisma generate
 
       - name: Run database migrations
+        if: ${{ github.event.inputs.target != 'prod' }}
         working-directory: backend
         run: npx prisma migrate deploy
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/hkcam_test
 
       - name: Start backend
+        if: ${{ github.event.inputs.target != 'prod' }}
         working-directory: backend
         run: |
           node src/index.js &
@@ -100,7 +111,9 @@ jobs:
         working-directory: frontend
         run: npx playwright install --with-deps chromium chromium-headless-shell
 
+      # ── Frontend build + preview (local only) ────────────────
       - name: Build frontend
+        if: ${{ github.event.inputs.target != 'prod' }}
         working-directory: frontend
         run: npm run build
         env:
@@ -108,6 +121,7 @@ jobs:
           VITE_SOCKET_URL: http://localhost:5001
 
       - name: Start frontend preview server
+        if: ${{ github.event.inputs.target != 'prod' }}
         working-directory: frontend
         run: |
           npx vite preview --port 4173 &
@@ -119,8 +133,8 @@ jobs:
         run: npx playwright test e2e/stress/ --reporter=github --timeout=3600000
         env:
           CI: true
-          STRESS_API_BASE: http://localhost:5001
-          STRESS_FRONTEND_URL: http://localhost:4173
+          STRESS_API_BASE: ${{ github.event.inputs.target == 'prod' && 'https://hk-camera-backend.fly.dev' || 'http://localhost:5001' }}
+          STRESS_FRONTEND_URL: ${{ github.event.inputs.target == 'prod' && 'https://hk-camera.pages.dev' || 'http://localhost:4173' }}
           STRESS_DURATION: ${{ github.event.inputs.duration || '300000' }}
           STRESS_VIEWER_COUNT: ${{ github.event.inputs.viewer_count || '3' }}
           STRESS_RECONNECT_CYCLES: ${{ github.event.inputs.reconnect_cycles || '20' }}
@@ -135,7 +149,7 @@ jobs:
           retention-days: 7
 
       - name: Show backend logs
-        if: always()
+        if: ${{ always() && github.event.inputs.target != 'prod' }}
         run: |
           echo "=== Last 100 backend log lines ==="
           docker logs $(docker ps -q --filter name=hk_backend 2>/dev/null) 2>/dev/null | tail -100 || \
