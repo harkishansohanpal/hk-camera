@@ -136,6 +136,32 @@ export async function mockGetUserMedia(page) {
   });
 }
 
+/** Ping /api/health until the backend responds (handles Fly.io cold-start). */
+export async function warmUpBackend(timeoutMs = 60000) {
+  const deadline = Date.now() + timeoutMs;
+  let lastErr;
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch(`${API_BASE}/api/health`, { signal: AbortSignal.timeout(5000) });
+      if (res.ok) return;
+      lastErr = new Error(`Health returned ${res.status}`);
+    } catch (err) {
+      lastErr = err;
+    }
+    await sleep(2000);
+  }
+  throw lastErr || new Error('Backend warm-up timed out');
+}
+
+/** Ping the backend every 30s to prevent Fly.io machine from stopping mid-test.
+ *  Returns a stop function. */
+export function startKeepAlive() {
+  const id = setInterval(() => {
+    fetch(`${API_BASE}/api/health`, { signal: AbortSignal.timeout(5000) }).catch(() => {});
+  }, 30000);
+  return () => clearInterval(id);
+}
+
 export async function setupAuth(page) {
   const tk = auth;
   await page.addInitScript(`

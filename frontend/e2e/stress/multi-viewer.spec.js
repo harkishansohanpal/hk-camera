@@ -3,7 +3,7 @@ import {
   createTestUser, createTestCamera, cleanupTestData,
   mockGetUserMedia, setupAuth, startCameraBroadcast,
   openViewer, waitForViewerConnected, getViewerStatus,
-  getCameraStatus, formatDuration,
+  getCameraStatus, formatDuration, warmUpBackend, startKeepAlive,
 } from './helpers.js';
 
 const VIEWER_COUNT = parseInt(process.env.STRESS_VIEWER_COUNT || '5');
@@ -15,6 +15,7 @@ test.describe('Multi-Viewer Load', () => {
   let streamKey;
 
   test.beforeAll(async () => {
+    await warmUpBackend();
     await createTestUser();
     const c = await createTestCamera('Multi Viewer Load');
     cameraId = c.camera.id;
@@ -37,6 +38,8 @@ test.describe('Multi-Viewer Load', () => {
     await mockGetUserMedia(camPage);
     await setupAuth(camPage);
     await startCameraBroadcast(camPage, cameraId);
+
+    const stopKeepAlive = startKeepAlive();
 
     // Open all viewers
     const viewPages = [];
@@ -89,6 +92,7 @@ test.describe('Multi-Viewer Load', () => {
     // At least 60% of viewers should have zero drops
     expect(stableViewers / Math.max(VIEWER_COUNT, 1)).toBeGreaterThanOrEqual(0.6);
 
+    stopKeepAlive();
     for (const v of viewPages) {
       await v.ctx.close();
     }

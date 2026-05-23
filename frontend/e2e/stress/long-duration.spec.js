@@ -3,7 +3,7 @@ import {
   createTestUser, createTestCamera, cleanupTestData,
   mockGetUserMedia, setupAuth, startCameraBroadcast,
   openViewer, waitForViewerConnected, getViewerStatus,
-  getCameraStatus, formatDuration,
+  getCameraStatus, formatDuration, warmUpBackend, startKeepAlive,
 } from './helpers.js';
 
 const TEST_DURATION_MS = parseInt(process.env.STRESS_DURATION || '300000'); // default 5 min
@@ -14,6 +14,7 @@ test.describe('Long-Duration Stability', () => {
   let streamKey;
 
   test.beforeAll(async () => {
+    await warmUpBackend();
     await createTestUser();
     const c = await createTestCamera('Long Duration Stability');
     cameraId = c.camera.id;
@@ -48,6 +49,8 @@ test.describe('Long-Duration Stability', () => {
     await openViewer(viewPage, streamKey);
     const connected = await waitForViewerConnected(viewPage, 30000);
     expect(connected).toBe(true);
+
+    const stopKeepAlive = startKeepAlive();
 
     const events = [];
     let viewerPrevStatus = 'live';
@@ -106,6 +109,7 @@ test.describe('Long-Duration Stability', () => {
     // A passing test: no more than 3 drops for the duration
     expect(drops.length).toBeLessThanOrEqual(3);
 
+    stopKeepAlive();
     await camCtx.close();
     await viewCtx.close();
   });

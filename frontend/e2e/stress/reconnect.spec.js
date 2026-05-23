@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import {
   createTestUser, createTestCamera, cleanupTestData,
   mockGetUserMedia, setupAuth, startCameraBroadcast,
-  openViewer, waitForViewerConnected,
+  openViewer, waitForViewerConnected, warmUpBackend, startKeepAlive,
 } from './helpers.js';
 
 const CYCLES = parseInt(process.env.STRESS_RECONNECT_CYCLES || '20');
@@ -13,6 +13,7 @@ test.describe('Rapid Reconnect Cycling', () => {
   let streamKey;
 
   test.beforeAll(async () => {
+    await warmUpBackend();
     await createTestUser();
     const c = await createTestCamera('Reconnect Stress');
     cameraId = c.camera.id;
@@ -35,6 +36,8 @@ test.describe('Rapid Reconnect Cycling', () => {
     await mockGetUserMedia(camPage);
     await setupAuth(camPage);
     await startCameraBroadcast(camPage, cameraId);
+
+    const stopKeepAlive = startKeepAlive();
 
     const results = [];
     let consecutiveFails = 0;
@@ -96,6 +99,7 @@ test.describe('Rapid Reconnect Cycling', () => {
     // At least 90% success rate
     expect(successCycles.length / Math.max(results.length, 1)).toBeGreaterThanOrEqual(0.9);
 
+    stopKeepAlive();
     await camCtx.close();
   });
 });

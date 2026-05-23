@@ -3,7 +3,7 @@ import {
   createTestUser, createTestCamera, cleanupTestData,
   mockGetUserMedia, setupAuth, startCameraBroadcast,
   openViewer, waitForViewerConnected, getViewerStatus,
-  getCameraStatus, formatDuration,
+  getCameraStatus, formatDuration, warmUpBackend, startKeepAlive,
 } from './helpers.js';
 
 const RECOVERY_TIMEOUT = 30000;
@@ -13,6 +13,7 @@ test.describe('Network Fault Injection', () => {
   let streamKey;
 
   test.beforeAll(async () => {
+    await warmUpBackend();
     await createTestUser();
     const c = await createTestCamera('Network Fault Stress');
     cameraId = c.camera.id;
@@ -53,6 +54,8 @@ test.describe('Network Fault Injection', () => {
     await setupAuth(camPage);
     await startCameraBroadcast(camPage, cameraId);
 
+    const stopKeepAlive = startKeepAlive();
+
     const viewCtx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const viewPage = await viewCtx.newPage();
     await setupAuth(viewPage);
@@ -83,6 +86,7 @@ test.describe('Network Fault Injection', () => {
     console.log(`  Recovery from offline: ${recovered ? '✓' : '✗'}`);
     expect(recovered).toBe(true);
 
+    stopKeepAlive();
     await camCtx.close();
     await viewCtx.close();
   });
@@ -98,6 +102,8 @@ test.describe('Network Fault Injection', () => {
     await mockGetUserMedia(camPage);
     await setupAuth(camPage);
     await startCameraBroadcast(camPage, cameraId);
+
+    const stopKeepAlive = startKeepAlive();
 
     const viewCtx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const viewPage = await viewCtx.newPage();
@@ -133,6 +139,7 @@ test.describe('Network Fault Injection', () => {
     console.log(`  Final status after restore: ${recovered ? '✓ LIVE' : '✗ down'}`);
     expect(recovered).toBe(true);
 
+    stopKeepAlive();
     await camCtx.close();
     await viewCtx.close();
   });
@@ -148,6 +155,8 @@ test.describe('Network Fault Injection', () => {
     await mockGetUserMedia(camPage);
     await setupAuth(camPage);
     await startCameraBroadcast(camPage, cameraId);
+
+    const stopKeepAlive = startKeepAlive();
 
     const viewCtx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const viewPage = await viewCtx.newPage();
@@ -190,6 +199,7 @@ test.describe('Network Fault Injection', () => {
     console.log(`  After ${flaps} flaps: ${finalStatus}`);
     expect(finalStatus).toBe('live');
 
+    stopKeepAlive();
     await camCtx.close();
     await viewCtx.close();
   });
