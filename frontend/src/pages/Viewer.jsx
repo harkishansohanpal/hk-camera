@@ -118,7 +118,7 @@ export default function Viewer() {
     if (!document.fullscreenElement && !document.webkitFullscreenElement) {
       containerEl?.requestFullscreen?.().catch(() => setShowControls(false));
     } else {
-      (document.exitFullscreen || document.webkitExitFullscreen)?.();
+      (document.exitFullscreen || document.webkitExitFullscreen)?.().catch(() => {});
     }
   }
 

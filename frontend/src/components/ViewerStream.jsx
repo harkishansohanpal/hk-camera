@@ -26,7 +26,7 @@ export default function ViewerStream({ remoteStream, status, className = '', vid
     function onVisibilityChange() { if (!document.hidden && video.paused) tryPlay(); }
     document.addEventListener('visibilitychange', onVisibilityChange);
     function onFullscreenChange() {
-      if (!document.fullscreenElement && video.paused) {
+      if (!document.fullscreenElement && video.paused && remoteStream) {
         video.srcObject = remoteStream;
         tryPlay();
       }
