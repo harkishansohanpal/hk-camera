@@ -24,7 +24,8 @@ function sendBatch() {
   const batch = _buffer.splice(0, MAX_BATCH);
   const token = localStorage.getItem('accessToken');
   if (!token) return;
-  fetch('/api/admin/logs', {
+  const baseUrl = import.meta.env.VITE_API_URL || '';
+  fetch(`${baseUrl}/api/admin/logs`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ logs: batch }),
