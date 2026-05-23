@@ -314,6 +314,25 @@ Runs only on pushes to `master`:
 6. Deploys backend to Fly.io via `flyctl deploy`
 7. Runs smoke tests against production URLs (frontend + backend)
 
+### Stress Tests (Manual Workflow)
+
+The repo includes a third workflow, `.github/workflows/stress.yml`, for running WebRTC streaming stability tests. It supports two targets:
+
+- **local** (default) — spins up Postgres + Redis services, runs migrations, starts backend, builds frontend, runs Playwright stress tests.
+- **prod** — points tests at your deployed Fly.io backend + Cloudflare Pages frontend.
+
+Trigger it manually from the Actions tab or via `gh`:
+
+```bash
+gh workflow run stress.yml -f target=prod -f duration=120000 -f reconnect_cycles=5
+```
+
+For production stress runs, increase the JWT expiry to avoid mid-suite token expiry:
+
+```bash
+fly secrets set JWT_EXPIRES_IN=1h
+```
+
 ### Required Secrets
 
 | Secret | Used by | Value |

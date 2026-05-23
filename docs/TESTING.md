@@ -150,7 +150,7 @@ Defined in `backend/src/__tests__/setup.js` as `global.mockPrisma`. All models (
 
 ## Stress Tests (Playwright)
 
-Four stress test scenarios in `frontend/e2e/stress/`. Each creates a real test user + camera via the REST API, then exercises the WebRTC streaming pipeline using headless Chromium with a fake media stream (canvas-based animation + silent audio).
+Four stress test scenarios in `frontend/e2e/stress/`. Each creates a test user + camera via the REST API, then exercises the WebRTC streaming pipeline using headless Chromium with a fake media stream (canvas-based animation + silent audio).
 
 ### Prerequisites
 
@@ -178,6 +178,7 @@ npm run test:stress:network     # network fault injection (3 sub-tests)
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `STRESS_API_BASE` | `http://localhost:5001` | Backend API URL |
+| `STRESS_FRONTEND_URL` | `http://localhost:5173` | Frontend URL (for `page.goto`) |
 | `STRESS_DURATION` | `300000` (5 min) | Long-duration test length (ms) |
 | `STRESS_RECONNECT_CYCLES` | `20` | Reconnect cycles |
 | `STRESS_VIEWER_COUNT` | `5` | Concurrent viewers |
@@ -185,7 +186,22 @@ npm run test:stress:network     # network fault injection (3 sub-tests)
 
 ### Test Fixtures
 
-Each test registers a unique user (`stress-{timestamp}@test.local`) and creates a camera. The camera is deleted in `cleanupTestData()` (afterAll). The fake media stream mock (`mockGetUserMedia`) overrides `navigator.mediaDevices.getUserMedia` to return a canvas-based animation with a silent audio track.
+All tests share a fixed user (`stress-tester@hk-camera-test.local`) to avoid rate-limit collisions between runs. The first spec file to run registers it; subsequent files just log in. The camera is deleted in `cleanupTestData()` (afterAll). The fake media stream mock (`mockGetUserMedia`) overrides `navigator.mediaDevices.getUserMedia` to return a canvas-based animation with a silent audio track.
+
+### Production Testing
+
+Point tests at deployed services:
+
+```bash
+STRESS_API_BASE=https://hk-camera-backend.fly.dev \
+STRESS_FRONTEND_URL=https://hk-camera.pages.dev \
+npx playwright test e2e/stress/
+```
+
+**Important for production runs:**
+- **Fly.io `auto_stop_machines = "stop"`** will kill the backend machine between test scenarios. The test helpers include `warmUpBackend()` (retries `/api/health` for up to 60s) and `startKeepAlive()` (pings `/api/health` every 30s to keep the machine alive mid-test).
+- **JWT access tokens expire in 15 min** (`JWT_EXPIRES_IN`). The `setupAuth()` helper automatically calls `/api/auth/refresh` when the token is expired. For longer test runs, increase TTL on Fly.io via `fly secrets set JWT_EXPIRES_IN=1h`.
+- **Test credentials only work if Turnstile bypass is configured** on the production backend (the test secret key `1x0000000000000000000000000000000AA` must be set as `TURNSTILE_SECRET_KEY`).
 
 ### Test Descriptions
 

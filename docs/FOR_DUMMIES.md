@@ -908,6 +908,8 @@ Push to master
 
 **Backend deployment:** `flyctl deploy` → builds a Docker container and deploys to Fly.io (a tiny virtual machine).
 
+**Stress Tests:** The repo has a third workflow (`stress.yml`) that runs WebRTC stress tests against either a local stack or production. It's triggered manually (not on push). It spins up Postgres + Redis, runs migrations, starts the backend, builds the frontend, and runs the Playwright stress suite. For production runs it skips the local stack and points tests at Fly.io + Cloudflare Pages.
+
 **Why deploy both?** The frontend (HTML/JS/CSS) is static — it can be served from anywhere. Cloudflare has data centers worldwide, so your site loads fast. The backend needs to run code 24/7, which is what Fly.io does.
 
 ### Chapter 19: Environment Variables
@@ -918,14 +920,19 @@ These are like settings for your app that differ between development and product
 # === Backend (.env) ===
 DATABASE_URL=postgresql://user:pass@host:5432/db
 JWT_SECRET=make_up_a_really_long_random_string_here
+JWT_REFRESH_SECRET=make_up_another_long_random_string_here
+JWT_EXPIRES_IN=15m                 # Access token TTL — bump to 1h for stress tests
+JWT_REFRESH_EXPIRES_IN=7d          # Refresh token TTL
 TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA  # Test key
 ADMIN_PASSWORD=change_me
-STORAGE_STRATEGY=local          # or 's3' for cloud storage
+STORAGE_STRATEGY=local             # or 's3' for cloud storage
+```
 
+```bash
 # === Frontend (.env) ===
 VITE_API_URL=https://your-backend.fly.dev
 VITE_SOCKET_URL=https://your-backend.fly.dev
-VITE_TURNSTILE_SITE_KEY=1x00000000000000000AA  # Test key
+VITE_TURNSTILE_SITE_KEY=1x0000000000000000000000000000000AA  # Test key
 ```
 
 > **Tip:** Turnstile test keys always pass. In production, replace them with real keys from the Cloudflare Dashboard. They're free.
@@ -1064,16 +1071,29 @@ hk-camera/
 │   │   └── services/
 │   │       └── api.js                ← How we talk to the backend (Axios)
 │   └── e2e/                          ← End-to-end tests (Playwright)
+│       ├── stress/                   ← WebRTC streaming stability tests
+│       │   ├── helpers.js            ← Shared test utilities (auth, warm-up, keep-alive)
+│       │   ├── long-duration.spec.js ← 5+ min stream stability
+│       │   ├── reconnect.spec.js     ← Rapid connect/disconnect cycling
+│       │   ├── multi-viewer.spec.js  ← Concurrent viewer load
+│       │   └── network-fault.spec.js ← Offline, latency, packet-loss injection
+│       ├── smoke.spec.js             ← Quick production health checks
+│       ├── regression.spec.js        ← Full user-flow regression
+│       └── ...                       ← Auth, pricing, landing tests
+│
+├── AGENTS.md                         ← Agent context for AI coding tools
 │
 ├── docs/                             ← Documentation
 │   ├── ARCHITECTURE.md               ← The original architecture doc
 │   ├── SETUP.md                      ← How to run locally
 │   ├── DEPLOYMENT.md                 ← How to deploy
+│   ├── TESTING.md                    ← Test suite guide
 │   └── FOR_DUMMIES.md                ← You are here
 │
 └── .github/workflows/                ← CI/CD automation
     ├── ci.yml                        ← Tests + lint on every push
-    └── deploy.yml                    ← Deploy on push to master
+    ├── deploy.yml                    ← Deploy on push to master
+    └── stress.yml                    ← Manual WebRTC stress tests (local or prod)
 ```
 
 ### Appendix B: Glossary (For When You Forget the Fancy Word)
