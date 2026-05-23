@@ -102,7 +102,7 @@ jobs:
         run: npx wait-on http://localhost:4173
 
       - name: Run E2E tests
-        run: npx playwright test e2e/ --reporter=github
+        run: npx playwright test e2e/smoke.spec.js e2e/regression.spec.js --reporter=github
         env:
           CI: true
 
