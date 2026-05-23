@@ -12,8 +12,8 @@ import ViewerStream from '../components/ViewerStream';
 import DetectionOverlay from '../components/DetectionOverlay';
 import api from '../services/api';
 
-const RETRY_DELAYS = [1, 2, 5, 15, 30, 60];
-const CONNECT_TIMEOUT_MS = 15000;
+const RETRY_DELAYS = [5, 10, 20, 30, 60, 60];
+const CONNECT_TIMEOUT_MS = 10000;
 
 export default function Viewer() {
   const { streamKey } = useParams();

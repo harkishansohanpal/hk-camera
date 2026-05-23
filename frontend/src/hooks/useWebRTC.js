@@ -196,7 +196,10 @@ export function useWebRTC({ streamKey, onCommand }) {
     const socket = io(FINAL_SOCKET_URL, {
       auth: { token },
       transports: ['websocket'],
-      reconnection: false, // Viewer.jsx manages reconnect with backoff
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
     });
     socketRef.current = socket;
     logger.debug('WebRTC', 'Socket created', { tookMs: Date.now() - connectStartRef.current });
@@ -388,12 +391,9 @@ export function useWebRTC({ streamKey, onCommand }) {
     };
 
     const handleDisconnect = () => {
-      if (isActive) {
-        logger.warn('WebRTC', 'Socket disconnected unexpectedly', { streamKey });
-        setStatus('disconnected');
-        closePeerConnection();
-      }
-      isActive = false;
+      logger.warn('WebRTC', 'Socket disconnected unexpectedly', { streamKey });
+      setStatus('disconnected');
+      closePeerConnection();
     };
 
     socket.on('connect', handleConnect);
