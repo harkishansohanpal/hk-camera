@@ -145,3 +145,53 @@ Defined in `backend/src/__tests__/setup.js` as `global.mockPrisma`. All models (
 
 ### Socket.IO Mock
 `getIO()` returns a mock object: `{ to: () => ({ emit: jest.fn() }) }`.
+
+---
+
+## Stress Tests (Playwright)
+
+Four stress test scenarios in `frontend/e2e/stress/`. Each creates a real test user + camera via the REST API, then exercises the WebRTC streaming pipeline using headless Chromium with a fake media stream (canvas-based animation + silent audio).
+
+### Prerequisites
+
+1. Frontend dev server running: `npm run dev`
+2. Backend server running (default: `http://localhost:5001`)
+3. Camera/mic permissions are auto-granted via Playwright's `contextOptions.permissions`
+
+### Running
+
+```bash
+cd frontend
+
+# Run all stress tests (long-duration defaults to 5 min)
+npm run test:stress
+
+# Run a specific scenario
+npm run test:stress:long       # long-duration stability (10 min)
+npm run test:stress:reconnect   # rapid reconnect cycling (20 cycles)
+npm run test:stress:multi       # multi-viewer load (5 viewers, 1 min)
+npm run test:stress:network     # network fault injection (3 sub-tests)
+```
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `STRESS_API_BASE` | `http://localhost:5001` | Backend API URL |
+| `STRESS_DURATION` | `300000` (5 min) | Long-duration test length (ms) |
+| `STRESS_RECONNECT_CYCLES` | `20` | Reconnect cycles |
+| `STRESS_VIEWER_COUNT` | `5` | Concurrent viewers |
+| `STRESS_MONITOR_DURATION` | `60000` (1 min) | Multi-viewer monitor period (ms) |
+
+### Test Fixtures
+
+Each test registers a unique user (`stress-{timestamp}@test.local`) and creates a camera. The camera is deleted in `cleanupTestData()` (afterAll). The fake media stream mock (`mockGetUserMedia`) overrides `navigator.mediaDevices.getUserMedia` to return a canvas-based animation with a silent audio track.
+
+### Test Descriptions
+
+| File | What it tests |
+|------|---------------|
+| `stress/long-duration.spec.js` | Camera + 1 viewer run for N minutes. Polls every 5s, counts drops, measures uptime %. Expects ≤3 drops. |
+| `stress/reconnect.spec.js` | Camera stays broadcasting. Opens/closes viewer N times. Measures connect time per cycle. Expects ≥90% success rate. |
+| `stress/multi-viewer.spec.js` | Camera + N concurrent viewers. Monitors all for drops over M seconds. Expects ≥60% zero-drop viewers. |
+| `stress/network-fault.spec.js` | Camera + 1 viewer. Three sub-tests: 5s offline recovery, 15s high-latency/packet-loss, 5x brief network flaps. Expects full recovery each time. |

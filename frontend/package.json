@@ -13,7 +13,12 @@
     "test:e2e": "playwright test",
     "test:e2e:ci": "CI=true playwright test",
     "test:smoke": "playwright test e2e/smoke.spec.js",
-    "test:regression": "playwright test e2e/regression.spec.js"
+    "test:regression": "playwright test e2e/regression.spec.js",
+    "test:stress": "playwright test e2e/stress/ --timeout=3600000",
+    "test:stress:long": "STRESS_DURATION=600000 playwright test e2e/stress/long-duration.spec.js --timeout=7200000",
+    "test:stress:reconnect": "playwright test e2e/stress/reconnect.spec.js --timeout=600000",
+    "test:stress:multi": "playwright test e2e/stress/multi-viewer.spec.js --timeout=600000",
+    "test:stress:network": "playwright test e2e/stress/network-fault.spec.js --timeout=600000"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.1",
