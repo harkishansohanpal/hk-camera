@@ -59,7 +59,7 @@ export default function Dashboard() {
       const timer = setTimeout(() => tour.start(), 500);
       return () => clearTimeout(timer);
     }
-  }, [loading, tour.dismissed]);
+  }, [loading, tour, tour.dismissed]);
 
   useEffect(() => {
     function handleClickOutside(e) {

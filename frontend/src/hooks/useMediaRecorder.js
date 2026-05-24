@@ -77,7 +77,7 @@ export function useMediaRecorder({ cameraId, trigger: defaultTrigger = 'MANUAL',
 
     timerRef.current = setInterval(() => setDuration((d) => d + 1), 1000);
     autoStopRef.current = setTimeout(() => stopRecording(), MAX_RECORDING_MS);
-  }, [cameraId, defaultTrigger, isRecording, onRecordingReady]);
+  }, [cameraId, defaultTrigger, isRecording, onRecordingReady, stopRecording]);
 
   const stopRecording = useCallback(() => {
     if (recorderRef.current?.state === 'recording') {
