@@ -96,15 +96,18 @@ export function useWebRTC({ streamKey, onCommand }) {
   useEffect(() => { statusRef.current = status; }, [status]);
 
   const socketRef         = useRef(null);
+  // Viewer: single pcRef
   const pcRef             = useRef(null);
+  // Camera: Map of viewerSocketId → { pc, pendingCandidates }
   const viewerPCsRef      = useRef(new Map());
 
   const localStreamRef    = useRef(null);
   const offerInFlightRef  = useRef(false);
-  const pendingCandidates = useRef([]);
+  const pendingCandidates = useRef([]);         // viewer-side ICE buffer
   const onCommandRef      = useRef(onCommand);
-  const connectStartRef   = useRef(0);
-  const disconnectTimeoutRef = useRef(null);
+  const connectStartRef   = useRef(0);          // timestamp when connectViewer started
+  const disconnectTimeoutRef = useRef(null);    // debounce PC disconnected → status change
+  const lastCameraOnlineRef  = useRef(0);        // debounce duplicate camera:online events
   useEffect(() => { onCommandRef.current = onCommand; }, [onCommand]);
 
   // ── Two-way audio: viewer talk state ──
@@ -347,14 +350,6 @@ export function useWebRTC({ streamKey, onCommand }) {
       }
     };
 
-const handleCameraOffline = () => {
-      if (isActive) {
-        logger.info('WebRTC', 'Camera went offline');
-        closePeerConnection();
-        setStatus('waiting');
-      }
-    };
-
     const handleCameraStatus = async ({ online, cameraId: id }) => {
       if (!isActive) return;
       logger.info('WebRTC', 'Received camera:status', { online, cameraId: id });
@@ -363,6 +358,8 @@ const handleCameraOffline = () => {
         logger.info('WebRTC', 'Camera offline, waiting');
         setStatus('waiting');
       } else {
+        // Check if existing PC is healthy — avoids unnecessary
+        // renegotiation after a brief signaling socket glitch
         const pc = pcRef.current;
         if (pc && pc.connectionState === 'connected') {
           logger.info('WebRTC', 'Existing PC healthy, skipping re-initiation');
@@ -450,19 +447,23 @@ const handleCameraOffline = () => {
       }
     };
 
-const socket.on('connect', handleConnect);
-      socket.on('camera:status', handleCameraStatus);
-      socket.on('camera:answer', handleCameraAnswer);
-      socket.on('ice:candidate', handleIceCandidate);
-      socket.on('error', handleError);
-      socket.on('connect_error', handleConnectError);
-      socket.on('disconnect', handleDisconnect);
+    socket.on('connect', handleConnect);
+    socket.on('camera:status', handleCameraStatus);
+    socket.on('camera:online', handleCameraOnline);
+    socket.on('camera:offline', handleCameraOffline);
+    socket.on('camera:answer', handleCameraAnswer);
+    socket.on('ice:candidate', handleIceCandidate);
+    socket.on('error', handleError);
+    socket.on('connect_error', handleConnectError);
+    socket.on('disconnect', handleDisconnect);
 
     // Cleanup: remove listeners when hook unmounts or reconnects
     return () => {
       isActive = false;
       socket.off('connect', handleConnect);
       socket.off('camera:status', handleCameraStatus);
+      socket.off('camera:online', handleCameraOnline);
+      socket.off('camera:offline', handleCameraOffline);
       socket.off('camera:answer', handleCameraAnswer);
       socket.off('ice:candidate', handleIceCandidate);
       socket.off('error', handleError);
