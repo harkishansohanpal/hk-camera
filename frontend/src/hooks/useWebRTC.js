@@ -21,7 +21,11 @@ import { logger } from '../lib/logger';
 
 const FINAL_SOCKET_URL = import.meta.env.VITE_SOCKET_URL || '';
 
-const FALLBACK_ICE = [{ urls: 'stun:stun.cloudflare.com:3478' }];
+const FALLBACK_ICE = [
+  { urls: 'stun:stun.cloudflare.com:3478' },
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' },
+];
 
 // Module-level cache — credentials are valid for 24 h, reuse them across
 // all reconnect attempts so we never hammer the backend on retries.
@@ -88,6 +92,9 @@ export function useWebRTC({ streamKey, onCommand }) {
   const [remoteStream, setRemoteStream] = useState(null);
   const [cameraId, setCameraId]         = useState(null);
 
+  const statusRef           = useRef(status);
+  useEffect(() => { statusRef.current = status; }, [status]);
+
   const socketRef         = useRef(null);
   // Viewer: single pcRef
   const pcRef             = useRef(null);
@@ -99,6 +106,7 @@ export function useWebRTC({ streamKey, onCommand }) {
   const pendingCandidates = useRef([]);         // viewer-side ICE buffer
   const onCommandRef      = useRef(onCommand);
   const connectStartRef   = useRef(0);          // timestamp when connectViewer started
+  const disconnectTimeoutRef = useRef(null);    // debounce PC disconnected → status change
   useEffect(() => { onCommandRef.current = onCommand; }, [onCommand]);
 
   // ── Two-way audio: viewer talk state ──
@@ -107,6 +115,10 @@ export function useWebRTC({ streamKey, onCommand }) {
 
   // ── Partial cleanup (close peer connection but keep socket) ────
   const closePeerConnection = useCallback(() => {
+    if (disconnectTimeoutRef.current) {
+      clearTimeout(disconnectTimeoutRef.current);
+      disconnectTimeoutRef.current = null;
+    }
     if (pcRef.current) {
       pcRef.current.close();
       pcRef.current = null;
@@ -124,6 +136,10 @@ export function useWebRTC({ streamKey, onCommand }) {
 
   // ── Full cleanup (disconnect socket and peer connection) ────
   const cleanup = useCallback(() => {
+    if (disconnectTimeoutRef.current) {
+      clearTimeout(disconnectTimeoutRef.current);
+      disconnectTimeoutRef.current = null;
+    }
     // Disconnect socket first (prevents new events firing during cleanup)
     if (socketRef.current) {
       socketRef.current.disconnect();
@@ -264,16 +280,30 @@ export function useWebRTC({ streamKey, onCommand }) {
           const s = pc.connectionState;
           logger.info('WebRTC', 'PC connection state change', { state: s });
           if (s === 'connected') {
+            if (disconnectTimeoutRef.current) {
+              clearTimeout(disconnectTimeoutRef.current);
+              disconnectTimeoutRef.current = null;
+            }
             const elapsed = Date.now() - connectStartRef.current;
             logger.info('WebRTC', 'Peer connection established', { tookMs: elapsed });
             setStatus('connected');
             offerInFlightRef.current = false;
           }
           if (s === 'disconnected') {
-            setStatus('disconnected');
+            // Give ICE a chance to recover before tearing down
             offerInFlightRef.current = false;
+            if (!disconnectTimeoutRef.current) {
+              disconnectTimeoutRef.current = setTimeout(() => {
+                disconnectTimeoutRef.current = null;
+                setStatus('disconnected');
+              }, 4000);
+            }
           }
           if (s === 'failed') {
+            if (disconnectTimeoutRef.current) {
+              clearTimeout(disconnectTimeoutRef.current);
+              disconnectTimeoutRef.current = null;
+            }
             setStatus('error');
             offerInFlightRef.current = false;
           }
@@ -327,8 +357,18 @@ export function useWebRTC({ streamKey, onCommand }) {
         logger.info('WebRTC', 'Camera offline, waiting');
         setStatus('waiting');
       } else {
-        logger.info('WebRTC', 'Camera online, initiating offer');
-        await initiateOffer(socket, isActive);
+        // Check if existing PC is healthy — avoids unnecessary
+        // renegotiation after a brief signaling socket glitch
+        const pc = pcRef.current;
+        if (pc && (pc.connectionState === 'connected' || pc.connectionState === 'connecting')) {
+          logger.info('WebRTC', 'Existing PC healthy, skipping re-initiation');
+          if (statusRef.current === 'waiting' || statusRef.current === 'connecting') {
+            setStatus('connected');
+          }
+        } else {
+          logger.info('WebRTC', 'Camera online, initiating offer');
+          await initiateOffer(socket, isActive);
+        }
       }
     };
 
@@ -392,8 +432,9 @@ export function useWebRTC({ streamKey, onCommand }) {
 
     const handleDisconnect = () => {
       logger.warn('WebRTC', 'Socket disconnected unexpectedly', { streamKey });
-      setStatus('disconnected');
-      closePeerConnection();
+      // Don't close the PC — socket.io will auto-reconnect and we'll
+      // re-establish the signaling path. The PC's own connection state
+      // handler (with debounce) will handle a real media-level dropout.
     };
 
     socket.on('connect', handleConnect);
@@ -472,11 +513,18 @@ export function useWebRTC({ streamKey, onCommand }) {
     const socket = io(FINAL_SOCKET_URL, {
       auth: { streamKey },
       transports: ['websocket'],
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
     });
     socketRef.current = socket;
 
     socket.on('connect', () => {
       logger.info('WebRTC', 'Camera socket connected', { streamKey });
+      // Re-register with signaling server after socket reconnect
+      // (the server's disconnect handler removes us from the cameras Map)
+      socket.emit('camera:reconnect');
       setStatus('connected');
     });
     socket.on('connect_error', (err) => {

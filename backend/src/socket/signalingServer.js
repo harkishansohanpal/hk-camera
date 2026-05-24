@@ -99,6 +99,18 @@ function initSignalingServer(socketIO) {
         }
       });
 
+      // Re-register after socket.io reconnection (disconnect handler removes from map)
+      socket.on('camera:reconnect', () => {
+        const key = socket.streamKey;
+        if (!key) return;
+        cameras.set(key, socket.id);
+        prisma.camera.update({ where: { id: socket.cameraId }, data: { isOnline: true, lastSeen: new Date() } })
+          .catch((err) => logger.warn('Failed to persist camera reconnection status', { cameraId: socket.cameraId, error: err.message }));
+        io.to(`camera:${key}`).emit('camera:online', { cameraId: socket.cameraId });
+        io.to(`user:${socket.userId}`).emit('camera:online', { cameraId: socket.cameraId });
+        logger.info('Signaling', 'Camera reconnected', { cameraId: socket.cameraId, streamKey: key });
+      });
+
       // Forward answer to the specific viewer
       socket.on('camera:answer', ({ viewerSocketId, answer }) => {
         io.to(viewerSocketId).emit('camera:answer', { answer });
