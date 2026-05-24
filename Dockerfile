@@ -3,12 +3,12 @@ WORKDIR /app
 
 # ── Install dependencies ──────────────────────────────────────
 FROM base AS deps
-COPY package*.json ./
+COPY backend/package*.json ./
 RUN npm ci --omit=dev
 
 # ── Generate Prisma client ────────────────────────────────────
 FROM deps AS prisma
-COPY src/prisma ./src/prisma
+COPY backend/src/prisma ./src/prisma
 RUN npx prisma generate
 
 # ── Download ML model (yolo11m) ───────────────────────────────
@@ -30,7 +30,7 @@ ENV NODE_ENV=production
 COPY --from=prisma /app/node_modules ./node_modules
 COPY --from=prisma /app/src/prisma  ./src/prisma
 COPY --from=model-dl /app/models ./models
-COPY src ./src
+COPY backend/src ./src
 
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh \
