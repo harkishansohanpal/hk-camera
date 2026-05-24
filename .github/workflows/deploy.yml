@@ -12,6 +12,7 @@ jobs:
   # ── Frontend: Cloudflare Pages ──────────────────────────────
   frontend:
     runs-on: ubuntu-latest
+    if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
     defaults:
       run:
         working-directory: frontend
@@ -49,6 +50,7 @@ jobs:
   # ── Backend: Fly.io ─────────────────────────────────────────
   backend:
     runs-on: ubuntu-latest
+    if: ${{ secrets.FLY_API_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
         with:
