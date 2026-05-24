@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Camera, Wifi, WifiOff, Trash2, Eye, AlertTriangle, MoreVertical, Radio } from 'lucide-react';
+import { Plus, Camera, Wifi, WifiOff, Trash2, Eye, AlertTriangle, MoreVertical, Video } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { cameraAPI } from '../services/api';
 import toast from 'react-hot-toast';
@@ -199,10 +199,10 @@ export default function Dashboard() {
                     className="flex-1 btn-primary text-sm">
                     <Eye size={15} /> Watch
                   </button>
-                  <button onClick={() => navigate(`/cameras/${cam.id}?auto=1`)}
+                  <button onClick={() => navigate(`/cameras/${cam.id}`)}
                     data-tour="tour-broadcast"
                     className="flex-1 inline-flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl transition-all bg-ap-red text-white hover:brightness-90">
-                    <Radio size={15} /> Stream
+                    <Video size={15} /> Stream
                   </button>
                 </div>
               </div>
