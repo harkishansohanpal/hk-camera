@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Shield, Video, Mic, MicOff } from 'lucide-react';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { Shield, Video, MicOff, X, Sun, Moon } from 'lucide-react';
 import { cameraAPI, alertAPI } from '../services/api';
 import { prefetchIceServers } from '../hooks/useWebRTC';
 import { useWebRTC } from '../hooks/useWebRTC';
@@ -14,6 +14,8 @@ import toast from 'react-hot-toast';
 export default function CameraView() {
   const { cameraId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const autoStartedRef = useRef(false);
 
   const [camera, setCamera]           = useState(null);
   const [stream, setStream]           = useState(null);
@@ -23,6 +25,7 @@ export default function CameraView() {
   const [screenDimmed, setScreenDimmed] = useState(false);
   const [backgroundMode, setBackgroundMode] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [audioConsentWarn, setAudioConsentWarn] = useState(false);
   const audioConsentedRef = useRef(false);
   const { acquire: acquireWL, release: releaseWL } = useWakeLock();
@@ -145,77 +148,164 @@ export default function CameraView() {
     else if (stream) { const recStream = getOrientedStream(); if (recStream) startRecording(recStream); }
   }
 
-  return (
-    <div className="page-container max-w-3xl animate-fade-in bg-page min-h-screen">
-      <div className="flex items-center gap-2 mb-4">
-        <button onClick={() => navigate('/dashboard')}
-          className="w-10 h-10 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-card-hover rounded-xl transition-colors flex-shrink-0">
-          <ArrowLeft size={18} />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold text-text-primary truncate">{camera?.name ?? 'Camera'}</h1>
-          {camera?.description && <p className="text-text-secondary text-sm truncate">{camera.description}</p>}
-        </div>
-        {isRecording && (
-          <div className="flex items-center gap-1.5 text-ap-red text-xs font-semibold flex-shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-ap-red animate-pulse" />
-            {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, '0')}
-          </div>
-        )}
-      </div>
+  useEffect(() => {
+    if (camera && searchParams.get('auto') === '1' && !autoStartedRef.current && !isBroadcasting) {
+      autoStartedRef.current = true;
+      logger.info('CameraView', 'Auto-starting broadcast', { cameraId });
+      handleToggle();
+    }
+  }, [camera, searchParams, handleToggle, isBroadcasting, cameraId]);
 
-      <CameraStream ref={videoRef} stream={stream} isBroadcasting={isBroadcasting} onToggle={handleToggle}
-        onFlip={flipCamera} micOn={micOn} onMicToggle={() => {
+  function handleBack() { navigate('/dashboard'); }
+
+  return (
+    <div className="fixed inset-0 bg-black z-40 flex flex-col">
+      <CameraStream ref={videoRef} stream={stream} isBroadcasting={isBroadcasting}
+        onToggle={handleToggle} onFlip={flipCamera}
+        micOn={micOn} onMicToggle={() => {
           if (micOn) { setMicOn(false); setMicEnabled(false); return; }
           if (!audioConsentedRef.current) { setAudioConsentWarn(true); return; }
           setMicOn(true); setMicEnabled(true);
         }}
         isRecording={isRecording} onRecordToggle={handleRecordToggle}
-        className="aspect-video w-full rounded-2xl overflow-hidden shadow-apple" />
+        onBack={handleBack} onSettings={() => setShowSettings(true)}
+        className="flex-1 w-full" />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-        <div className="card p-4 shadow-apple-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <Shield size={14} className="text-ap-blue" />
-            <span className="text-sm font-semibold text-text-primary">Motion Detection</span>
-            <button onClick={async () => {
-              const next = !camera?.motionDetect; setCamera((c) => ({ ...c, motionDetect: next }));
-              await cameraAPI.update(cameraId, { motionDetect: next });
-              if (isBroadcasting) { next ? startDetection() : stopDetection(); }
-            }} className={`ml-auto px-3 py-1.5 text-xs rounded-lg font-semibold transition-colors ${camera?.motionDetect ? 'bg-ap-green/10 text-ap-green' : 'bg-fill-input text-text-secondary'}`}>
-              {camera?.motionDetect ? 'ON' : 'OFF'}
-            </button>
-          </div>
-          <p className="text-xl font-bold text-text-primary">{motionCount}</p>
-          <p className="text-text-secondary text-xs">events</p>
-          <div className={`mt-1 text-xs font-semibold ${isDetecting ? 'text-ap-green' : 'text-text-secondary'}`}>
-            {isDetecting ? '\u25cf On' : '\u25cb Off'}
+      {/* Settings overlay */}
+      {showSettings && (
+        <div className="absolute inset-0 z-20 flex flex-col justify-end bg-black/40 backdrop-blur-sm animate-fade-in"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowSettings(false); }}>
+          <div className="bg-card rounded-t-[28px] shadow-apple-lg animate-slide-up px-5 pt-6 pb-10 safe-bottom max-h-[70vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-bold text-text-primary">Settings</h2>
+              <button onClick={() => setShowSettings(false)}
+                className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-text-primary rounded-full hover:bg-card-hover transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              {/* Motion Detection */}
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center gap-3">
+                  <Shield size={18} className="text-ap-blue" />
+                  <div>
+                    <p className="text-sm font-semibold text-text-primary">Motion Detection</p>
+                    <p className="text-xs text-text-secondary">{isDetecting ? 'Active' : 'Off'}</p>
+                  </div>
+                </div>
+                <button onClick={async () => {
+                  const next = !camera?.motionDetect;
+                  setCamera((c) => ({ ...c, motionDetect: next }));
+                  await cameraAPI.update(cameraId, { motionDetect: next });
+                  if (isBroadcasting) { next ? startDetection() : stopDetection(); }
+                }} className={`relative w-[51px] h-[31px] rounded-full transition-colors duration-200 ${camera?.motionDetect ? 'bg-ap-green' : 'bg-text-tertiary'}`}>
+                  <div className={`absolute w-[27px] h-[27px] bg-white rounded-full shadow-sm top-[2px] transition-transform duration-200 ${camera?.motionDetect ? 'translate-x-[22px]' : 'translate-x-[2px]'}`} />
+                </button>
+              </div>
+
+              {/* Sensitivity */}
+              {camera?.motionDetect && (
+                <div className="flex flex-col gap-2 py-2 pl-9">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-text-secondary">Sensitivity</p>
+                    <p className="text-xs font-bold text-text-primary">{camera?.sensitivity ?? 30}%</p>
+                  </div>
+                  <input type="range" min="5" max="80" value={camera?.sensitivity ?? 30}
+                    onChange={async (e) => {
+                      const v = Number(e.target.value);
+                      setCamera((c) => ({ ...c, sensitivity: v }));
+                      await cameraAPI.update(cameraId, { sensitivity: v });
+                    }}
+                    className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                    style={{ background: `linear-gradient(to right, var(--ap-blue) ${camera?.sensitivity ?? 30}%, var(--color-text-tertiary) ${camera?.sensitivity ?? 30}%)` }} />
+                </div>
+              )}
+
+              {/* Record on Motion */}
+              {camera?.motionDetect && (
+                <div className="flex items-center justify-between py-2 pl-9">
+                  <div className="flex items-center gap-3">
+                    <Video size={18} className="text-ap-red" />
+                    <div>
+                      <p className="text-sm font-semibold text-text-primary">Auto-Record</p>
+                      <p className="text-xs text-text-secondary">Record clips on motion</p>
+                    </div>
+                  </div>
+                  <button onClick={async () => {
+                    const next = !camera?.recordOnMotion;
+                    setCamera((c) => ({ ...c, recordOnMotion: next }));
+                    await cameraAPI.update(cameraId, { recordOnMotion: next });
+                  }} className={`relative w-[51px] h-[31px] rounded-full transition-colors duration-200 ${camera?.recordOnMotion ? 'bg-ap-red' : 'bg-text-tertiary'}`}>
+                    <div className={`absolute w-[27px] h-[27px] bg-white rounded-full shadow-sm top-[2px] transition-transform duration-200 ${camera?.recordOnMotion ? 'translate-x-[22px]' : 'translate-x-[2px]'}`} />
+                  </button>
+                </div>
+              )}
+
+              <div className="h-px bg-ap-separator my-1" />
+
+              {/* Screen Dim */}
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center gap-3">
+                  <Moon size={18} className="text-ap-blue" />
+                  <div>
+                    <p className="text-sm font-semibold text-text-primary">Screen Dim</p>
+                    <p className="text-xs text-text-secondary">Darken display while streaming</p>
+                  </div>
+                </div>
+                <button onClick={() => setScreenDimmed((v) => !v)}
+                  className={`relative w-[51px] h-[31px] rounded-full transition-colors duration-200 ${screenDimmed ? 'bg-ap-blue' : 'bg-text-tertiary'}`}>
+                  <div className={`absolute w-[27px] h-[27px] bg-white rounded-full shadow-sm top-[2px] transition-transform duration-200 ${screenDimmed ? 'translate-x-[22px]' : 'translate-x-[2px]'}`} />
+                </button>
+              </div>
+
+              {/* Torch / Screen light (Android only) */}
+              {isAndroid && (
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-3">
+                    <Sun size={18} className="text-ap-orange" />
+                    <div>
+                      <p className="text-sm font-semibold text-text-primary">Screen Light</p>
+                      <p className="text-xs text-text-secondary">White screen as torch</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setTorchOn((v) => !v)}
+                    className={`relative w-[51px] h-[31px] rounded-full transition-colors duration-200 ${torchOn ? 'bg-ap-orange' : 'bg-text-tertiary'}`}>
+                    <div className={`absolute w-[27px] h-[27px] bg-white rounded-full shadow-sm top-[2px] transition-transform duration-200 ${torchOn ? 'translate-x-[22px]' : 'translate-x-[2px]'}`} />
+                  </button>
+                </div>
+              )}
+
+              <div className="h-px bg-ap-separator my-1" />
+
+              {/* Motion events count */}
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center gap-3">
+                  <Shield size={18} className="text-text-secondary" />
+                  <div>
+                    <p className="text-sm font-semibold text-text-primary">Motion Events</p>
+                    <p className="text-xs text-text-secondary">Detected this session</p>
+                  </div>
+                </div>
+                <span className="text-lg font-bold text-text-primary">{motionCount}</span>
+              </div>
+            </div>
           </div>
         </div>
+      )}
 
-        <div className="card p-4 shadow-apple-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <Video size={14} className="text-ap-blue" />
-            <span className="text-sm font-semibold text-text-primary">Settings</span>
-          </div>
-          <div className="flex flex-col gap-2 text-xs text-text-secondary">
-            <span>Sensitivity: <strong className="text-text-primary">{camera?.sensitivity ?? 30}%</strong></span>
-            <span>Two-way audio: <strong className="text-text-primary">{camera?.twoWayAudio ? 'Yes' : 'No'}</strong></span>
-            <button onClick={async () => {
-              const next = !camera?.recordOnMotion; setCamera((c) => ({ ...c, recordOnMotion: next }));
-              await cameraAPI.update(cameraId, { recordOnMotion: next });
-            }} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors self-start ${camera?.recordOnMotion ? 'bg-ap-red/10 text-ap-red' : 'bg-fill-input text-text-secondary'}`}>
-              <Video size={12} /> {camera?.recordOnMotion ? 'Auto-Record On' : 'Auto-Record Off'}
-            </button>
-          </div>
+      {/* Screen dim overlay */}
+      {screenDimmed && (
+        <div className="fixed inset-0 z-50 bg-black cursor-pointer flex items-center justify-center" onClick={() => setScreenDimmed(false)}>
+          <p className="text-text-secondary text-xs">Tap to restore screen</p>
         </div>
-      </div>
+      )}
 
-      {screenDimmed && <div className="fixed inset-0 z-50 bg-black cursor-pointer flex items-center justify-center" onClick={() => setScreenDimmed(false)}>
-        <p className="text-text-secondary text-xs">Tap to restore screen</p>
-      </div>}
+      {/* Android torch overlay */}
       {isAndroid && torchOn && <div className="fixed inset-0 z-50 bg-white pointer-events-none" />}
 
+      {/* Audio consent modal */}
       {audioConsentWarn && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="bg-card border border-ap-separator rounded-2xl shadow-apple-lg p-6 max-w-sm w-full">
