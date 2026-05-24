@@ -107,6 +107,7 @@ export function useWebRTC({ streamKey, onCommand }) {
   const onCommandRef      = useRef(onCommand);
   const connectStartRef   = useRef(0);          // timestamp when connectViewer started
   const disconnectTimeoutRef = useRef(null);    // debounce PC disconnected → status change
+  const lastCameraOnlineRef  = useRef(0);        // debounce duplicate camera:online events
   useEffect(() => { onCommandRef.current = onCommand; }, [onCommand]);
 
   // ── Two-way audio: viewer talk state ──
@@ -374,9 +375,10 @@ export function useWebRTC({ streamKey, onCommand }) {
 
     const handleCameraOnline = async () => {
       if (!isActive) return;
-      // Always reset stale state when camera comes back online — don't
-      // silently skip if a previous offer attempt is stuck in-flight.
-      closePeerConnection();
+      // Server emits camera:online to both camera room and user room.
+      // The viewer may be in both rooms, so debounce to prevent races.
+      if (Date.now() - lastCameraOnlineRef.current < 2000) return;
+      lastCameraOnlineRef.current = Date.now();
       logger.debug('WebRTC', 'camera:online received, initiating offer');
       await initiateOffer(socket, isActive);
     };
