@@ -1,0 +1,5 @@
+# Wrangler configuration for Cloudflare Pages
+account_id = "${CLOUDFLARE_ACCOUNT_ID}"
+
+[env.production]
+pages_project = { name = "hk-camera", git_branch = "master" }
