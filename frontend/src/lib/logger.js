@@ -23,13 +23,18 @@ function sendBatch() {
   if (_buffer.length === 0) return;
   const batch = _buffer.splice(0, MAX_BATCH);
   const token = localStorage.getItem('accessToken');
-  if (!token) return;
+  if (!token) {
+    console.warn('[logger] No accessToken found, dropping log batch');
+    return;
+  }
   const baseUrl = import.meta.env.VITE_API_URL || '';
-  fetch(`${baseUrl}/api/admin/logs`, {
+  fetch(`${baseUrl}/api/logs`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ logs: batch }),
-  }).catch(() => {});
+  }).then(r => {
+    if (!r.ok) console.warn('[logger] POST /api/logs failed', r.status, r.statusText);
+  }).catch(e => console.warn('[logger] POST /api/logs error', e));
 }
 
 function scheduleSend() {

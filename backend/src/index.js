@@ -107,8 +107,13 @@ app.use('/api/users',        userRoutes);
 app.use('/api/turn-credentials', turnRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 
-// ── Admin routes (require ADMIN role) ─────────────────────────
+// ── Log ingestion (authenticated, no admin required) ─────────
 const { authenticate, requireAdmin } = require('./middleware/auth');
+const logRoutes = require('./routes/logs');
+
+app.use('/api/logs', authenticate, logRoutes);
+
+// ── Admin routes (require ADMIN role) ─────────────────────────
 const adminRoutes = require('./routes/admin');
 const adminUserRoutes = require('./routes/adminUsers');
 
