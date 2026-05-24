@@ -96,13 +96,11 @@ function initSignalingServer(socketIO) {
       io.to(`user:${socket.userId}`).emit('camera:online', { cameraId: socket.cameraId });
 
       socket.on('disconnect', () => {
-        // Only delete if this socket is still the registered camera (handles stale reconnect races)
         if (cameras.get(key) === socket.id) {
           reportScheduler.endSession(socket.cameraId);
           cameras.delete(key);
           prisma.camera.update({ where: { id: socket.cameraId }, data: { isOnline: false } }).catch((err) => logger.warn('Failed to persist camera offline status', { cameraId: socket.cameraId, error: err.message }));
           
-          // Debounce offline emission to prevent duplicate events
           const now = Date.now();
           const lastEmit = lastOfflineEmit.get(key) || 0;
           if (now - lastEmit > 1000) {

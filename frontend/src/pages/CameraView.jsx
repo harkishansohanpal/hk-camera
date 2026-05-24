@@ -34,6 +34,7 @@ export default function CameraView() {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
   const streamRef = useRef(null);
+  const toggleCooldownRef = useRef(false);
   useEffect(() => { streamRef.current = stream; }, [stream]);
   const cameraRef = useRef(null);
   useEffect(() => { cameraRef.current = camera; }, [camera]);
@@ -122,6 +123,10 @@ export default function CameraView() {
   async function getLocalStream() { return navigator.mediaDevices.getUserMedia({ video: { facingMode, width: { ideal: 1920, min: 1280 }, height: { ideal: 1080, min: 720 } }, audio: true }); }
 
   async function handleToggle() {
+    if (toggleCooldownRef.current) return;
+    toggleCooldownRef.current = true;
+    setTimeout(() => { toggleCooldownRef.current = false; }, 1000);
+
     if (isBroadcasting) {
       logger.info('CameraView', 'Stopping broadcast', { cameraId });
       stopBroadcast(); stopDetection();
