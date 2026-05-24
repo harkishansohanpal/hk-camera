@@ -509,7 +509,11 @@ export function useWebRTC({ streamKey, onCommand }) {
     setStatus('connecting');
     localStreamRef.current = mediaStream;
 
-    // Clean up any existing socket before creating new one
+    // Clean up old peer connections and socket
+    for (const { pc } of viewerPCsRef.current.values()) {
+      pc.close();
+    }
+    viewerPCsRef.current.clear();
     if (socketRef.current) {
       socketRef.current.disconnect();
     }
@@ -573,7 +577,10 @@ export function useWebRTC({ streamKey, onCommand }) {
 
         viewerPCsRef.current.set(viewerSocketId, { pc, pending });
 
-        mediaStream.getTracks().forEach((track) => pc.addTrack(track, mediaStream));
+        const currentStream = localStreamRef.current;
+        if (currentStream) {
+          currentStream.getTracks().forEach((track) => pc.addTrack(track, currentStream));
+        }
 
         // Optimize codecs and bitrate for high-quality streaming
         await optimizeCodecs(pc);
@@ -624,6 +631,24 @@ export function useWebRTC({ streamKey, onCommand }) {
     });
   }, [streamKey]);
 
+  const replaceCameraStream = useCallback(async (newStream) => {
+    localStreamRef.current = newStream;
+    const promises = [];
+    for (const { pc } of viewerPCsRef.current.values()) {
+      const senders = pc.getSenders();
+      for (const sender of senders) {
+        const kind = sender.track?.kind;
+        const newTrack = kind === 'video' ? newStream.getVideoTracks()[0]
+                      : kind === 'audio' ? newStream.getAudioTracks()[0]
+                      : null;
+        if (newTrack) {
+          promises.push(sender.replaceTrack(newTrack).catch(() => {}));
+        }
+      }
+    }
+    await Promise.all(promises);
+  }, []);
+
   const stopBroadcast = useCallback(() => {
     socketRef.current?.disconnect();
     cleanup();
@@ -659,6 +684,7 @@ export function useWebRTC({ streamKey, onCommand }) {
     disconnectViewer,
     startBroadcast,
     stopBroadcast,
+    replaceCameraStream,
     sendCommand,
     rejoinViewer,
     setMicEnabled,

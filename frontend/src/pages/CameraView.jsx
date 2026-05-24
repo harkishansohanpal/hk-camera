@@ -55,7 +55,7 @@ export default function CameraView() {
     else if (command === 'BACKGROUND') { setBackgroundMode(payload.on); }
   }
 
-  const { startBroadcast, stopBroadcast, setMicEnabled, status: rtcStatus } = useWebRTC({ streamKey: camera?.streamKey, onCommand: handleRemoteCommand });
+  const { startBroadcast, stopBroadcast, replaceCameraStream, setMicEnabled, status: rtcStatus } = useWebRTC({ streamKey: camera?.streamKey, onCommand: handleRemoteCommand });
   const isBroadcasting = rtcStatus === 'connected' || rtcStatus === 'connecting';
   const { startRecording, stopRecording, isRecording, duration } = useMediaRecorder({ cameraId, trigger: 'MANUAL' });
   const startRecordingRef = useRef(startRecording);
@@ -138,9 +138,10 @@ export default function CameraView() {
     const next = facingMode === 'environment' ? 'user' : 'environment';
     setFacingMode(next);
     if (isBroadcasting) {
-      streamRef.current?.getTracks().forEach((t) => t.stop());
       const newStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: next, width: { ideal: 1920, min: 1280 }, height: { ideal: 1080, min: 720 } }, audio: true });
-      setStream(newStream); await startBroadcast(newStream);
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      setStream(newStream);
+      await replaceCameraStream(newStream);
     }
   }
 
