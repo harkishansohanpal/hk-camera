@@ -25,6 +25,7 @@ export default function Layout() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isViewer = location.pathname.startsWith('/viewer');
+  const isCameraView = location.pathname.startsWith('/cameras/');
 
   async function handleLogout() {
     await logout();
@@ -150,8 +151,8 @@ export default function Layout() {
       {sidebarOpen && <div className="fixed inset-0 z-40 bg-black/20 dark:bg-black/40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
       {/* ── Main ──────────────────────────────────────────── */}
-      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${!isViewer ? 'lg:ml-68' : ''}`}>
-        {!isViewer && (
+      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${!isViewer && !isCameraView ? 'lg:ml-68' : ''}`}>
+        {!isViewer && !isCameraView && (
           <header className="nav-bar lg:hidden flex items-center gap-2 px-3 py-1.5" style={{ zIndex: 30 }}>
             <button onClick={() => setSidebarOpen(true)} data-tour="tour-nav"
               className="w-10 h-10 flex items-center justify-center text-text-secondary hover:text-text-primary rounded-xl transition-colors flex-shrink-0">
@@ -170,14 +171,14 @@ export default function Layout() {
           </header>
         )}
 
-        <main className={`flex-1 ${!isViewer ? 'overflow-y-auto' : 'overflow-hidden'}`}
-          style={!isViewer ? { paddingBottom: 'calc(3.75rem + env(safe-area-inset-bottom))' } : {}}>
+        <main className={`flex-1 ${!isViewer && !isCameraView ? 'overflow-y-auto' : 'overflow-hidden'}`}
+          style={!isViewer && !isCameraView ? { paddingBottom: 'calc(3.75rem + env(safe-area-inset-bottom))' } : {}}>
           <Outlet />
         </main>
       </div>
 
       {/* ── Mobile Tab Bar ────────────────────────────────── */}
-      {!isViewer && (
+      {!isViewer && !isCameraView && (
         <nav data-tour="tour-nav" className="tab-bar fixed bottom-0 left-0 right-0 z-40 lg:hidden"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
           <div className="flex h-14">
