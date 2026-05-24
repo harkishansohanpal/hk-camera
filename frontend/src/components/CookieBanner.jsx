@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { acceptConsent, rejectConsent, consentStatus } from '../lib/consent';
 
 export default function CookieBanner() {
