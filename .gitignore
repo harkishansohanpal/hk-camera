@@ -27,7 +27,6 @@ backend/uploads/
 backend/recordings/
 
 # Logs
-logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -62,6 +61,7 @@ a.md
 *.md
 !README.md
 !docs/*.md
+!logs/*.md
 
 # Editor / IDE
 .claude/settings.local.json

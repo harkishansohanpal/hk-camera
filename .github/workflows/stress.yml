@@ -148,6 +148,34 @@ jobs:
           path: frontend/test-results/
           retention-days: 7
 
+      - name: Generate log report
+        if: always()
+        run: |
+          API_FLAG="--api http://localhost:5001"
+          if [ "${{ github.event.inputs.target }}" = "prod" ]; then
+            API_FLAG="--api https://hk-camera-backend.fly.dev"
+          fi
+          node scripts/generate-log-report.js $API_FLAG \
+            --admin-email "${{ secrets.ADMIN_EMAIL }}" \
+            --admin-password "${{ secrets.ADMIN_PASSWORD }}"
+        env:
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        continue-on-error: true
+
+      - name: Commit log report
+        if: always()
+        run: |
+          git config user.name "hk-camera-bot"
+          git config user.email "bot@hkcamera.app"
+          git add logs/
+          if git diff --cached --quiet; then
+            echo "No new logs to commit"
+          else
+            git commit -m "log report after stress test $(date -u +%Y-%m-%dT%H:%M)"
+            git push
+          fi
+
       - name: Show backend logs
         if: ${{ always() && github.event.inputs.target != 'prod' }}
         run: |
