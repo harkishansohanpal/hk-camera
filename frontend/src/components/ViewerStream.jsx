@@ -16,7 +16,7 @@ export default function ViewerStream({ remoteStream, status, className = '', vid
   const overlayCanvasRef = useRef(null);
   useNightVision({ videoRef, canvasRef: overlayCanvasRef, enabled: nightVision === 'ir' });
 
-  useEffect(() => {
+  useEffect(() => { 
     const video = videoRef.current;
     if (!video || !remoteStream) return;
     video.srcObject = remoteStream;
@@ -39,7 +39,7 @@ export default function ViewerStream({ remoteStream, status, className = '', vid
       document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
       video.removeEventListener('loadedmetadata', tryPlay);
     };
-  }, [remoteStream]);
+  }, [remoteStream, videoRef.current]);
 
   const overlay = STATUS_LABELS[status];
   const isConnected = status === 'connected';
