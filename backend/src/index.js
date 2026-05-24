@@ -110,8 +110,10 @@ app.use('/api/subscriptions', subscriptionRoutes);
 // ── Log ingestion (authenticated, no admin required) ─────────
 const { authenticate, requireAdmin } = require('./middleware/auth');
 const logRoutes = require('./routes/logs');
+const reportRoutes = require('./routes/reports');
 
 app.use('/api/logs', authenticate, logRoutes);
+app.use('/api/reports', authenticate, reportRoutes);
 
 // ── Admin routes (require ADMIN role) ─────────────────────────
 const adminRoutes = require('./routes/admin');

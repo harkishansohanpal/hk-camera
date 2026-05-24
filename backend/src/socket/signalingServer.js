@@ -17,6 +17,7 @@
 const jwt = require('jsonwebtoken');
 const { prisma } = require('../config/database');
 const logger = require('../config/logger');
+const reportScheduler = require('../services/reportScheduler');
 
 let io = null;
 
@@ -83,6 +84,9 @@ function initSignalingServer(socketIO) {
       prisma.camera.update({ where: { id: socket.cameraId }, data: { isOnline: true, lastSeen: new Date() } })
         .catch((err) => logger.warn('Failed to persist camera online status', { cameraId: socket.cameraId, error: err.message }));
 
+      // Start 5-min report heartbeat for this session
+      reportScheduler.startSession(socket.cameraId);
+
       // Notify any waiting viewers
       io.to(`camera:${key}`).emit('camera:online', { cameraId: socket.cameraId });
       // Notify the camera owner's Dashboard and other pages in real-time
@@ -91,6 +95,7 @@ function initSignalingServer(socketIO) {
       socket.on('disconnect', () => {
         // Only delete if this socket is still the registered camera (handles stale reconnect races)
         if (cameras.get(key) === socket.id) {
+          reportScheduler.endSession(socket.cameraId);
           cameras.delete(key);
           prisma.camera.update({ where: { id: socket.cameraId }, data: { isOnline: false } }).catch((err) => logger.warn('Failed to persist camera offline status', { cameraId: socket.cameraId, error: err.message }));
           io.to(`camera:${key}`).emit('camera:offline', { cameraId: socket.cameraId });
