@@ -360,7 +360,7 @@ export function useWebRTC({ streamKey, onCommand }) {
         // Check if existing PC is healthy — avoids unnecessary
         // renegotiation after a brief signaling socket glitch
         const pc = pcRef.current;
-        if (pc && (pc.connectionState === 'connected' || pc.connectionState === 'connecting')) {
+        if (pc && pc.connectionState === 'connected') {
           logger.info('WebRTC', 'Existing PC healthy, skipping re-initiation');
           if (statusRef.current === 'waiting' || statusRef.current === 'connecting') {
             setStatus('connected');
@@ -376,6 +376,7 @@ export function useWebRTC({ streamKey, onCommand }) {
       if (!isActive) return;
       // Always reset stale state when camera comes back online — don't
       // silently skip if a previous offer attempt is stuck in-flight.
+      closePeerConnection();
       logger.debug('WebRTC', 'camera:online received, initiating offer');
       await initiateOffer(socket, isActive);
     };
@@ -383,6 +384,7 @@ export function useWebRTC({ streamKey, onCommand }) {
     const handleCameraOffline = () => {
       if (isActive) {
         logger.info('WebRTC', 'Camera went offline');
+        closePeerConnection();
         setStatus('waiting');
       }
     };

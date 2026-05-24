@@ -31,6 +31,7 @@ export default function CameraView() {
   const { acquire: acquireWL, release: releaseWL } = useWakeLock();
   const isAndroid = /Android/.test(navigator.userAgent);
   const videoRef = useRef(null);
+  const containerRef = useRef(null);
   const streamRef = useRef(null);
   useEffect(() => { streamRef.current = stream; }, [stream]);
   const cameraRef = useRef(null);
@@ -156,10 +157,26 @@ export default function CameraView() {
     }
   }, [camera, searchParams, handleToggle, isBroadcasting, cameraId]);
 
+  // Auto-fullscreen on mount
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    if (el.requestFullscreen) {
+      el.requestFullscreen().catch(() => {});
+    } else if (videoRef.current?.webkitEnterFullscreen) {
+      videoRef.current.webkitEnterFullscreen();
+    }
+    return () => {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        (document.exitFullscreen || document.webkitExitFullscreen)?.().catch(() => {});
+      }
+    };
+  }, []);
+
   function handleBack() { navigate('/dashboard'); }
 
   return (
-    <div className="fixed inset-0 bg-black z-40 flex flex-col">
+    <div ref={containerRef} className="fixed inset-0 bg-black z-40 flex flex-col">
       <CameraStream ref={videoRef} stream={stream} isBroadcasting={isBroadcasting}
         onToggle={handleToggle} onFlip={flipCamera}
         micOn={micOn} onMicToggle={() => {
