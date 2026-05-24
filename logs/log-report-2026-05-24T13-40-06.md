@@ -1,0 +1,138 @@
+# Log Report — 2026-05-24T13-40-06
+
+**Total logs in database:** 132
+
+## Summary by Level
+
+| Level | Count |
+|-------|-------|
+| info | 128 |
+| error | 1 |
+| warn | 3 |
+
+## Summary by Tag
+
+| Tag | Count |
+|-----|-------|
+| CameraView | 12 |
+| Viewer | 22 |
+| WebRTC | 96 |
+| Test | 2 |
+
+## Per-User Summary
+
+- **User 30d6cecf** — 1 events
+  - Camera online (offers initiated): 0
+  - Viewer waiting (camera offline): 0
+  - Peer connections established: 0
+  - Errors: 0
+- **User 6e7031f8** — 131 events
+  - Camera online (offers initiated): 2
+  - Viewer waiting (camera offline): 4
+  - Peer connections established: 7
+  - Errors: 1
+
+## Recent Events (Last 100)
+
+```
+[2026-05-24T05:41:32.008Z] INFO [WebRTC] Received camera:answer
+[2026-05-24T05:41:32.008Z] INFO [WebRTC] PC connection state change {"state":"connecting"}
+[2026-05-24T05:41:32.008Z] INFO [WebRTC] PC connection state change {"state":"connected"}
+[2026-05-24T05:41:32.008Z] INFO [WebRTC] Peer connection established {"tookMs":12907}
+[2026-05-24T05:41:32.008Z] INFO [Viewer] Status transition {"status":"connected"}
+[2026-05-24T05:41:42.008Z] INFO [WebRTC] Camera went offline
+[2026-05-24T05:41:42.008Z] INFO [Viewer] Status transition {"status":"waiting"}
+[2026-05-24T05:41:42.008Z] INFO [WebRTC] Camera went offline
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] initiateOffer called
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] Emitting viewer:offer
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] Total initiateOffer time {"tookMs":14}
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] Received camera:answer
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] PC connection state change {"state":"connecting"}
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] PC connection state change {"state":"connected"}
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] Peer connection established {"tookMs":30514}
+[2026-05-24T05:41:52.003Z] INFO [Viewer] Status transition {"status":"connected"}
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] Camera went offline
+[2026-05-24T05:41:52.003Z] INFO [Viewer] Status transition {"status":"waiting"}
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] Camera went offline
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] initiateOffer called
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] Emitting viewer:offer
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] Total initiateOffer time {"tookMs":14}
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] Received camera:answer
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] PC connection state change {"state":"connecting"}
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] PC connection state change {"state":"connected"}
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] Peer connection established {"tookMs":35037}
+[2026-05-24T05:41:52.003Z] INFO [Viewer] Status transition {"status":"connected"}
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] Camera went offline
+[2026-05-24T05:41:52.003Z] INFO [Viewer] Status transition {"status":"waiting"}
+[2026-05-24T05:41:52.003Z] INFO [WebRTC] Camera went offline
+[2026-05-24T05:42:02.009Z] INFO [WebRTC] Re-emitting viewer:join to re-check camera status
+[2026-05-24T05:42:02.009Z] INFO [WebRTC] Received camera:status {"online":false,"cameraId":"cam-backyard"}
+[2026-05-24T05:42:02.009Z] INFO [WebRTC] Camera offline, waiting
+[2026-05-24T05:42:02.009Z] INFO [WebRTC] initiateOffer called
+[2026-05-24T05:42:02.009Z] INFO [WebRTC] Emitting viewer:offer
+[2026-05-24T05:42:02.009Z] INFO [WebRTC] Total initiateOffer time {"tookMs":14}
+[2026-05-24T05:42:02.009Z] ERROR [WebRTC] Signaling error {"message":"Camera is not online"}
+[2026-05-24T05:42:02.009Z] INFO [Viewer] Status transition {"status":"error"}
+[2026-05-24T05:42:12.011Z] WARN [WebRTC] Socket disconnected unexpectedly {"streamKey":"46ca6564-494a-4108-9690-16b383639370"}
+[2026-05-24T05:42:12.011Z] INFO [Viewer] Status transition {"status":"disconnected"}
+[2026-05-24T05:42:12.011Z] INFO [WebRTC] connectViewer called {"streamKey":"46ca6564-494a-4108-9690-16b383639370"}
+[2026-05-24T05:42:12.011Z] INFO [Viewer] Status transition {"status":"connecting"}
+[2026-05-24T05:42:12.011Z] INFO [WebRTC] Socket connected, emitting viewer:join {"streamKey":"46ca6564-494a-4108-9690-16b383639370"}
+[2026-05-24T05:42:12.011Z] INFO [WebRTC] Received camera:status {"online":false,"cameraId":"cam-backyard"}
+[2026-05-24T05:42:12.011Z] INFO [WebRTC] Camera offline, waiting
+[2026-05-24T05:42:12.011Z] INFO [Viewer] Status transition {"status":"waiting"}
+[2026-05-24T05:42:22.009Z] INFO [WebRTC] Re-emitting viewer:join to re-check camera status
+[2026-05-24T05:42:22.009Z] INFO [WebRTC] Received camera:status {"online":false,"cameraId":"cam-backyard"}
+[2026-05-24T05:42:22.009Z] INFO [WebRTC] Camera offline, waiting
+[2026-05-24T05:42:22.009Z] WARN [WebRTC] Socket disconnected unexpectedly {"streamKey":"46ca6564-494a-4108-9690-16b383639370"}
+[2026-05-24T05:42:22.009Z] INFO [Viewer] Status transition {"status":"idle"}
+[2026-05-24T05:42:22.009Z] INFO [WebRTC] connectViewer called {"streamKey":"91207073-b711-4e07-a7f5-c2db32c185fa"}
+[2026-05-24T05:42:22.009Z] INFO [Viewer] Status transition {"status":"connecting"}
+[2026-05-24T05:42:22.009Z] INFO [WebRTC] Socket connected, emitting viewer:join {"streamKey":"91207073-b711-4e07-a7f5-c2db32c185fa"}
+[2026-05-24T05:42:22.009Z] INFO [WebRTC] Received camera:status {"online":true,"cameraId":"cam-front-door"}
+[2026-05-24T05:42:22.009Z] INFO [WebRTC] Camera online, initiating offer
+[2026-05-24T05:42:22.009Z] INFO [WebRTC] initiateOffer called
+[2026-05-24T05:42:22.009Z] INFO [WebRTC] Emitting viewer:offer
+[2026-05-24T05:42:22.009Z] INFO [WebRTC] Total initiateOffer time {"tookMs":14}
+[2026-05-24T05:42:22.009Z] INFO [WebRTC] Received camera:answer
+[2026-05-24T05:42:22.009Z] INFO [WebRTC] PC connection state change {"state":"connecting"}
+[2026-05-24T05:42:22.009Z] INFO [WebRTC] PC connection state change {"state":"connected"}
+[2026-05-24T05:42:22.009Z] INFO [WebRTC] Peer connection established {"tookMs":713}
+[2026-05-24T05:42:22.009Z] INFO [Viewer] Status transition {"status":"connected"}
+[2026-05-24T05:42:32.013Z] INFO [WebRTC] Camera went offline
+[2026-05-24T05:42:32.013Z] INFO [Viewer] Status transition {"status":"waiting"}
+[2026-05-24T05:42:32.013Z] INFO [WebRTC] Camera went offline
+[2026-05-24T05:42:32.013Z] INFO [WebRTC] initiateOffer called
+[2026-05-24T05:42:32.013Z] INFO [WebRTC] Emitting viewer:offer
+[2026-05-24T05:42:32.013Z] INFO [WebRTC] Total initiateOffer time {"tookMs":14}
+[2026-05-24T05:42:32.013Z] INFO [WebRTC] Received camera:answer
+[2026-05-24T05:42:32.013Z] INFO [WebRTC] PC connection state change {"state":"connecting"}
+[2026-05-24T05:42:32.013Z] INFO [WebRTC] PC connection state change {"state":"connected"}
+[2026-05-24T05:42:32.013Z] INFO [WebRTC] Peer connection established {"tookMs":12247}
+[2026-05-24T05:42:32.013Z] INFO [Viewer] Status transition {"status":"connected"}
+[2026-05-24T05:42:52.004Z] INFO [WebRTC] Camera went offline
+[2026-05-24T05:42:52.004Z] INFO [Viewer] Status transition {"status":"waiting"}
+[2026-05-24T05:42:52.004Z] INFO [WebRTC] Camera went offline
+[2026-05-24T05:43:02.002Z] INFO [WebRTC] Re-emitting viewer:join to re-check camera status
+[2026-05-24T05:43:02.002Z] INFO [WebRTC] Received camera:status {"online":false,"cameraId":"cam-front-door"}
+[2026-05-24T05:43:02.002Z] INFO [WebRTC] Camera offline, waiting
+[2026-05-24T05:43:02.002Z] WARN [WebRTC] Socket disconnected unexpectedly {"streamKey":"91207073-b711-4e07-a7f5-c2db32c185fa"}
+[2026-05-24T05:43:02.002Z] INFO [CameraView] Auto-starting broadcast {"cameraId":"cam-front-door"}
+[2026-05-24T05:43:02.002Z] INFO [CameraView] Starting broadcast {"cameraId":"cam-front-door"}
+[2026-05-24T05:43:02.002Z] INFO [WebRTC] Camera socket connected {"streamKey":"91207073-b711-4e07-a7f5-c2db32c185fa"}
+[2026-05-24T05:43:52.012Z] INFO [CameraView] Stopping broadcast {"cameraId":"cam-front-door"}
+[2026-05-24T05:44:01.998Z] INFO [CameraView] Starting broadcast {"cameraId":"cam-front-door"}
+[2026-05-24T05:44:01.998Z] INFO [WebRTC] Camera socket connected {"streamKey":"91207073-b711-4e07-a7f5-c2db32c185fa"}
+[2026-05-24T05:44:01.998Z] INFO [CameraView] Stopping broadcast {"cameraId":"cam-front-door"}
+[2026-05-24T05:44:01.998Z] INFO [CameraView] Starting broadcast {"cameraId":"cam-front-door"}
+[2026-05-24T05:44:01.998Z] INFO [WebRTC] Camera socket connected {"streamKey":"91207073-b711-4e07-a7f5-c2db32c185fa"}
+[2026-05-24T05:44:12.009Z] INFO [CameraView] Stopping broadcast {"cameraId":"cam-front-door"}
+[2026-05-24T05:44:22.007Z] INFO [CameraView] Starting broadcast {"cameraId":"cam-front-door"}
+[2026-05-24T05:44:22.007Z] INFO [WebRTC] Camera socket connected {"streamKey":"91207073-b711-4e07-a7f5-c2db32c185fa"}
+[2026-05-24T05:44:32.009Z] INFO [CameraView] Stopping broadcast {"cameraId":"cam-front-door"}
+[2026-05-24T05:44:42.003Z] INFO [CameraView] Starting broadcast {"cameraId":"cam-front-door"}
+[2026-05-24T05:44:42.003Z] INFO [WebRTC] Camera socket connected {"streamKey":"91207073-b711-4e07-a7f5-c2db32c185fa"}
+[2026-05-24T05:44:42.003Z] INFO [CameraView] Stopping broadcast {"cameraId":"cam-front-door"}
+[2026-05-24T05:46:52.572Z] INFO [CameraView] App backgrounded, stopping detection
+[2026-05-24T13:16:47.393Z] INFO [Test] test from curl
+```
