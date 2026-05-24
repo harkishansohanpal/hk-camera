@@ -64,7 +64,6 @@ model Camera {
   motionDetect   Boolean       @default(true)
   sensitivity    Int           @default(30) // 1-100 (pixel-diff)
   detectionMode  DetectionMode @default(PIXEL_DIFF)
-  mlConfidence   Int           @default(50) // 0-100 (ML confidence threshold)
   nightVision    Boolean       @default(false)
   twoWayAudio    Boolean       @default(true)
   recordOnMotion Boolean       @default(false)
@@ -86,7 +85,6 @@ model Camera {
 
 enum DetectionMode {
   PIXEL_DIFF
-  ML
 }
 
 // ── Recording ─────────────────────────────────────────────────

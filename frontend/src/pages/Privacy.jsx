@@ -31,7 +31,7 @@ export default function Privacy() {
           <div className="space-y-3">
             <div><strong className="text-text-primary">Encryption</strong> &mdash; Your video is scrambled during streaming and when stored.</div>
           <div><strong className="text-text-primary">Access control</strong> &mdash; Each camera has a unique key. Only people with it can watch.</div>
-          <div><strong className="text-text-primary">No snooping</strong> &mdash; Your video feeds are private. We don't watch or record them. Our detection runs on your device and can't identify faces.</div>
+          <div><strong className="text-text-primary">No snooping</strong> &mdash; Your video feeds are private. We don't watch or record them. Our motion detection runs entirely on your device.</div>
           </div>
         </section>
 

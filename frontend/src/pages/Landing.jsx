@@ -5,7 +5,6 @@ import { useAuth } from '../contexts/AuthContext';
 
 const PRODUCTS = [
   { id: 'live', Icon: Video, title: 'Live Video', desc: 'Watch live from any browser. No app needed.', tech: 'Works right out of the box.' },
-  { id: 'detection', Icon: Zap, title: 'Smart Detection', desc: 'Knows the difference between people, cars, and animals. Fewer false alerts.', tech: 'Works right out of the box.' },
   { id: 'alerts', Icon: Bell, title: 'Instant Alerts', desc: 'Get notified the moment something happens — by email or push.', tech: 'Works right out of the box.' },
   { id: 'night', Icon: Eye, title: 'Night Vision', desc: 'Works in the dark. Clear video even with the lights off.', tech: 'Works right out of the box.' },
   { id: 'audio', Icon: Volume2, title: 'Talk Through It', desc: 'Hear and speak through your camera like a walkie-talkie.', tech: 'Works right out of the box.' },

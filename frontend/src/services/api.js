@@ -123,11 +123,6 @@ export const userAPI = {
   updateDoNotSell:(data) => api.patch('/users/me/do-not-sell', data),
 };
 
-// ── ML Detection ─────────────────────────────────────────────
-export const detectAPI = {
-  detect: (data) => api.post('/detect', data),
-};
-
 // ── Subscriptions (Stripe) ────────────────────────────────────
 export const subscriptionAPI = {
   listPlans:       ()   => api.get('/subscriptions/plans'),

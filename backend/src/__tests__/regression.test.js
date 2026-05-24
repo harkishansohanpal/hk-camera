@@ -35,7 +35,7 @@ const mockPlan = {
   name: 'Pro',
   stripePriceId: 'price_pro_monthly',
   price: 999,
-  features: JSON.stringify(['ML Detection', '30-day recordings']),
+  features: JSON.stringify(['30-day recordings']),
   sortOrder: 1,
 };
 

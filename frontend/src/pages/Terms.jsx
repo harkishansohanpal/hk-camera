@@ -34,7 +34,7 @@ export default function Terms() {
 
         <section>
           <h3 className="text-base font-semibold text-text-primary mb-2">3. Object Detection</h3>
-          <p>HK Camera can detect people, cars, and animals in your video. This happens on your device and:</p>
+          <p>HK Camera uses a pixel-based motion detection algorithm that runs entirely on your device and:</p>
           <ul className="list-disc pl-5 mt-2 space-y-1">
             <li>Does <strong className="text-text-primary">not</strong> recognize faces or identify people.</li>
             <li>Does <strong className="text-text-primary">not</strong> create face prints.</li>

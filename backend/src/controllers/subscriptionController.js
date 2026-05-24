@@ -85,8 +85,8 @@ async function seedPlans(req, res) {
 
   const plans = [
     { name: 'Free', description: 'Basic camera monitoring', price: 0, interval: 'MONTHLY', features: JSON.stringify(['1 camera', '1 day recording history', 'Pixel-diff detection', 'Email alerts']), stripePriceId: 'free_plan', sortOrder: 0, highlighted: false },
-    { name: 'Pro', description: 'For serious home security', price: 999, interval: 'MONTHLY', features: JSON.stringify(['Up to 5 cameras', '30 day recording history', 'ML object detection', 'Two-way audio', 'Email + push alerts', 'Cloud recordings']), stripePriceId: 'price_pro_monthly', sortOrder: 1, highlighted: true },
-    { name: 'Enterprise', description: 'For power users & small biz', price: 2999, interval: 'MONTHLY', features: JSON.stringify(['Unlimited cameras', '90 day recording history', 'ML object detection', 'Two-way audio', 'All alert types', 'Priority support', 'Custom integrations']), stripePriceId: 'price_enterprise_monthly', sortOrder: 2, highlighted: false },
+    { name: 'Pro', description: 'For serious home security', price: 999, interval: 'MONTHLY', features: JSON.stringify(['Up to 5 cameras', '30 day recording history', 'Two-way audio', 'Email + push alerts', 'Cloud recordings']), stripePriceId: 'price_pro_monthly', sortOrder: 1, highlighted: true },
+    { name: 'Enterprise', description: 'For power users & small biz', price: 2999, interval: 'MONTHLY', features: JSON.stringify(['Unlimited cameras', '90 day recording history', 'Two-way audio', 'All alert types', 'Priority support', 'Custom integrations']), stripePriceId: 'price_enterprise_monthly', sortOrder: 2, highlighted: false },
   ];
 
   for (const plan of plans) {

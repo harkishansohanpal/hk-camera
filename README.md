@@ -1,25 +1,23 @@
 # HK Camera
 
-> A production-grade home security camera platform. Turn any browser-equipped device into a live security camera with real-time WebRTC streaming, ML-based motion detection, two-way audio, and cloud recordings.
+> A production-grade home security camera platform. Turn any browser-equipped device into a live security camera with real-time WebRTC streaming, motion detection, two-way audio, and cloud recordings.
 
 ---
 
 ## Features
 
 - **Live streaming** – Peer-to-peer WebRTC video from any browser (no plugins)
-- **Motion detection** – Canvas pixel-diff algorithm *or* YOLOv8-nano ML detection (ONNX Runtime Web), configurable per-camera
+- **Motion detection** – Canvas pixel-diff algorithm
 - **Two-way audio** – Speak back through the camera device from the viewer
-- **Night vision** – Camera2 native Android low-light + canvas IR phosphor overlay modes
-- **Torch / flashlight** – Native torch control via WebRTC constraint and Capacitor plugin
-- **Granular camera controls** – Exposure, focus, white balance, ISO, brightness, contrast
-- **Remote camera control** – Control host camera settings (torch, focus, zoom, etc.) from the viewer
-- **Cloud recordings** – Auto-record on motion; store locally or on AWS S3
+- **Night vision** – Canvas IR phosphor overlay modes
+- **Torch / flashlight** – Remote torch control via WebRTC constraints
+- **Remote camera control** – Control host camera settings (torch, screen dim, etc.) from the viewer
+- **Cloud recordings** – Auto-record on motion; store locally or on AWS S3 / Cloudflare R2
 - **Alerts** – In-app, email (SMTP), and browser push notifications
 - **Multi-camera** – Manage multiple cameras per account
 - **JWT auth** – Short-lived access tokens with rotating refresh tokens
 - **Stripe billing** – Subscription plans, checkout, customer portal
 - **TURN server** – Coturn (self-hosted) or Cloudflare TURN with STUN fallback
-- **Mobile apps** – Native iOS and Android via Capacitor, installable as PWA
 - **User registration** – Self-service account creation
 - **Dark mode** – Light/dark theme toggle with CSS variables, persisted to localStorage
 
@@ -30,15 +28,13 @@
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 18, Vite, Tailwind CSS, Socket.io client |
-| ML Detection | ONNX Runtime Web, YOLOv8-nano |
 | Backend | Node.js 20, Express, Socket.io |
 | Database | PostgreSQL + Prisma ORM |
 | Cache | Redis |
 | Real-time | WebRTC (P2P), Socket.io (signaling) |
-| Storage | AWS S3 or local disk |
+| Storage | AWS S3, Cloudflare R2, or local disk |
 | Billing | Stripe |
 | Notifications | Nodemailer (SMTP) + web-push (VAPID) |
-| Mobile | Capacitor (Android + iOS), `@capawesome/capacitor-torch` |
 | Containers | Docker + Docker Compose |
 | Proxy | Nginx |
 | Deploy (prod) | Fly.io (backend) + Cloudflare Pages (frontend) |
@@ -128,24 +124,21 @@ hk-camera/
 │   └── package.json
 ├── frontend/
 │   ├── src/
-│   │   ├── components/       # CameraStream, ViewerStream, CameraControlsPanel, Layout, ProtectedRoute, GuidedTour
+│   │   ├── components/       # CameraStream, ViewerStream, Layout, ProtectedRoute, GuidedTour
 │   │   ├── contexts/         # AuthContext, ThemeContext
-│   │   ├── hooks/            # useWebRTC, useMotionDetection, useYoloDetection, useMediaRecorder, ...
-│   │   ├── ml/               # Pure detection logic (parseDetections, preprocessFrame, constants)
+│   │   ├── hooks/            # useWebRTC, useMotionDetection, useMediaRecorder, ...
 │   │   ├── pages/            # Landing, Pricing, Billing, Dashboard, CameraView, Viewer, Settings, ...
 │   │   │   └── admin/        # Admin dashboard, logs, log analyzer
-│   │   ├── services/         # api.js (Axios + auto-refresh), advancedCamera.js
+│   │   ├── services/         # api.js (Axios + auto-refresh)
 │   │   ├── App.jsx
 │   │   ├── main.jsx
 │   │   └── index.css         # Tailwind + CSS custom properties (light/dark)
 │   ├── e2e/                  # Playwright E2E tests
 │   ├── public/
 │   │   ├── _redirects        # Cloudflare Pages SPA fallback
-│   │   ├── models/           # YOLOv8n.onnx (downloaded during CI)
 │   │   ├── manifest.json     # PWA manifest
 │   │   └── icons/
 │   ├── .eslintrc.cjs         # ESLint with security + React hooks rules
-│   ├── capacitor.config.ts
 │   ├── playwright.config.js
 │   ├── nginx.conf
 │   ├── Dockerfile

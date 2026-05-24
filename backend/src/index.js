@@ -22,7 +22,6 @@ const recordingRoutes  = require('./routes/recordings');
 const userRoutes       = require('./routes/users');
 const turnRoutes       = require('./routes/turn');
 const subscriptionRoutes = require('./routes/subscriptions');
-const detectRoutes      = require('./routes/detect');
 const webhookRoutes    = require('./routes/webhook');
 
 // ── Express app ───────────────────────────────────────────────
@@ -106,7 +105,6 @@ app.use('/api/alerts',       alertRoutes);
 app.use('/api/recordings',   recordingRoutes);
 app.use('/api/users',        userRoutes);
 app.use('/api/turn-credentials', turnRoutes);
-app.use('/api/detect',       detectRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 
 // ── Admin routes (require ADMIN role) ─────────────────────────

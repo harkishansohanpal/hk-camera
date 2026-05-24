@@ -1,14 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Shield, Video, Brain, Mic, MicOff } from 'lucide-react';
-import { Capacitor } from '@capacitor/core';
-import { Torch } from '@capawesome/capacitor-torch';
-import { AdvancedCamera } from '../services/advancedCamera';
+import { ArrowLeft, Shield, Video, Mic, MicOff } from 'lucide-react';
 import { cameraAPI, alertAPI } from '../services/api';
 import { prefetchIceServers } from '../hooks/useWebRTC';
 import { useWebRTC } from '../hooks/useWebRTC';
 import { useMotionDetection } from '../hooks/useMotionDetection';
-import { useYoloDetection } from '../hooks/useYoloDetection';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
 import { useWakeLock } from '../hooks/useWakeLock';
 import { logger } from '../lib/logger';
@@ -37,63 +33,13 @@ export default function CameraView() {
   const cameraRef = useRef(null);
   useEffect(() => { cameraRef.current = camera; }, [camera]);
   const wasBackgroundRef = useRef(false);
-  const nvCanvasRef = useRef(null);
-  const nvListenerRef = useRef(null);
 
   const recCanvasRef = useRef(null);
   const recRafRef = useRef(null);
 
-  async function startCamera2NightVision(broadcastStream) {
-    if (!Capacitor.isNativePlatform() || !AdvancedCamera) return;
-    if (nvListenerRef.current) return;
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = 480; canvas.height = 360;
-      nvCanvasRef.current = canvas;
-      await AdvancedCamera.startCapture({ iso: 1600, exposureMs: 66, width: 480, height: 360 });
-      nvListenerRef.current = AdvancedCamera.addListener('frame', async (data) => {
-        try {
-          const base64 = data.jpeg;
-          const binary = atob(base64);
-          const array = new Uint8Array(binary.length);
-          for (let i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
-          const blob = new Blob([array], { type: 'image/jpeg' });
-          const bitmap = await createImageBitmap(blob);
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(bitmap, 0, 0, 480, 360);
-          bitmap.close();
-        } catch (err) { console.warn('[NV] Frame processing error:', err); }
-      });
-      const canvasStream = canvas.captureStream(15);
-      const videoTrack = canvasStream.getVideoTracks()[0];
-      const audioTrack = broadcastStream?.getAudioTracks()[0];
-      const newStream = new MediaStream();
-      if (videoTrack) newStream.addTrack(videoTrack);
-      if (audioTrack) newStream.addTrack(audioTrack);
-      stopBroadcast();
-      streamRef.current = newStream;
-      await startBroadcast(newStream);
-    } catch (err) {
-      console.error('[NV] Camera2 night vision failed:', err);
-      toast.error('Night vision failed: ' + err.message);
-    }
-  }
-
-  async function stopCamera2NightVision() {
-    if (nvListenerRef.current) { nvListenerRef.current.remove(); nvListenerRef.current = null; }
-    if (AdvancedCamera) { await AdvancedCamera.stopCapture().catch(() => {}); }
-  }
-
   async function handleRemoteCommand(command, payload) {
     if (command === 'TORCH') {
-      if (Capacitor.isNativePlatform()) {
-        try {
-          const { available } = await Torch.isAvailable();
-          if (!available) { toast.error('Flashlight not available'); return; }
-          if (payload.on) { await Torch.enable(); } else { await Torch.disable(); }
-          setTorchOn(payload.on); toast.success(`Flashlight ${payload.on ? 'ON' : 'OFF'}`);
-        } catch (err) { toast.error(`Torch error: ${err.message}`); }
-      } else if (isAndroid) { setTorchOn(payload.on); toast.success(`Screen light ${payload.on ? 'ON' : 'OFF'}`); }
+      if (isAndroid) { setTorchOn(payload.on); toast.success(`Screen light ${payload.on ? 'ON' : 'OFF'}`); }
       else {
         const track = streamRef.current?.getVideoTracks()[0];
         if (!track) return;
@@ -103,23 +49,6 @@ export default function CameraView() {
       }
     } else if (command === 'SCREEN_DIM') { setScreenDimmed(payload.on); }
     else if (command === 'BACKGROUND') { setBackgroundMode(payload.on); }
-    else if (command === 'NIGHT_VISION') {
-      if (payload.on) {
-        if (Capacitor.isNativePlatform() && AdvancedCamera) { await startCamera2NightVision(streamRef.current); }
-        else {
-          const track = streamRef.current?.getVideoTracks()[0];
-          if (!track) return;
-          const caps = track.getCapabilities?.() ?? {};
-          const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-          const constraints = { advanced: [] };
-          if (isIOS) {
-            if (caps.focusMode?.includes('continuous-picture')) constraints.advanced.push({ focusMode: 'continuous-picture' });
-            if (caps.exposureMode) constraints.advanced.push({ exposureMode: 'continuous' });
-          }
-          if (constraints.advanced.length > 0) track.applyConstraints(constraints).catch(() => {});
-        }
-      } else { await stopCamera2NightVision(); }
-    }
   }
 
   const { startBroadcast, stopBroadcast, setMicEnabled, status: rtcStatus } = useWebRTC({ streamKey: camera?.streamKey, onCommand: handleRemoteCommand });
@@ -166,17 +95,10 @@ export default function CameraView() {
     }
   }, [cameraId, motionCount]);
 
-  const detectionMode = camera?.detectionMode || 'PIXEL_DIFF';
-  const isMlMode = detectionMode === 'ML';
-  const { startDetection: startPixelDiff, stopDetection: stopPixelDiff, isDetecting: isPixelDetecting } = useMotionDetection({ videoRef, sensitivity: camera?.sensitivity ?? 30, onMotion: handleMotion });
-  const { startDetection: startMlDetection, stopDetection: stopMlDetection, isDetecting: isMlDetecting, modelLoaded, loadingError: mlError, inferenceError: mlInferenceError } = useYoloDetection({ videoRef, confidence: camera?.mlConfidence ?? 80, onDetection: (dets) => {}, onMotion: (payload) => handleMotion(payload) });
-  const isDetecting = isMlMode ? isMlDetecting : isPixelDetecting;
-  const startDetection = isMlMode ? startMlDetection : startPixelDiff;
-  const stopDetection = isMlMode ? stopMlDetection : stopPixelDiff;
+  const { startDetection, stopDetection, isDetecting } = useMotionDetection({ videoRef, sensitivity: camera?.sensitivity ?? 30, onMotion: handleMotion });
 
   useEffect(() => { prefetchIceServers().catch(() => {}); }, []);
   useEffect(() => { cameraAPI.get(cameraId).then(({ data }) => setCamera(data.data)).catch(() => toast.error('Camera not found')); }, [cameraId]);
-  useEffect(() => { return () => { stopCamera2NightVision().catch(() => {}); }; }, []);
   useEffect(() => { if (isBroadcasting && !backgroundMode) acquireWL(); else releaseWL(); }, [isBroadcasting, backgroundMode, acquireWL, releaseWL]);
 
   function shouldDetect(cam) { if (!cam) return false; return cam.motionDetect; }
@@ -197,7 +119,7 @@ export default function CameraView() {
   async function handleToggle() {
     if (isBroadcasting) {
       logger.info('CameraView', 'Stopping broadcast', { cameraId });
-      await stopCamera2NightVision(); stopBroadcast(); stopDetection();
+      stopBroadcast(); stopDetection();
       if (isRecording) stopRecording();
       streamRef.current?.getTracks().forEach((t) => t.stop()); setStream(null); return;
     }
@@ -269,30 +191,6 @@ export default function CameraView() {
           <div className={`mt-1 text-xs font-semibold ${isDetecting ? 'text-ap-green' : 'text-text-secondary'}`}>
             {isDetecting ? '\u25cf On' : '\u25cb Off'}
           </div>
-          <div className="mt-2 flex gap-1.5">
-            <button onClick={async () => {
-              setCamera((c) => ({ ...c, detectionMode: 'PIXEL_DIFF' }));
-              await cameraAPI.update(cameraId, { detectionMode: 'PIXEL_DIFF' });
-              if (isBroadcasting) { stopMlDetection(); if (camera?.motionDetect) startPixelDiff(); }
-            }} className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-semibold transition-colors ${!isMlMode ? 'bg-ap-blue/10 text-ap-blue' : 'bg-fill-input text-text-secondary'}`}>
-              Standard
-            </button>
-            <button onClick={async () => {
-              setCamera((c) => ({ ...c, detectionMode: 'ML' }));
-              await cameraAPI.update(cameraId, { detectionMode: 'ML' });
-              if (isBroadcasting) { stopPixelDiff(); if (camera?.motionDetect) startMlDetection(); }
-            }} className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-semibold transition-colors flex items-center justify-center gap-1 ${isMlMode ? 'bg-ap-blue/10 text-ap-blue' : 'bg-fill-input text-text-secondary'}`}>
-              <Brain size={10} /> Smart
-            </button>
-          </div>
-          {isMlMode && (
-            <div className="mt-1 text-[10px]">
-              {!modelLoaded && !mlError && isMlDetecting && <p className="text-ap-orange">Loading model\u2026</p>}
-              {modelLoaded && <p className="text-ap-green">Model ready</p>}
-              {mlError && <p className="text-ap-red">Model error: {mlError}</p>}
-              {mlInferenceError && <p className="text-ap-red">Detection error: {mlInferenceError}</p>}
-            </div>
-          )}
         </div>
 
         <div className="card p-4 shadow-apple-sm">
