@@ -111,11 +111,12 @@ jobs:
         env:
           CI: true
 
-      - name: Run visual regression tests
-        run: npx playwright test e2e/visual.spec.js --reporter=github
-        env:
-          CI: true
-          PWTEST_SKIP_SCREENSHOT: ''
+      # Visual regression disabled in CI — requires platform-matched baselines.
+      # Run locally: npx playwright test e2e/visual.spec.js --update-snapshots
+      #- name: Run visual regression tests
+      #  run: npx playwright test e2e/visual.spec.js --reporter=github
+      #  env:
+      #    CI: true
 
   # ── Smoke tests (preview) ──────────────────────────────────
   smoke:

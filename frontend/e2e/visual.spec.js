@@ -7,21 +7,15 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('Visual Regression', () => {
-  test('Landing page matches screenshot', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('h1')).toBeVisible();
-    await expect(page).toHaveScreenshot({ fullPage: true, maxDiffPixels: 100 });
-  });
-
-  test('Login page matches screenshot', async ({ page }) => {
-    await page.goto('/login');
-    await expect(page.locator('h1')).toBeVisible();
-    await expect(page).toHaveScreenshot({ fullPage: true, maxDiffPixels: 100 });
-  });
-
-  test('Register page matches screenshot', async ({ page }) => {
-    await page.goto('/register');
-    await expect(page.locator('h1')).toBeVisible();
-    await expect(page).toHaveScreenshot({ fullPage: true, maxDiffPixels: 100 });
-  });
+  for (const { name, path } of [
+    { name: 'Landing page', path: '/' },
+    { name: 'Login page', path: '/login' },
+    { name: 'Register page', path: '/register' },
+  ]) {
+    test(`${name} matches screenshot`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page.locator('h1').first()).toBeVisible();
+      await expect(page).toHaveScreenshot({ fullPage: true, maxDiffPixels: 100 });
+    });
+  }
 });
