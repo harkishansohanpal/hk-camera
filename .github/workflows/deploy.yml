@@ -32,9 +32,10 @@ jobs:
           VITE_SOCKET_URL: https://hk-camera-backend.fly.dev
 
       - name: Deploy to Cloudflare Pages
-        run: npx wrangler pages deploy frontend/dist --project-name=hk-camera --branch=master
+        run: npx wrangler pages deploy frontend/dist
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
   # ── Backend: Fly.io ─────────────────────────────────────────
   backend:
