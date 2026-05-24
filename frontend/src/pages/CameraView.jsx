@@ -122,7 +122,7 @@ export default function CameraView() {
 
   async function getLocalStream() { return navigator.mediaDevices.getUserMedia({ video: { facingMode, width: { ideal: 1920, min: 1280 }, height: { ideal: 1080, min: 720 } }, audio: true }); }
 
-  async function handleToggle() {
+  const handleToggle = useCallback(async () => {
     if (toggleCooldownRef.current) return;
     toggleCooldownRef.current = true;
     setTimeout(() => { toggleCooldownRef.current = false; }, 1000);
@@ -138,7 +138,7 @@ export default function CameraView() {
       const localStream = await getLocalStream(); setStream(localStream); await startBroadcast(localStream);
       toast.success('Streaming started');
     } catch (err) { logger.error('CameraView', 'Failed to start broadcast', { error: err.message, cameraId }); toast.error('Could not start camera: ' + err.message); }
-  }
+  }, [isBroadcasting, isRecording, cameraId, startBroadcast, stopBroadcast, stopDetection, getLocalStream]);
 
   async function flipCamera() {
     const next = facingMode === 'environment' ? 'user' : 'environment';

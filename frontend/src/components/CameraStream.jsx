@@ -6,7 +6,11 @@ const CameraStream = forwardRef(function CameraStream(
 ) {
   const internalRef = useRef(null);
   const videoRef = ref || internalRef;
-  useEffect(() => { if (videoRef.current && stream) videoRef.current.srcObject = stream; }, [stream]);
+  useEffect(() => { 
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream; 
+    }
+  }, [stream, videoRef.current]);
 
   return (
     <div className={`relative bg-black overflow-hidden ${className}`}>
