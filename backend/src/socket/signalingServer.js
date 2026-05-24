@@ -28,6 +28,9 @@ const cameras = new Map();
 // Map of streamKey → { viewerSocketId → joinedAt }
 const viewerSessions = new Map();
 
+// Map of streamKey → last offline emit timestamp
+const lastOfflineEmit = new Map();
+
 function initSignalingServer(socketIO) {
   io = socketIO;
 
@@ -98,8 +101,16 @@ function initSignalingServer(socketIO) {
           reportScheduler.endSession(socket.cameraId);
           cameras.delete(key);
           prisma.camera.update({ where: { id: socket.cameraId }, data: { isOnline: false } }).catch((err) => logger.warn('Failed to persist camera offline status', { cameraId: socket.cameraId, error: err.message }));
-          io.to(`camera:${key}`).emit('camera:offline', { cameraId: socket.cameraId });
-          io.to(`user:${socket.userId}`).emit('camera:offline', { cameraId: socket.cameraId });
+          
+          // Debounce offline emission to prevent duplicate events
+          const now = Date.now();
+          const lastEmit = lastOfflineEmit.get(key) || 0;
+          if (now - lastEmit > 1000) {
+            lastOfflineEmit.set(key, now);
+            io.to(`camera:${key}`).emit('camera:offline', { cameraId: socket.cameraId });
+            io.to(`user:${socket.userId}`).emit('camera:offline', { cameraId: socket.cameraId });
+          }
+          
           logger.info('Signaling', 'Camera disconnected', { cameraId: socket.cameraId, streamKey: key });
         }
       });

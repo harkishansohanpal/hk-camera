@@ -16,6 +16,7 @@ export default function CameraView() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const autoStartedRef = useRef(false);
+  const lastAutoStartRef = useRef(0);  // Debounce auto-start
 
   const [camera, setCamera]           = useState(null);
   const [stream, setStream]           = useState(null);
@@ -152,6 +153,12 @@ export default function CameraView() {
 
   useEffect(() => {
     if (camera && searchParams.get('auto') === '1' && !autoStartedRef.current && !isBroadcasting) {
+      const now = Date.now();
+      if (now - lastAutoStartRef.current < 5000) {
+        logger.info('CameraView', 'Auto-start cooldown, skipping');
+        return;
+      }
+      lastAutoStartRef.current = now;
       autoStartedRef.current = true;
       logger.info('CameraView', 'Auto-starting broadcast', { cameraId });
       handleToggle();

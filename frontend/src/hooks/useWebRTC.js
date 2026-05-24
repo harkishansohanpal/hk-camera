@@ -436,9 +436,15 @@ export function useWebRTC({ streamKey, onCommand }) {
 
     const handleDisconnect = () => {
       logger.warn('WebRTC', 'Socket disconnected unexpectedly', { streamKey });
-      // Don't close the PC — socket.io will auto-reconnect and we'll
-      // re-establish the signaling path. The PC's own connection state
-      // handler (with debounce) will handle a real media-level dropout.
+      // Trigger reconnection by re-emitting viewer:join after a short delay
+      // The socket.io client will auto-reconnect, but we need to rejoin the room
+      if (isActive) {
+        setTimeout(() => {
+          if (socketRef.current?.connected && isActive) {
+            socketRef.current.emit('viewer:join', { streamKey });
+          }
+        }, 1000);
+      }
     };
 
     socket.on('connect', handleConnect);
