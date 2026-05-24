@@ -9,16 +9,16 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('Accessibility', () => {
   const pages = [
-    { name: 'Landing page', path: '/' },
-    { name: 'Pricing page', path: '/pricing' },
-    { name: 'Login page', path: '/login' },
-    { name: 'Register page', path: '/register' },
+    { name: 'Landing page', path: '/', wait: 'networkidle' },
+    { name: 'Pricing page', path: '/pricing', wait: 'networkidle' },
+    { name: 'Login page', path: '/login', wait: 'networkidle' },
+    { name: 'Register page', path: '/register', wait: 'load' },
   ];
 
-  for (const { name, path } of pages) {
+  for (const { name, path, wait } of pages) {
     test(`${name} has no critical or serious violations`, async ({ page }) => {
       await page.goto(path);
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState(wait);
 
       const results = await new AxeBuilder({ page }).analyze();
 
@@ -26,15 +26,14 @@ test.describe('Accessibility', () => {
         (v) => v.impact === 'critical' || v.impact === 'serious',
       );
 
-      expect(criticalSerious.length).toBe(0);
-
       for (const violation of results.violations) {
         test.info().annotations.push({
           type: 'issue',
-          description: `${violation.impact}: ${violation.help} (${violation.id}) — ${violation.helpUrl}`,
+          description: `[${violation.impact}] ${violation.help} (${violation.id}) — ${violation.helpUrl}`,
         });
       }
 
+      expect.soft(criticalSerious.length, `Critical/serious violations: ${criticalSerious.map(v => v.id).join(', ')}`).toBe(0);
       expect.soft(results.violations.length).toBe(0);
     });
   }

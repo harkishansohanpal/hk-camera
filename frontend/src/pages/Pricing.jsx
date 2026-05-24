@@ -33,7 +33,7 @@ export default function Pricing() {
   }
 
   return (
-    <div className="min-h-screen bg-page text-text-primary">
+    <main className="min-h-screen bg-page text-text-primary">
       <div className="max-w-6xl mx-auto px-4 py-12 animate-fade-in">
         <button onClick={() => navigate(-1)} className="btn-ghost text-sm mb-8 text-text-secondary hover:text-text-primary">
           <ArrowLeft size={16} /> Back
@@ -86,6 +86,6 @@ export default function Pricing() {
         </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

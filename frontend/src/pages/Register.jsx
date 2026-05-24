@@ -40,7 +40,7 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-dvh flex items-center justify-center bg-page px-4">
+    <main className="min-h-dvh flex items-center justify-center bg-page px-4">
       <div className="w-full max-w-sm animate-slide-up">
         <div className="flex flex-col items-center mb-8">
           <div className="w-14 h-14 bg-ap-blue rounded-2xl flex items-center justify-center mb-4 shadow-apple shadow-ap-blue/20">
@@ -86,6 +86,6 @@ export default function Register() {
           <Link to="/login" className="text-ap-blue hover:text-blue-700 font-semibold">Log In</Link>
         </p>
       </div>
-    </div>
+    </main>
   );
 }

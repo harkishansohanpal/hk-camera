@@ -19,11 +19,16 @@ function stripAnsi(s) {
 }
 function parseTestCount(output) {
   // Vitest: "Tests  39 passed (39)"
-  // Jest:   "Tests:       57 passed, 57 total"
-  // Strip ANSI escape codes that vitest emits even in non-TTY mode
+  // Jest (no skips): "Tests:       57 passed, 57 total"
+  // Jest (with skips): "Tests:       3 skipped, 61 passed, 64 total"
+  //
+  // Match the number that appears immediately before " passed".
+  // Use a loop to find the last occurrence (which is always the passed count).
   const clean = stripAnsi(output);
-  const m = clean.match(/Tests:?\s+(\d+)\s+passed/);
-  return m ? parseInt(m[1], 10) : null;
+  const re = /(\d+)\s+passed/g;
+  let m, last;
+  while ((m = re.exec(clean)) !== null) last = m[1];
+  return last ? parseInt(last, 10) : null;
 }
 
 function updateTestTable(content, suite, count) {

@@ -25,7 +25,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-dvh flex items-center justify-center bg-page px-4">
+    <main className="min-h-dvh flex items-center justify-center bg-page px-4">
       <div className="w-full max-w-sm animate-slide-up">
         <div className="flex flex-col items-center mb-8">
           <div className="w-14 h-14 bg-ap-blue rounded-2xl flex items-center justify-center mb-4 shadow-apple shadow-ap-blue/20">
@@ -49,6 +49,7 @@ export default function Login() {
                   placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
                   value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
                 <button type="button" onClick={() => setShowPw(!showPw)}
+                  aria-label={showPw ? 'Hide password' : 'Show password'}
                   className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary rounded-lg transition-colors">
                   {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -65,6 +66,6 @@ export default function Login() {
           <Link to="/register" className="text-ap-blue hover:text-blue-700 font-semibold">Sign Up</Link>
         </p>
       </div>
-    </div>
+    </main>
   );
 }
