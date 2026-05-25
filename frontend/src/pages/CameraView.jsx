@@ -121,13 +121,11 @@ export default function CameraView() {
 
   async function getLocalStream() { return navigator.mediaDevices.getUserMedia({ video: { facingMode, width: { ideal: 1920, min: 1280 }, height: { ideal: 1080, min: 720 } }, audio: true }); }
 
-  function enterFullscreen() {
+  function requestFullscreen() {
     const el = containerRef.current;
     if (!el) return;
     if (el.requestFullscreen) {
       el.requestFullscreen().catch(() => {});
-    } else if (videoRef.current?.webkitEnterFullscreen) {
-      videoRef.current.webkitEnterFullscreen();
     }
   }
 
@@ -148,8 +146,14 @@ export default function CameraView() {
     }
     try {
       logger.info('CameraView', 'Starting broadcast', { cameraId });
+      // Request fullscreen synchronously before any await to preserve gesture chain.
+      // On iOS Chrome this is the only way webkitEnterFullscreen might work.
+      if (videoRef.current?.webkitEnterFullscreen) {
+        videoRef.current.webkitEnterFullscreen();
+      } else {
+        requestFullscreen();
+      }
       const localStream = await getLocalStream(); setStream(localStream); await startBroadcast(localStream);
-      enterFullscreen();
       toast.success('Streaming started');
     } catch (err) { logger.error('CameraView', 'Failed to start broadcast', { error: err.message, cameraId }); toast.error('Could not start camera: ' + err.message); }
   }
