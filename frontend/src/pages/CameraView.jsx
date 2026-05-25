@@ -121,16 +121,35 @@ export default function CameraView() {
 
   async function getLocalStream() { return navigator.mediaDevices.getUserMedia({ video: { facingMode, width: { ideal: 1920, min: 1280 }, height: { ideal: 1080, min: 720 } }, audio: true }); }
 
+  function enterFullscreen() {
+    const el = containerRef.current;
+    if (!el) return;
+    if (el.requestFullscreen) {
+      el.requestFullscreen().catch(() => {});
+    } else if (videoRef.current?.webkitEnterFullscreen) {
+      videoRef.current.webkitEnterFullscreen();
+    }
+  }
+
+  function exitFullscreen() {
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      (document.exitFullscreen || document.webkitExitFullscreen)?.().catch(() => {});
+    }
+  }
+
   async function handleToggle() {
     if (isBroadcasting) {
       logger.info('CameraView', 'Stopping broadcast', { cameraId });
       stopBroadcast(); stopDetection();
       if (isRecording) stopRecording();
-      streamRef.current?.getTracks().forEach((t) => t.stop()); setStream(null); return;
+      streamRef.current?.getTracks().forEach((t) => t.stop()); setStream(null);
+      exitFullscreen();
+      return;
     }
     try {
       logger.info('CameraView', 'Starting broadcast', { cameraId });
       const localStream = await getLocalStream(); setStream(localStream); await startBroadcast(localStream);
+      enterFullscreen();
       toast.success('Streaming started');
     } catch (err) { logger.error('CameraView', 'Failed to start broadcast', { error: err.message, cameraId }); toast.error('Could not start camera: ' + err.message); }
   }
@@ -165,23 +184,7 @@ export default function CameraView() {
     }
   }, [camera, searchParams, handleToggle, isBroadcasting, cameraId]);
 
-  // Auto-fullscreen on mount
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    if (el.requestFullscreen) {
-      el.requestFullscreen().catch(() => {});
-    } else if (videoRef.current?.webkitEnterFullscreen) {
-      videoRef.current.webkitEnterFullscreen();
-    }
-    return () => {
-      if (document.fullscreenElement || document.webkitFullscreenElement) {
-        (document.exitFullscreen || document.webkitExitFullscreen)?.().catch(() => {});
-      }
-    };
-  }, []);
-
-  function handleBack() { navigate('/dashboard'); }
+  function handleBack() { exitFullscreen(); navigate('/dashboard'); }
 
   return (
     <div ref={containerRef} className="fixed inset-0 bg-black z-40 flex flex-col">
