@@ -68,6 +68,7 @@ async function getTurnCredentials(req, res) {
           });
         });
         req.on('error', reject);
+        req.setTimeout(5000, () => { req.destroy(); reject(new Error('Cloudflare TURN API timeout')); });
         req.write(body);
         req.end();
       });

@@ -22,7 +22,9 @@ async function connectDatabase() {
   logger.info('✅ Database connected');
   const url = process.env.DATABASE_URL || '';
   if (!url.includes('sslmode=require') && !url.includes('sslmode=verify-full')) {
-    logger.warn('⚠️  DATABASE_URL does not enforce SSL (missing sslmode=require). Add it in production: ?sslmode=require');
+    if (process.env.NODE_ENV !== 'production') {
+      logger.warn('⚠️  DATABASE_URL does not enforce SSL (missing sslmode=require). Add it in production: ?sslmode=require');
+    }
   }
 }
 

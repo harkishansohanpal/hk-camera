@@ -38,6 +38,8 @@ const io = new Server(server, {
     credentials: true,
   },
   transports: ['websocket', 'polling'],
+  pingInterval: 10000,
+  pingTimeout: 5000,
 });
 
 // ── Trust proxy (Fly.io / Cloudflare) ─────────────────────────
