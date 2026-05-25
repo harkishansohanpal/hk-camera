@@ -31,6 +31,11 @@ async function authenticate(req, res, next) {
     if (err.name === 'TokenExpiredError') {
       return res.status(401).json({ success: false, message: 'Token expired' });
     }
+    // DB connection errors should return 503, not 401 — otherwise the frontend
+    // clears its tokens and redirects to /login unnecessarily.
+    if (err.message?.includes('connection') || err.message?.includes('Closed') || err.code === 'P1001') {
+      return res.status(503).json({ success: false, message: 'Database unavailable, please retry' });
+    }
     logger.warn('JWT verification failed', { error: err.message });
     return res.status(401).json({ success: false, message: 'Invalid token' });
   }

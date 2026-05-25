@@ -39,7 +39,7 @@ api.interceptors.response.use(
       error.message = 'Service is starting up, please try again.';
     }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest._skipAuthRefresh) {
       if (refreshing) {
         return new Promise((resolve, reject) => {
           refreshQueue.push({ resolve, reject });
@@ -56,7 +56,9 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) throw new Error('No refresh token');
 
-        const { data } = await axios.post(`${API_BASE_URL}/api/auth/refresh`, { refreshToken });
+        // Use the api instance (with 503 retry) instead of bare axios.
+        // Flag it so a 401 from the refresh endpoint doesn't re-enter this handler.
+        const { data } = await api.post('/auth/refresh', { refreshToken }, { _skipAuthRefresh: true });
         const { accessToken, refreshToken: newRefreshToken } = data.data;
 
         localStorage.setItem('accessToken', accessToken);
