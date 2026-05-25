@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Maximize2, RotateCcw, Moon, BatteryCharging, Eye, EyeOff, Circle, Mic, MicOff } from 'lucide-react';
+import { ArrowLeft, Maximize2, RotateCcw, Moon, BatteryCharging, Eye, EyeOff, Circle, Mic, MicOff, X } from 'lucide-react';
 import { useWebRTC, prefetchIceServers } from '../hooks/useWebRTC';
 import { useMotionDetection } from '../hooks/useMotionDetection';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
@@ -82,27 +82,31 @@ export default function Viewer() {
   useEffect(() => { if (status !== 'connected') return; const interval = setInterval(() => api.get('/health').catch(() => {}), 60000); return () => clearInterval(interval); }, [status]);
   useEffect(() => { logger.info('Viewer', 'Status transition', { status }); }, [status]);
 
-  function handleFullscreen() {
-    const videoEl = videoRef.current;
-    const containerEl = document.getElementById('viewer-container');
+  const [cssFull, setCssFull] = useState(false);
+  useEffect(() => { return () => setCssFull(false); }, []);
 
+  function handleFullscreen() {
     if (document.fullscreenElement || document.webkitFullscreenElement) {
       (document.exitFullscreen || document.webkitExitFullscreen)?.().catch(() => {});
       return;
     }
-
-    if (videoEl?.webkitEnterFullscreen) {
-      videoEl.webkitEnterFullscreen();
+    // Standard Fullscreen API (Mac, iPad, Android)
+    const el = document.getElementById('viewer-container');
+    if (el?.requestFullscreen) {
+      el.requestFullscreen().catch(() => setCssFull(true));
     } else {
-      containerEl?.requestFullscreen?.().catch(() => setShowControls(false));
+      // iOS: CSS fullscreen (fills viewport like Google Lens)
+      setCssFull(true);
+      setTimeout(() => window.scrollTo(0, 0), 50);
     }
   }
 
   const isBad = status === 'error' || status === 'disconnected';
 
   return (
-    <div className="absolute inset-0 flex flex-col bg-black" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-      <nav className="z-20 flex items-center justify-between px-3 py-1.5 bg-black/80 backdrop-blur-xl border-b border-white/10"
+    <div className={`${cssFull ? 'fixed inset-0 z-[9999]' : 'absolute inset-0'} flex flex-col bg-black`}
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <nav className={`z-20 flex items-center justify-between px-3 py-1.5 bg-black/80 backdrop-blur-xl border-b border-white/10 ${cssFull ? 'hidden' : ''}`}
         style={{ paddingLeft: 'max(0.75rem, env(safe-area-inset-left))', paddingRight: 'max(0.75rem, env(safe-area-inset-right))' }}>
         <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/dashboard')} className="w-11 h-11 flex items-center justify-center text-white/60 hover:text-white rounded-xl transition-colors" title="Back">
           <ArrowLeft size={22} />
@@ -114,10 +118,18 @@ export default function Viewer() {
           </span>
           
         </div>
-        <button onClick={handleFullscreen} className="w-11 h-11 flex items-center justify-center text-white/60 hover:text-white rounded-xl transition-colors" title="Fullscreen">
-          <Maximize2 size={22} />
+        <button onClick={() => cssFull ? setCssFull(false) : handleFullscreen()} className="w-11 h-11 flex items-center justify-center text-white/60 hover:text-white rounded-xl transition-colors" title="Fullscreen">
+          {cssFull ? <X size={22} /> : <Maximize2 size={22} />}
         </button>
       </nav>
+
+      {/* CSS fullscreen Done button */}
+      {cssFull && (
+        <button onClick={() => setCssFull(false)}
+          className="absolute top-3 right-3 z-30 w-11 h-11 flex items-center justify-center text-white/80 hover:text-white rounded-full bg-white/10 backdrop-blur-sm transition-colors active:scale-95">
+          <X size={22} />
+        </button>
+      )}
 
       <div id="viewer-container" className="flex-1 relative bg-black overflow-hidden" onClick={() => setShowControls((v) => !v)}>
         <ViewerStream remoteStream={remoteStream} status={status} className="w-full h-full" videoRef={videoRef}
