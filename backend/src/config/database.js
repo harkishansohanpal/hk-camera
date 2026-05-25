@@ -23,18 +23,12 @@ if (process.env.NODE_ENV === 'development') {
   prisma.$on('query', (e) => logger.debug('Prisma query', { query: e.query, duration: e.duration }));
 }
 
-async function connectDatabase(retries = 5, delay = 2000) {
-  // Lazy connect — Prisma will connect on first query if not already connected
-  for (let i = 0; i < retries; i++) {
-    try {
-      await prisma.$connect();
-      logger.info('✅ Database connected');
-      return;
-    } catch (err) {
-      logger.error(`Database connection attempt ${i + 1}/${retries} failed`, { error: err.message });
-      if (i < retries - 1) await new Promise((r) => setTimeout(r, delay * (i + 1)));
-      else throw err;
-    }
+async function connectDatabase() {
+  try {
+    await prisma.$connect();
+    logger.info('✅ Database connected');
+  } catch (err) {
+    logger.warn('Database not ready yet, will connect on first query', { error: err.message });
   }
 }
 

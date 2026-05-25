@@ -26,6 +26,14 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    // Retry on 503 (DB reconnecting after Fly.io wake)
+    if (error.response?.status === 503 && !originalRequest._retry503) {
+      originalRequest._retry503 = true;
+      await new Promise((r) => setTimeout(r, 1500));
+      return api(originalRequest);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (refreshing) {
         return new Promise((resolve, reject) => {
