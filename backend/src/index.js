@@ -8,7 +8,7 @@ const morgan = require('morgan');
 const { Server } = require('socket.io');
 
 const logger = require('./config/logger');
-const { connectDatabase } = require('./config/database');
+const { connectDatabase, startKeepalive } = require('./config/database');
 const { connectRedis } = require('./config/redis');
 const { initSignalingServer } = require('./socket/signalingServer');
 const { apiLimiter } = require('./middleware/rateLimiter');
@@ -135,6 +135,7 @@ app.use(errorHandler);
 async function bootstrap() {
   try {
     await connectDatabase();
+    startKeepalive();
 
     // Redis is optional – won't crash server if unavailable in dev
     try { await connectRedis(); } catch { logger.warn('Redis unavailable – continuing without it'); }

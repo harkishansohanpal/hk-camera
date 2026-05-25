@@ -23,6 +23,8 @@ if (process.env.NODE_ENV === 'development') {
   prisma.$on('query', (e) => logger.debug('Prisma query', { query: e.query, duration: e.duration }));
 }
 
+let keepaliveInterval = null;
+
 async function connectDatabase() {
   try {
     await prisma.$connect();
@@ -32,4 +34,21 @@ async function connectDatabase() {
   }
 }
 
-module.exports = { prisma, connectDatabase };
+// Keep the connection pool fresh — Supabase PgBouncer drops idle connections after ~60s.
+// Run SELECT 1 every 30s to prevent the pool from going stale.
+function startKeepalive() {
+  if (keepaliveInterval) return;
+  keepaliveInterval = setInterval(async () => {
+    try {
+      await prisma.$executeRaw`SELECT 1`;
+    } catch {
+      // Connection will be re-established on next query
+    }
+  }, 30000);
+}
+
+// Stop keepalive on shutdown
+process.on('SIGINT', () => { clearInterval(keepaliveInterval); });
+process.on('SIGTERM', () => { clearInterval(keepaliveInterval); });
+
+module.exports = { prisma, connectDatabase, startKeepalive };
