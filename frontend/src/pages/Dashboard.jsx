@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Camera, Wifi, WifiOff, Trash2, Eye, AlertTriangle, MoreVertical, Video } from 'lucide-react';
+import { Plus, Camera, Wifi, WifiOff, Trash2, Eye, AlertTriangle, MoreVertical, Video, RefreshCw } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { cameraAPI } from '../services/api';
 import toast from 'react-hot-toast';
@@ -13,6 +13,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [cameras, setCameras]     = useState([]);
   const [loading, setLoading]     = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [showAdd, setShowAdd]     = useState(false);
   const [newCam, setNewCam]       = useState({ name: '', description: '' });
   const [creating, setCreating]   = useState(false);
@@ -22,14 +23,23 @@ export default function Dashboard() {
   const tourFired = useRef(false);
 
   async function loadCameras() {
+    setLoading(true);
+    setLoadError(false);
     try {
       const { data } = await cameraAPI.list();
       setCameras(data.data);
-    } catch { toast.error('Could not load cameras'); }
+    } catch { toast.error('Could not load cameras'); setLoadError(true); }
     finally  { setLoading(false); }
   }
 
   useEffect(() => { loadCameras(); }, []);
+
+  // Refresh cameras when page becomes visible (e.g. navigating back from camera view)
+  useEffect(() => {
+    function onVisibility() { if (!document.hidden) loadCameras(); }
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
 
   // Subscribe to real-time camera online/offline events
   useEffect(() => {
@@ -104,6 +114,9 @@ export default function Dashboard() {
           <p className="page-subtitle mt-0.5">{cameras.length} camera{cameras.length !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
+          <button onClick={loadCameras} className="w-9 h-9 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-card-hover rounded-xl transition-colors" title="Refresh">
+            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+          </button>
           <button onClick={() => setShowAdd(true)} data-tour="tour-add-camera" className="btn-primary text-sm px-3 sm:px-5 whitespace-nowrap">
             <Plus size={16} /> <span className="hidden sm:inline">Add </span>Camera
           </button>
@@ -135,6 +148,15 @@ export default function Dashboard() {
       {loading ? (
         <div className="flex justify-center py-20">
           <div className="w-8 h-8 border-[3px] border-ap-blue border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : cameras.length === 0 && loadError ? (
+        <div className="card text-center py-16 px-6 shadow-apple">
+          <AlertTriangle size={48} className="text-ap-orange mx-auto mb-4" />
+          <p className="text-text-primary font-semibold text-lg">Failed to load cameras</p>
+          <p className="text-text-secondary text-sm mt-2">Check your connection and try again</p>
+          <button onClick={loadCameras} className="mt-5 btn-primary text-sm px-5">
+            <RefreshCw size={16} /> Retry
+          </button>
         </div>
       ) : cameras.length === 0 ? (
         <div className="card text-center py-16 px-6 shadow-apple">
