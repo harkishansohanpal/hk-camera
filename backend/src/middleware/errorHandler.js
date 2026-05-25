@@ -18,6 +18,11 @@ function errorHandler(err, req, res, next) {
     return res.status(404).json({ success: false, message: 'Resource not found' });
   }
 
+  // Prisma connection errors – DB might be reconnecting after idle
+  if (err.message?.includes('connection') || err.message?.includes('Closed') || err.code === 'P1001') {
+    return res.status(503).json({ success: false, message: 'Database unavailable, please retry' });
+  }
+
   const status = err.status || err.statusCode || 500;
   const message = err.message || 'Internal server error';
 
