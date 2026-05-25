@@ -4,7 +4,6 @@
  * Buffers logs and flushes every 5s to batch DB writes.
  */
 const Transport = require('winston-transport');
-const { prisma } = require('./database');
 
 const LOG_LEVEL_MAP = {
   error: 'error',
@@ -21,18 +20,36 @@ class DbTransport extends Transport {
     super(opts);
     this.buffer = [];
     this.flushTimer = null;
-    this.name = 'DbTransport';
     this.batchSize = opts.batchSize || 50;
     this.flushIntervalMs = opts.flushIntervalMs || 5000;
+    this._prisma = null;
+    this._proxyMode = opts.proxyMode !== false;
     this._startFlushTimer();
   }
 
+  get prisma() {
+    if (!this._prisma && this._proxyMode) {
+      try {
+        this._prisma = require('./database').prisma;
+      } catch {
+        // DB not available — logs silently dropped
+        this._proxyMode = false;
+      }
+    }
+    return this._prisma;
+  }
+
   log(info, callback) {
+    if (!this.prisma) {
+      callback();
+      return;
+    }
+
     const entry = {
       level: LOG_LEVEL_MAP[info.level] || 'info',
       tag: info.tag || info.label || info.level,
       message: info.message || '',
-      meta: info.meta || undefined,
+      meta: info.meta ? info.meta : undefined,
       sessionId: info.sessionId || undefined,
       userId: info.userId || undefined,
       cameraId: info.cameraId || undefined,
@@ -54,11 +71,10 @@ class DbTransport extends Transport {
 
   _flush() {
     if (this.buffer.length === 0) return;
+    if (!this.prisma) return;
     const batch = this.buffer.splice(0);
-    prisma.log.createMany({ data: batch, skipDuplicates: true })
-      .catch((err) => {
-        console.error('[dbLogger] Failed to write logs to DB:', err.message);
-      });
+    this.prisma.log.createMany({ data: batch, skipDuplicates: true })
+      .catch(() => {});
   }
 
   close() {
