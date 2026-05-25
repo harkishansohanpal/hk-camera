@@ -194,13 +194,29 @@ export async function startCameraBroadcast(page, cameraId) {
   await page.goto(`${FRONTEND_URL}/cameras/${cameraId}`, { waitUntil: 'load', timeout: 20000 });
   await page.waitForTimeout(3000);
 
-  const streamBtn = page.locator('button', { hasText: 'Stream' });
+  // The stream toggle is the large circular icon button (w-[68px])
+  const streamBtn = page.locator('button[class*="w-\\[68px\\]"]');
   await expect(streamBtn).toBeVisible({ timeout: 15000 });
 
+  // Make sure it's in "start" mode (shows Camera icon = not broadcasting)
   await streamBtn.click();
 
   const liveBadge = page.locator('text=LIVE').first();
   await expect(liveBadge).toBeVisible({ timeout: 30000 });
+}
+
+export async function stopCameraBroadcast(page) {
+  const stopBtn = page.locator('button[class*="w-\\[68px\\]"]');
+  if (await stopBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await stopBtn.click();
+  }
+}
+
+export async function toggleCameraBroadcast(page) {
+  const btn = page.locator('button[class*="w-\\[68px\\]"]');
+  if (await btn.isVisible({ timeout: 1000 }).catch(() => false)) {
+    await btn.click();
+  }
 }
 
 export async function openViewer(page, streamKey) {
