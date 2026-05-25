@@ -4,9 +4,8 @@ generator client {
 }
 
 datasource db {
-  provider        = "postgresql"
-  url             = env("DATABASE_URL")
-  connection_limit = 5
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ── User ──────────────────────────────────────────────────────
