@@ -40,16 +40,21 @@ function initSignalingServer(socketIO) {
 
     if (streamKey) {
       // Camera device authenticates with its stream key
-      const camera = await prisma.camera.findUnique({
-        where: { streamKey },
-        include: { user: { select: { id: true } } },
-      });
-      if (!camera) return next(new Error('Invalid stream key'));
-      socket.cameraId  = camera.id;
-      socket.streamKey = streamKey;
-      socket.role      = 'camera';
-      socket.userId    = camera.user.id;
-      return next();
+      try {
+        const camera = await prisma.camera.findUnique({
+          where: { streamKey },
+          include: { user: { select: { id: true } } },
+        });
+        if (!camera) return next(new Error('Invalid stream key'));
+        socket.cameraId  = camera.id;
+        socket.streamKey = streamKey;
+        socket.role      = 'camera';
+        socket.userId    = camera.user.id;
+        return next();
+      } catch (err) {
+        logger.warn('DB unavailable for camera auth', { streamKey, error: err.message });
+        return next(new Error('Service temporarily unavailable'));
+      }
     }
 
     if (token) {
@@ -143,11 +148,28 @@ function initSignalingServer(socketIO) {
     // ── Viewer joins ──────────────────────────────────────────
     if (socket.role === 'viewer') {
       socket.on('viewer:join', async ({ streamKey }) => {
-        // Verify viewer owns or has access to this camera
-        const camera = await prisma.camera.findUnique({
-          where: { streamKey },
-          select: { id: true, userId: true, isOnline: true },
-        });
+        let camera;
+        try {
+          camera = await prisma.camera.findUnique({
+            where: { streamKey },
+            select: { id: true, userId: true, isOnline: true },
+          });
+        } catch (err) {
+          // DB may be reconnecting after Fly.io wake — use in-memory map as fallback
+          logger.warn('DB unavailable for viewer:join, using in-memory fallback', { streamKey, error: err.message });
+          socket.join(`camera:${streamKey}`);
+          socket.streamKey = streamKey;
+          socket.cameraId = null;
+          const online = cameras.has(streamKey);
+          socket.emit('camera:status', { online, cameraId: null });
+          if (online) {
+            const cameraSocketId = cameras.get(streamKey);
+            if (cameraSocketId) {
+              io.to(cameraSocketId).emit('viewer:joined', { viewerSocketId: socket.id });
+            }
+          }
+          return;
+        }
 
         logger.debug('Viewer join attempt', { streamKey, userId: socket.userId, cameraFound: !!camera });
 
