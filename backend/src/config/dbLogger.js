@@ -74,7 +74,12 @@ class DbTransport extends Transport {
     if (!this.prisma) return;
     const batch = this.buffer.splice(0);
     this.prisma.log.createMany({ data: batch, skipDuplicates: true })
-      .catch(() => {});
+      .catch((err) => {
+        // Connection error – put logs back and retry
+        if (err.message?.includes('connection') || err.message?.includes('Closed')) {
+          this.buffer.unshift(...batch);
+        }
+      });
   }
 
   close() {
