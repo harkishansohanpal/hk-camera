@@ -26,9 +26,14 @@ export default function ViewerStream({ remoteStream, status, className = '', vid
     function onVisibilityChange() { if (!document.hidden && video.paused) tryPlay(); }
     document.addEventListener('visibilitychange', onVisibilityChange);
     function onFullscreenChange() {
-      if (!document.fullscreenElement && video.paused && remoteStream) {
-        video.srcObject = remoteStream;
-        tryPlay();
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        setTimeout(() => {
+          if (remoteStream) {
+            video.srcObject = null;
+            video.srcObject = remoteStream;
+            tryPlay();
+          }
+        }, 100);
       }
     }
     document.addEventListener('fullscreenchange', onFullscreenChange);
