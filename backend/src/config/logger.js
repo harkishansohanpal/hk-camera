@@ -1,4 +1,5 @@
 const winston = require('winston');
+const { DbTransport } = require('./dbLogger');
 
 const { combine, timestamp, printf, colorize, json } = winston.format;
 
@@ -24,6 +25,8 @@ const logger = winston.createLogger({
           new winston.transports.File({ filename: 'logs/combined.log' }),
         ]
       : []),
+    // Write all logs to DB as well
+    new DbTransport(),
   ],
 });
 

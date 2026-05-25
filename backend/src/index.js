@@ -88,6 +88,10 @@ app.use(morgan(process.env.NODE_ENV === 'production'
   : 'dev'
 ));
 
+// ── HTTP request/response logging to DB ───────────────────────
+const httpLogger = require('./middleware/httpLogger');
+app.use(httpLogger);
+
 // ── Static file serving ───────────────────────────────────────
 app.use('/uploads',    express.static(path.resolve(process.env.LOCAL_UPLOAD_DIR    || './uploads')));
 app.use('/recordings', express.static(path.resolve(process.env.LOCAL_RECORDING_DIR || './recordings')));
