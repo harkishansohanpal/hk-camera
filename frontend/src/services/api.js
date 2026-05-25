@@ -27,11 +27,16 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Retry on 503 (DB reconnecting after Fly.io wake)
-    if (error.response?.status === 503 && !originalRequest._retry503) {
-      originalRequest._retry503 = true;
-      await new Promise((r) => setTimeout(r, 1500));
-      return api(originalRequest);
+    // Retry on 503 (DB reconnecting after Fly.io wake) — up to 3 times
+    if (error.response?.status === 503) {
+      const retries = originalRequest._503retries ?? 0;
+      if (retries < 3) {
+        originalRequest._503retries = retries + 1;
+        await new Promise((r) => setTimeout(r, 1500 * (retries + 1)));
+        return api(originalRequest);
+      }
+      // After exhausting retries, return a friendlier message
+      error.message = 'Service is starting up, please try again.';
     }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
