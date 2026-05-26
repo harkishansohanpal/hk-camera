@@ -99,15 +99,9 @@ export default function AdminDashboard() {
       {/* ── Header ─────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div><h1 className="text-lg font-bold text-text-primary">Dashboard</h1><p className="text-xs text-text-secondary mt-0.5">Recent activity</p></div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => { setAnalyzeMode(!analyzeMode); setMessages([]); }}
-            className={`btn-ghost text-xs ${analyzeMode ? 'text-ap-blue' : ''}`}>
-            <MessageSquare size={12} /> Analyze
-          </button>
-          <button onClick={fetchLogs} className="btn-ghost text-xs">
-            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> Refresh
-          </button>
-        </div>
+        <button onClick={fetchLogs} className="btn-ghost text-xs">
+          <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> Refresh
+        </button>
       </div>
 
       {/* ── Meta cards ─────────────────────────── */}
@@ -140,6 +134,11 @@ export default function AdminDashboard() {
             {meta.tags?.map((t) => <option key={t.tag} value={t.tag}>{t.tag} ({t.count})</option>)}
           </select>
         )}
+        <div className="w-px h-5 bg-ap-separator" />
+        <button onClick={() => { setAnalyzeMode(!analyzeMode); setMessages([]); }}
+          className={`btn-ghost text-xs ${analyzeMode ? 'text-ap-blue bg-ap-blue/10' : ''}`}>
+          <MessageSquare size={12} /> Smart Analyze
+        </button>
       </div>
 
       {/* ── Logs table ─────────────────────────── */}
