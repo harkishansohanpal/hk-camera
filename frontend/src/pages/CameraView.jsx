@@ -28,6 +28,7 @@ export default function CameraView() {
   const [torchOn, setTorchOn] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [audioConsentWarn, setAudioConsentWarn] = useState(false);
+  const [broadcastStartedAt, setBroadcastStartedAt] = useState(null);
   const audioConsentedRef = useRef(false);
   const { acquire: acquireWL, release: releaseWL } = useWakeLock();
   const isAndroid = /Android/.test(navigator.userAgent);
@@ -141,11 +142,13 @@ export default function CameraView() {
       stopBroadcast(); stopDetection();
       if (isRecording) stopRecording();
       streamRef.current?.getTracks().forEach((t) => t.stop()); setStream(null);
+      setBroadcastStartedAt(null);
       exitFullscreen();
       return;
     }
     try {
       logger.info('CameraView', 'Starting broadcast', { cameraId });
+      setBroadcastStartedAt(new Date().toISOString());
       // Request fullscreen synchronously before any await to preserve gesture chain.
       // On iOS Chrome this is the only way webkitEnterFullscreen might work.
       if (videoRef.current?.webkitEnterFullscreen) {
@@ -155,7 +158,7 @@ export default function CameraView() {
       }
       const localStream = await getLocalStream(); setStream(localStream); await startBroadcast(localStream);
       toast.success('Streaming started');
-    } catch (err) { logger.error('CameraView', 'Failed to start broadcast', { error: err.message, cameraId }); toast.error('Could not start camera: ' + err.message); }
+    } catch (err) { logger.error('CameraView', 'Failed to start broadcast', { error: err.message, cameraId }); toast.error('Could not start camera: ' + err.message); setBroadcastStartedAt(null); }
   }
 
   async function flipCamera() {
@@ -192,7 +195,7 @@ export default function CameraView() {
 
   return (
     <div ref={containerRef} className="fixed inset-0 bg-black z-40 flex flex-col">
-      <CameraStream ref={videoRef} stream={stream} isBroadcasting={isBroadcasting}
+      <CameraStream ref={videoRef} stream={stream} isBroadcasting={isBroadcasting} broadcastStartedAt={broadcastStartedAt}
         onToggle={handleToggle} onFlip={flipCamera}
         micOn={micOn} onMicToggle={() => {
           if (micOn) { setMicOn(false); setMicEnabled(false); return; }

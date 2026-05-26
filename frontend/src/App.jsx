@@ -56,7 +56,7 @@ export default function App() {
           <Route element={<Layout />}>
             <Route element={<AdminRoute />}>
               <Route element={<AdminLayout />}>
-                <Route path="/admin"             element={<AdminDashboard />} />
+                <Route path="/admin"             element={<Navigate to="/admin/logs" replace />} />
                 <Route path="/admin/logs"        element={<AdminDashboard />} />
                 <Route path="/admin/users"       element={<AdminUserManager />} />
               </Route>

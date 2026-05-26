@@ -35,7 +35,6 @@ export default function Settings() {
     finally { setSaving(false); }
   }
 
-  async function saveNotifications() { await userAPI.updateProfile(notifs); await refreshUser(); toast.success('Saved'); }
 
   async function handleExport() {
     setExporting(true);
@@ -110,11 +109,10 @@ export default function Settings() {
         ].map(({ key, label, desc }) => (
           <label key={key} className="list-row justify-between cursor-pointer">
             <div><p className="text-sm font-semibold text-text-primary">{label}</p><p className="text-xs text-text-secondary">{desc}</p></div>
-            <input type="checkbox" className="sr-only" checked={notifs[key]} onChange={(e) => setNotifs((n) => ({ ...n, [key]: e.target.checked }))} />
+            <input type="checkbox" className="sr-only" checked={notifs[key]} onChange={async (e) => { const next = { ...notifs, [key]: e.target.checked }; setNotifs(next); try { await userAPI.updateProfile(next); await refreshUser(); } catch {} }} />
             <div className={`toggle ${notifs[key] ? 'toggle-on' : 'toggle-off'}`}><span className="toggle-knob" /></div>
           </label>
         ))}
-        <div className="px-5 py-3"><button onClick={saveNotifications} className="btn-primary text-sm">Save</button></div>
       </div>
 
       {/* Billing */}

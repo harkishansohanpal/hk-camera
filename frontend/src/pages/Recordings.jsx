@@ -82,7 +82,8 @@ export default function Recordings() {
       ) : filtered.length === 0 ? (
         <div className="card text-center py-16 shadow-apple-sm">
           <Video size={36} className="text-ap-gray3 mx-auto mb-3" />
-          <p className="text-text-secondary font-semibold">No recordings yet</p>
+          <p className="text-text-secondary font-semibold">No recordings</p>
+          <p className="text-xs text-text-secondary mt-1">Recordings appear here when motion is detected or you manually record from the camera view.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">

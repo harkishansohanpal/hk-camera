@@ -27,6 +27,11 @@ export default function Alerts() {
 
   useEffect(() => { load(); }, []);
 
+  useEffect(() => {
+    const interval = setInterval(load, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   async function handleMarkRead(id) {
     await alertAPI.markRead(id);
     setAlerts((prev) => prev.map((a) => a.id === id ? { ...a, read: true } : a));
@@ -62,8 +67,8 @@ export default function Alerts() {
       ) : alerts.length === 0 ? (
         <div className="card text-center py-16 shadow-apple-sm">
           <BellOff size={36} className="text-ap-gray3 mx-auto mb-3" />
-          <p className="text-text-secondary font-semibold">No alerts yet</p>
-          <p className="text-text-secondary text-sm mt-1">You'll get notified when something happens</p>
+          <p className="text-text-secondary font-semibold">All clear</p>
+          <p className="text-text-secondary text-sm mt-1">You'll be notified when motion is detected or a camera goes offline.</p>
         </div>
       ) : (
         <div className="space-y-2">

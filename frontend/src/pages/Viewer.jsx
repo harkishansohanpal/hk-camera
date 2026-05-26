@@ -108,7 +108,7 @@ export default function Viewer() {
       style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <nav className={`z-20 flex items-center justify-between px-3 py-1.5 bg-black/80 backdrop-blur-xl border-b border-white/10 ${cssFull ? 'hidden' : ''}`}
         style={{ paddingLeft: 'max(0.75rem, env(safe-area-inset-left))', paddingRight: 'max(0.75rem, env(safe-area-inset-right))' }}>
-        <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/dashboard')} className="w-11 h-11 flex items-center justify-center text-white/60 hover:text-white rounded-xl transition-colors" title="Back">
+        <button onClick={() => navigate('/dashboard')} className="w-11 h-11 flex items-center justify-center text-white/60 hover:text-white rounded-xl transition-colors" title="Back">
           <ArrowLeft size={22} />
         </button>
         <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 backdrop-blur-sm">

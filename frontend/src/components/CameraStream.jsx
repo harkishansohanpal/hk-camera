@@ -1,8 +1,8 @@
-import { useRef, useEffect, forwardRef } from 'react';
+import { useRef, useEffect, useState, forwardRef } from 'react';
 import { Camera, CameraOff, RotateCcw, Mic, MicOff, ArrowLeft, Settings } from 'lucide-react';
 
 const CameraStream = forwardRef(function CameraStream(
-  { stream, isBroadcasting, onToggle, onFlip, micOn, onMicToggle, isRecording, onRecordToggle, onBack, onSettings, className = '' }, ref
+  { stream, isBroadcasting, broadcastStartedAt, onToggle, onFlip, micOn, onMicToggle, isRecording, onRecordToggle, onBack, onSettings, className = '' }, ref
 ) {
   const internalRef = useRef(null);
   const videoRef = ref || internalRef;
@@ -33,6 +33,7 @@ const CameraStream = forwardRef(function CameraStream(
               <div className="flex items-center gap-1.5 bg-ap-red/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse-slow" />
                 <span className="text-[10px] font-bold text-white tracking-wide">LIVE</span>
+                {broadcastStartedAt && <ElapsedTimer startedAt={broadcastStartedAt} />}
               </div>
             )}
             {onSettings && (
@@ -92,5 +93,23 @@ const CameraStream = forwardRef(function CameraStream(
     </div>
   );
 });
+
+function ElapsedTimer({ startedAt }) {
+  const [elapsed, setElapsed] = useState('');
+
+  useEffect(() => {
+    function tick() {
+      const sec = Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000);
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      setElapsed(`${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`);
+    }
+    tick();
+    const iv = setInterval(tick, 1000);
+    return () => clearInterval(iv);
+  }, [startedAt]);
+
+  return <span className="text-[10px] text-white/80 ml-1 font-mono">{elapsed}</span>;
+}
 
 export default CameraStream;

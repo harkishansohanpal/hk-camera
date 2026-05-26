@@ -163,7 +163,9 @@ export default function Dashboard() {
         <div className="card text-center py-16 px-6 shadow-apple">
           <Camera size={48} className="text-ap-gray3 mx-auto mb-4" />
           <p className="text-text-primary font-semibold text-lg">No cameras yet</p>
-          <p className="text-text-secondary text-sm mt-2">Add your first camera to start watching</p>
+          <p className="text-text-secondary text-sm mt-2 max-w-md mx-auto">
+            Add a camera to start broadcasting. Then open the camera page and tap <strong>Broadcast</strong> to go live.
+          </p>
           <button onClick={() => setShowAdd(true)} className="mt-5 btn-primary text-sm px-5">
             <Plus size={16} /> Add Camera
           </button>
@@ -217,15 +219,17 @@ export default function Dashboard() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <button onClick={() => navigate(`/viewer/${cam.streamKey}`)}
-                    data-tour="tour-view-live"
-                    className="flex-1 btn-primary text-sm">
-                    <Eye size={15} /> Watch
-                  </button>
+                  {cam.isOnline && (
+                    <button onClick={() => navigate(`/viewer/${cam.streamKey}`)}
+                      data-tour="tour-view-live"
+                      className="flex-1 btn-primary text-sm">
+                      <Eye size={15} /> View
+                    </button>
+                  )}
                   <button onClick={() => navigate(`/cameras/${cam.id}`)}
                     data-tour="tour-broadcast"
-                    className="flex-1 inline-flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl transition-all bg-ap-red text-white hover:brightness-90">
-                    <Video size={15} /> Stream
+                    className={`inline-flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl transition-all bg-ap-red text-white hover:brightness-90 ${cam.isOnline ? 'flex-1' : 'w-full'}`}>
+                    <Video size={15} /> Broadcast
                   </button>
                 </div>
               </div>

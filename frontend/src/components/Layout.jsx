@@ -1,9 +1,9 @@
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import {
-  Camera, LayoutDashboard, Video, Bell, Settings, CreditCard,
+  Camera, LayoutDashboard, Video, Bell, Settings,
   LogOut, Menu, X, Sun, Moon, HelpCircle, Shield,
-  Activity, FileText, Users,
+  Activity, Users,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -14,14 +14,12 @@ const NAV_ITEMS = [
   { to: '/dashboard',  label: 'Dashboard',  Icon: LayoutDashboard },
   { to: '/recordings', label: 'Recordings', Icon: Video },
   { to: '/alerts',     label: 'Alerts',     Icon: Bell },
-  { to: '/billing',    label: 'Billing',    Icon: CreditCard },
   { to: '/settings',   label: 'Settings',   Icon: Settings },
 ];
 
 const ADMIN_ITEMS = [
-  { to: '/admin',          label: 'Dashboard', Icon: Activity },
-  { to: '/admin/logs',     label: 'Logs',      Icon: FileText },
-  { to: '/admin/users',    label: 'Users',     Icon: Users },
+  { to: '/admin/logs',   label: 'Logs',      Icon: Activity },
+  { to: '/admin/users',  label: 'Users',     Icon: Users },
 ];
 
 export default function Layout() {
@@ -237,29 +235,10 @@ export default function Layout() {
           </header>
         )}
 
-        <main className={`flex-1 ${!isViewer && !isCameraView ? 'overflow-y-auto' : 'overflow-hidden'}`}
-          style={!isViewer && !isCameraView ? { paddingBottom: 'calc(3.75rem + env(safe-area-inset-bottom))' } : {}}>
+        <main className={`flex-1 ${!isViewer && !isCameraView ? 'overflow-y-auto' : 'overflow-hidden'}`}>
           <Outlet />
         </main>
       </div>
-
-      {/* ── Mobile Tab Bar ────────────────────────────────── */}
-      {!isViewer && !isCameraView && (
-        <nav data-tour="tour-nav" className="tab-bar fixed bottom-0 left-0 right-0 z-40 lg:hidden"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          <div className="flex h-14">
-            {NAV_ITEMS.map(({ to, label, Icon }) => {
-              const isActive = location.pathname === to || (to !== '/dashboard' && location.pathname.startsWith(to));
-              return (
-                <NavLink key={to} to={to} className="flex-1 flex flex-col items-center justify-center gap-0.5 min-w-0 pt-1">
-                  <Icon size={20} className={isActive ? 'text-ap-blue' : 'text-text-secondary'} />
-                  <span className={`text-[10px] leading-tight font-semibold ${isActive ? 'text-ap-blue' : 'text-text-secondary'}`}>{label}</span>
-                </NavLink>
-              );
-            })}
-          </div>
-        </nav>
-      )}
     </div>
   );
 }
