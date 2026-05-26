@@ -19,7 +19,6 @@ import Terms      from './pages/Terms';
 import AdminRoute    from './components/AdminRoute';
 import AdminLayout   from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminLogAnalyzer from './pages/admin/AdminLogAnalyzer';
 import AdminUserManager from './pages/admin/AdminUserManager';
 
 import CookieBanner from './components/CookieBanner';
@@ -60,7 +59,6 @@ export default function App() {
                 <Route path="/admin"             element={<AdminDashboard />} />
                 <Route path="/admin/logs"        element={<AdminDashboard />} />
                 <Route path="/admin/users"       element={<AdminUserManager />} />
-                <Route path="/admin/analyze"     element={<AdminLogAnalyzer />} />
               </Route>
             </Route>
           </Route>

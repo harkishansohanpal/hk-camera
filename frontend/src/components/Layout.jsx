@@ -3,7 +3,7 @@ import { useState } from 'react';
 import {
   Camera, LayoutDashboard, Video, Bell, Settings, CreditCard,
   LogOut, Menu, X, Sun, Moon, HelpCircle, Shield,
-  Activity, FileText, MessageSquare, Users,
+  Activity, FileText, Users,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -22,7 +22,6 @@ const ADMIN_ITEMS = [
   { to: '/admin',          label: 'Dashboard', Icon: Activity },
   { to: '/admin/logs',     label: 'Logs',      Icon: FileText },
   { to: '/admin/users',    label: 'Users',     Icon: Users },
-  { to: '/admin/analyze',  label: 'Analyze',   Icon: MessageSquare },
 ];
 
 export default function Layout() {
