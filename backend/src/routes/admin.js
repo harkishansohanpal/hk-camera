@@ -86,7 +86,7 @@ router.get('/logs/meta', async (req, res, next) => {
 // ── Log summarization (AI) ─────────────────────────────────────
 router.post('/logs/analyze', async (req, res, next) => {
   try {
-    const { query, logIds, filters, timeRange } = req.body;
+    const { query, messages, logIds, filters, timeRange } = req.body;
 
     let logs;
     if (logIds && Array.isArray(logIds)) {
@@ -110,7 +110,7 @@ router.post('/logs/analyze', async (req, res, next) => {
     }
 
     if (logs.length === 0) {
-      return res.json({ success: true, data: { answer: 'No logs found matching the criteria.', summary: null } });
+      return res.json({ success: true, data: { answer: 'No logs found matching the criteria.', logCount: 0 } });
     }
 
     const logSummary = logs.map(l => {
@@ -118,16 +118,18 @@ router.post('/logs/analyze', async (req, res, next) => {
       return `[${l.createdAt.toISOString()}] ${l.level.toUpperCase()} [${l.tag}] ${l.message}${meta ? ' ' + meta : ''}`;
     }).join('\n');
 
-    const prompt = `You are a production support engineer analyzing application logs.
+    const systemContent = `You are a production support engineer analyzing application logs.\n\nHere are the matching logs (${logs.length} entries):\n\n${logSummary}\n\nAnswer questions based on these logs. Be concise and focus on actionable insights.`;
 
-${query ? `The user asks: "${query}"\n\n` : ''}
-Here are the most recent matching logs (${logs.length} entries):
+    const aiMessages = [
+      { role: 'system', content: systemContent },
+      ...(messages || []),
+    ];
 
-${logSummary}
+    if (query && (!messages || messages.length === 0)) {
+      aiMessages.push({ role: 'user', content: query });
+    }
 
-${query ? 'Answer the user\'s question based on these logs.' : 'Provide a concise summary of what these logs indicate: any errors, warnings, patterns, anomalies, or trends. Focus on actionable insights for production support.'}`;
-
-    const answer = await callAI(prompt);
+    const answer = await callAI(aiMessages);
     res.json({ success: true, data: { answer, logCount: logs.length } });
   } catch (err) {
     logger.error('Admin', 'Log analysis failed', { error: err.message });
@@ -136,7 +138,7 @@ ${query ? 'Answer the user\'s question based on these logs.' : 'Provide a concis
 });
 
 // ── OpenRouter / OpenAI call ────────────────────────────────────
-async function callAI(prompt) {
+async function callAI(aiMessages) {
   const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return 'AI analysis not configured. Set OPENROUTER_API_KEY or OPENAI_API_KEY.';
@@ -150,10 +152,7 @@ async function callAI(prompt) {
 
   const body = JSON.stringify({
     model,
-    messages: [
-      { role: 'system', content: 'You are a production support engineer. Analyze application logs concisely and provide actionable insights.' },
-      { role: 'user', content: prompt },
-    ],
+    messages: aiMessages,
     max_tokens: 2000,
     temperature: 0.3,
   });
