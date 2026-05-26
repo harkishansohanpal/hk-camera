@@ -146,8 +146,8 @@ export default function Dashboard() {
 
       {/* Camera grid */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <div className="w-8 h-8 border-[3px] border-ap-blue border-t-transparent rounded-full animate-spin" />
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/10 backdrop-blur-sm" style={{ height: '100dvh' }}>
+          <div className="w-10 h-10 border-[3px] border-ap-blue border-t-transparent rounded-full animate-spin" />
           <LoadingHint />
         </div>
       ) : cameras.length === 0 && loadError ? (
@@ -270,11 +270,11 @@ function LoadingHint() {
   const [hint, setHint] = useState('');
 
   useEffect(() => {
-    const t1 = setTimeout(() => setHint('Server is starting up\u2026'), 3000);
-    const t2 = setTimeout(() => setHint('Still waking up, almost there\u2026'), 8000);
+    const t1 = setTimeout(() => setHint('Server is starting up\u2026'), 2000);
+    const t2 = setTimeout(() => setHint('Still waking up, almost there\u2026'), 5000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
   if (!hint) return null;
-  return <p className="text-sm text-text-secondary animate-pulse">{hint}</p>;
+  return <p className="text-sm text-text-secondary animate-pulse mt-3">{hint}</p>;
 }

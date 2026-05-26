@@ -95,7 +95,14 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-4 animate-fade-in">
+    <>
+      {loading && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/10 backdrop-blur-sm" style={{ height: '100dvh' }}>
+          <div className="w-10 h-10 border-[3px] border-ap-blue border-t-transparent rounded-full animate-spin" />
+          <LoadingHint />
+        </div>
+      )}
+      <div className="max-w-6xl mx-auto space-y-4 animate-fade-in">
       {/* ── Header ─────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div><h1 className="text-lg font-bold text-text-primary">Dashboard</h1><p className="text-xs text-text-secondary mt-0.5">Recent activity</p></div>
@@ -247,6 +254,20 @@ export default function AdminDashboard() {
           <div ref={chatRef} />
         </div>
       )}
-    </div>
+        </div>
+      </>
   );
+}
+
+function LoadingHint() {
+  const [hint, setHint] = useState('');
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setHint('Loading\u2026'), 2000);
+    const t2 = setTimeout(() => setHint('Server is starting up\u2026'), 5000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+
+  if (!hint) return null;
+  return <p className="text-sm text-text-secondary animate-pulse mt-3">{hint}</p>;
 }
