@@ -53,12 +53,16 @@ export default function App() {
         </Route>
 
         {/* Admin (requires ADMIN role) */}
-        <Route element={<AdminRoute />}>
-          <Route element={<AdminLayout />}>
-            <Route path="/admin"             element={<AdminDashboard />} />
-            <Route path="/admin/logs"        element={<AdminDashboard />} />
-            <Route path="/admin/users"       element={<AdminUserManager />} />
-            <Route path="/admin/analyze"     element={<AdminLogAnalyzer />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route element={<AdminRoute />}>
+              <Route element={<AdminLayout />}>
+                <Route path="/admin"             element={<AdminDashboard />} />
+                <Route path="/admin/logs"        element={<AdminDashboard />} />
+                <Route path="/admin/users"       element={<AdminUserManager />} />
+                <Route path="/admin/analyze"     element={<AdminLogAnalyzer />} />
+              </Route>
+            </Route>
           </Route>
         </Route>
 

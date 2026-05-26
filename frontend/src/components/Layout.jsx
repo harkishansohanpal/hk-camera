@@ -2,7 +2,8 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import {
   Camera, LayoutDashboard, Video, Bell, Settings, CreditCard,
-  LogOut, Menu, X, Sun, Moon, HelpCircle,
+  LogOut, Menu, X, Sun, Moon, HelpCircle, Shield,
+  Activity, FileText, MessageSquare, Users,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -15,6 +16,13 @@ const NAV_ITEMS = [
   { to: '/alerts',     label: 'Alerts',     Icon: Bell },
   { to: '/billing',    label: 'Billing',    Icon: CreditCard },
   { to: '/settings',   label: 'Settings',   Icon: Settings },
+];
+
+const ADMIN_ITEMS = [
+  { to: '/admin',          label: 'Dashboard', Icon: Activity },
+  { to: '/admin/logs',     label: 'Logs',      Icon: FileText },
+  { to: '/admin/users',    label: 'Users',     Icon: Users },
+  { to: '/admin/analyze',  label: 'Analyze',   Icon: MessageSquare },
 ];
 
 export default function Layout() {
@@ -46,7 +54,7 @@ export default function Layout() {
           <span className="font-bold text-base text-text-primary tracking-tight">HK Camera</span>
         </div>
 
-        <nav data-tour="tour-nav" className="py-2 flex flex-col gap-0.5 flex-1">
+        <nav data-tour="tour-nav" className="py-2 flex flex-col gap-0.5 flex-1 overflow-y-auto">
           {NAV_ITEMS.map(({ to, label, Icon }) => (
             <NavLink key={to} to={to}
               className={({ isActive }) => `
@@ -61,6 +69,30 @@ export default function Layout() {
               {label}
             </NavLink>
           ))}
+
+          {user?.role === 'ADMIN' && (
+            <>
+              <div className="mx-5 my-2 h-px" style={{ backgroundColor: 'var(--color-separator)' }} />
+              <div className="flex items-center gap-2 mx-5 mt-1 mb-1">
+                <Shield size={12} className="text-text-secondary" />
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-text-secondary">Admin</span>
+              </div>
+              {ADMIN_ITEMS.map(({ to, label, Icon }) => (
+                <NavLink key={to} to={to}
+                  className={({ isActive }) => `
+                    flex items-center gap-3 mx-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200
+                    ${isActive
+                      ? 'text-ap-blue'
+                      : 'text-text-secondary hover:bg-card-hover hover:text-text-primary'
+                    }
+                  `}
+                  style={({ isActive }) => isActive ? { backgroundColor: 'color-mix(in srgb, var(--ap-blue) 10%, transparent)' } : {}}>
+                  <Icon size={18} className="flex-shrink-0" />
+                  {label}
+                </NavLink>
+              ))}
+            </>
+          )}
         </nav>
 
         <div className="p-3 border-t" style={{ borderColor: 'var(--color-separator)' }}>
@@ -123,6 +155,26 @@ export default function Layout() {
               <Icon size={18} /> {label}
             </NavLink>
           ))}
+
+          {user?.role === 'ADMIN' && (
+            <>
+              <div className="mx-5 my-2 h-px" style={{ backgroundColor: 'var(--color-separator)' }} />
+              <div className="flex items-center gap-2 mx-5 mt-1 mb-1">
+                <Shield size={12} className="text-text-secondary" />
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-text-secondary">Admin</span>
+              </div>
+              {ADMIN_ITEMS.map(({ to, label, Icon }) => (
+                <NavLink key={to} to={to} onClick={() => setSidebarOpen(false)}
+                  className={({ isActive }) => `
+                    flex items-center gap-3 mx-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all
+                    ${isActive ? 'text-ap-blue' : 'text-text-secondary hover:bg-card-hover hover:text-text-primary'}
+                  `}
+                  style={({ isActive }) => isActive ? { backgroundColor: 'color-mix(in srgb, var(--ap-blue) 10%, transparent)' } : {}}>
+                  <Icon size={18} /> {label}
+                </NavLink>
+              ))}
+            </>
+          )}
         </nav>
 
         <div className="p-3 mt-auto border-t" style={{ borderColor: 'var(--color-separator)' }}>
