@@ -185,6 +185,7 @@ async function callAI(prompt) {
       });
     });
     req.on('error', (err) => resolve(`AI analysis unavailable: ${err.message}`));
+    req.setTimeout(55000, () => { req.destroy(); resolve('AI analysis timed out.'); });
     req.write(body);
     req.end();
   });
