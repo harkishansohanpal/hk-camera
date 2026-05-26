@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Maximize2, RotateCcw, Moon, BatteryCharging, Eye, EyeOff, Circle, Mic, MicOff, X } from 'lucide-react';
+import { ArrowLeft, Maximize2, RotateCcw, Moon, Eye, EyeOff, Circle, Mic, MicOff, X } from 'lucide-react';
 import { useWebRTC, prefetchIceServers } from '../hooks/useWebRTC';
 import { useMotionDetection } from '../hooks/useMotionDetection';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
@@ -24,7 +24,6 @@ export default function Viewer() {
   const [motionEnabled, setMotionEnabled] = useState(false);
   const [recordOnMotion, setRecordOnMotion] = useState(false);
   const [screenDim, setScreenDim] = useState(false);
-  const [backgroundMode, setBackgroundMode] = useState(false);
   const [nightVisionMode, setNightVisionMode] = useState('off');
 
   const [retryCountdown, setRetryCountdown] = useState(null);
@@ -154,10 +153,7 @@ export default function Viewer() {
                 className={`flex flex-col items-center justify-center gap-0.5 w-11 h-11 rounded-xl transition-colors ${screenDim ? 'text-ap-blue bg-ap-blue/10' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
                 <Moon size={16} /><span className="text-[9px] font-semibold">Dim</span>
               </button>
-              <button onClick={() => { const n = !backgroundMode; setBackgroundMode(n); sendCommand('BACKGROUND', { on: n }); }}
-                className={`flex flex-col items-center justify-center gap-0.5 w-11 h-11 rounded-xl transition-colors ${backgroundMode ? 'text-ap-green bg-ap-green/10' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
-                <BatteryCharging size={16} /><span className="text-[9px] font-semibold">Battery</span>
-              </button>
+
               <button onClick={() => setMotionEnabled((v) => !v)}
                 className={`flex flex-col items-center justify-center gap-0.5 w-11 h-11 rounded-xl transition-colors ${motionEnabled ? 'text-ap-blue bg-ap-blue/10' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
                 {motionEnabled ? <Eye size={16} /> : <EyeOff size={16} />}<span className="text-[9px] font-semibold">Motion</span>

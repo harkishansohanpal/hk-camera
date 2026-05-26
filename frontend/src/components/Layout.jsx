@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Camera, LayoutDashboard, Video, Bell, Settings,
   LogOut, Menu, X, Sun, Moon, HelpCircle, Shield,
@@ -29,7 +29,12 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    return localStorage.getItem('sidebar_collapsed') === 'true';
+  });
+  useEffect(() => {
+    localStorage.setItem('sidebar_collapsed', sidebarCollapsed);
+  }, [sidebarCollapsed]);
   const isViewer = location.pathname.startsWith('/viewer');
   const isCameraView = location.pathname.startsWith('/cameras/');
 
@@ -42,8 +47,8 @@ export default function Layout() {
   return (
     <div className="w-full h-full flex bg-page overflow-hidden" style={{ height: '100dvh' }}>
       {/* ── Desktop Sidebar (lg+) ────────────────────────── */}
-      <aside className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-68'} bg-card border-r transition-all duration-200 safe-top shadow-sm`}
-        style={{ borderColor: 'var(--color-separator)' }}>
+      <aside className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'} backdrop-blur-xl border-r transition-all duration-200 safe-top shadow-sm`}
+        style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--color-separator)' }}>
         <div className="flex items-center justify-between px-4 py-4 border-b" style={{ borderColor: 'var(--color-separator)' }}>
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
@@ -138,10 +143,10 @@ export default function Layout() {
 
       {/* ── Mobile Sidebar ───────────────────────────────── */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-72 bg-card border-r shadow-apple-lg
+        fixed inset-y-0 left-0 z-50 w-72 backdrop-blur-xl border-r shadow-apple-lg
         transform transition-transform duration-200 ease-in-out lg:hidden safe-top
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `} style={{ borderColor: 'var(--color-separator)' }}>
+      `} style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--color-separator)' }}>
         <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--color-separator)' }}>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm"
@@ -212,10 +217,10 @@ export default function Layout() {
         </div>
       </aside>
 
-      {sidebarOpen && <div className="fixed inset-0 z-40 bg-black/20 dark:bg-black/40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+      {sidebarOpen && <div className="fixed inset-0 z-40 bg-black/20 dark:bg-black/40 lg:hidden backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />}
 
       {/* ── Main ──────────────────────────────────────────── */}
-      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden transition-all duration-200 ${!isViewer && !isCameraView ? (sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-68') : ''}`}>
+      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden transition-all duration-200 ${!isViewer && !isCameraView ? (sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64') : ''}`}>
         {!isViewer && !isCameraView && (
           <header className="nav-bar lg:hidden flex items-center gap-2 px-3 py-1.5" style={{ zIndex: 30 }}>
             <button onClick={() => setSidebarOpen(true)} data-tour="tour-nav"

@@ -181,7 +181,7 @@ export default function AdminDashboard() {
                         </button>
                       </td>
                     )}
-                    <td className="py-2.5 px-3 text-text-secondary whitespace-nowrap font-mono text-[10px]">{new Date(log.createdAt).toLocaleTimeString()}</td>
+                    <td className="py-2.5 px-3 text-text-secondary whitespace-nowrap font-mono text-[10px]">{new Date(log.createdAt).toLocaleString()}</td>
                     <td className="py-2.5 px-3">
                       <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${LEVEL_COLORS[log.level] || LEVEL_COLORS.info}`}>
                         <Icon size={10} /> {log.level.toUpperCase()}

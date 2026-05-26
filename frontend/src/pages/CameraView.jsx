@@ -24,7 +24,6 @@ export default function CameraView() {
   const [micOn, setMicOn]             = useState(true);
   const [motionCount, setMotionCount] = useState(0);
   const [screenDimmed, setScreenDimmed] = useState(false);
-  const [backgroundMode, setBackgroundMode] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [audioConsentWarn, setAudioConsentWarn] = useState(false);
@@ -54,7 +53,6 @@ export default function CameraView() {
           .catch((err) => toast.error(`Torch not supported: ${err.message}`));
       }
     } else if (command === 'SCREEN_DIM') { setScreenDimmed(payload.on); }
-    else if (command === 'BACKGROUND') { setBackgroundMode(payload.on); }
   }
 
   const { startBroadcast, stopBroadcast, replaceCameraStream, setMicEnabled, status: rtcStatus } = useWebRTC({ streamKey: camera?.streamKey, onCommand: handleRemoteCommand });
@@ -105,7 +103,7 @@ export default function CameraView() {
 
   useEffect(() => { prefetchIceServers().catch(() => {}); }, []);
   useEffect(() => { cameraAPI.get(cameraId).then(({ data }) => setCamera(data.data)).catch(() => toast.error('Camera not found')); }, [cameraId]);
-  useEffect(() => { if (isBroadcasting && !backgroundMode) acquireWL(); else releaseWL(); }, [isBroadcasting, backgroundMode, acquireWL, releaseWL]);
+  useEffect(() => { if (isBroadcasting) acquireWL(); else releaseWL(); }, [isBroadcasting, acquireWL, releaseWL]);
 
   function shouldDetect(cam) { if (!cam) return false; return cam.motionDetect; }
 
