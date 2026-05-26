@@ -146,8 +146,9 @@ export default function Dashboard() {
 
       {/* Camera grid */}
       {loading ? (
-        <div className="flex justify-center py-20">
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
           <div className="w-8 h-8 border-[3px] border-ap-blue border-t-transparent rounded-full animate-spin" />
+          <LoadingHint />
         </div>
       ) : cameras.length === 0 && loadError ? (
         <div className="card text-center py-16 px-6 shadow-apple">
@@ -263,4 +264,17 @@ export default function Dashboard() {
       )}
     </div>
   );
+}
+
+function LoadingHint() {
+  const [hint, setHint] = useState('');
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setHint('Server is starting up\u2026'), 3000);
+    const t2 = setTimeout(() => setHint('Still waking up, almost there\u2026'), 8000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+
+  if (!hint) return null;
+  return <p className="text-sm text-text-secondary animate-pulse">{hint}</p>;
 }
