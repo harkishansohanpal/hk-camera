@@ -3,6 +3,7 @@ import { consentGiven } from '../lib/consent';
 
 const THEME_KEY = 'hk-camera-theme';
 const BG_TONE_KEY = 'bg_tone';
+const GLASS_STYLE_KEY = 'glass_style';
 
 const ThemeContext = createContext();
 
@@ -17,6 +18,11 @@ export function ThemeProvider({ children }) {
     if (typeof window === 'undefined') return 50;
     const saved = localStorage.getItem(BG_TONE_KEY);
     return saved !== null ? Number(saved) : 50;
+  });
+
+  const [glassStyle, setGlassStyle] = useState(() => {
+    if (typeof window === 'undefined') return 'frosted';
+    return localStorage.getItem(GLASS_STYLE_KEY) || 'frosted';
   });
 
   useEffect(() => {
@@ -46,11 +52,17 @@ export function ThemeProvider({ children }) {
     }
   }, [bgTone]);
 
+  useEffect(() => {
+    if (consentGiven()) {
+      localStorage.setItem(GLASS_STYLE_KEY, glassStyle);
+    }
+  }, [glassStyle]);
+
   const setTheme = useCallback((t) => setThemeState(t), []);
   const toggleTheme = useCallback(() => setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark')), []);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, bgTone, setBgTone }}>
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, bgTone, setBgTone, glassStyle, setGlassStyle }}>
       {children}
     </ThemeContext.Provider>
   );

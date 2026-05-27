@@ -5,10 +5,11 @@ import { useTheme } from '../contexts/ThemeContext';
 import { userAPI } from '../services/api';
 import { Trash2, CreditCard, ChevronRight, Download, Shield, Sun, Moon } from 'lucide-react';
 import toast from 'react-hot-toast';
+import GlassSurface from '../components/GlassSurface';
 
 export default function Settings() {
   const { user, refreshUser, logout } = useAuth();
-  const { theme, toggleTheme, bgTone, setBgTone } = useTheme();
+  const { theme, toggleTheme, bgTone, setBgTone, glassStyle, setGlassStyle } = useTheme();
   const navigate = useNavigate();
   const [profile, setProfile] = useState({ name: user?.name ?? '' });
   const [password, setPassword] = useState({ currentPassword: '', newPassword: '', confirm: '' });
@@ -69,7 +70,7 @@ export default function Settings() {
 
       {/* Appearance */}
       <div className="section-header">Appearance</div>
-      <div className="card-grouped">
+      <GlassSurface className="card-grouped">
         <label className="list-row justify-between cursor-pointer">
           <div className="flex items-center gap-3">
             {theme === 'dark' ? <Moon size={16} className="text-ap-blue" /> : <Sun size={16} className="text-ap-blue" />}
@@ -91,11 +92,28 @@ export default function Settings() {
             <span className="text-[11px] text-text-secondary w-6">Dark</span>
           </div>
         </div>
-      </div>
+        <div className="px-5 py-3 flex items-center gap-4">
+          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-ap-blue/10 text-ap-blue text-[10px] font-bold">G</div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-text-primary">Glass Effect</p>
+            <p className="text-xs text-text-secondary">Frosted (fast) or Liquid (Chrome, GPU)</p>
+          </div>
+          <div className="flex gap-1 bg-page rounded-lg p-0.5 border border-ap-separator">
+            <button onClick={() => setGlassStyle('frosted')}
+              className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors ${glassStyle === 'frosted' ? 'bg-ap-blue text-white shadow-sm' : 'text-text-secondary hover:text-text-primary'}`}>
+              Frosted
+            </button>
+            <button onClick={() => setGlassStyle('liquid')}
+              className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors ${glassStyle === 'liquid' ? 'bg-ap-blue text-white shadow-sm' : 'text-text-secondary hover:text-text-primary'}`}>
+              Liquid
+            </button>
+          </div>
+        </div>
+      </GlassSurface>
 
       {/* Profile */}
       <div className="section-header">Profile</div>
-      <div className="card-grouped">
+      <GlassSurface className="card-grouped">
         <form onSubmit={saveProfile} className="p-5 space-y-4">
           <div>
             <label className="block text-sm font-semibold text-text-primary mb-1">Name</label>
@@ -107,11 +125,11 @@ export default function Settings() {
           </div>
           <button type="submit" className="btn-primary self-start text-sm" disabled={saving}>Save</button>
         </form>
-      </div>
+      </GlassSurface>
 
       {/* Password */}
       <div className="section-header">Password</div>
-      <div className="card-grouped">
+      <GlassSurface className="card-grouped">
         <form onSubmit={savePassword} className="p-5 space-y-4">
           {[
             { key: 'currentPassword', label: 'Current Password' },
@@ -126,11 +144,11 @@ export default function Settings() {
           ))}
           <button type="submit" className="btn-primary self-start text-sm" disabled={saving}>Update Password</button>
         </form>
-      </div>
+      </GlassSurface>
 
       {/* Notifications */}
       <div className="section-header">Notifications</div>
-      <div className="card-grouped">
+      <GlassSurface className="card-grouped">
         {[
           { key: 'emailAlerts', label: 'Email alerts', desc: 'Get alerts by email' },
           { key: 'pushAlerts',  label: 'Push alerts',  desc: 'Get push notifications in your browser' },
@@ -141,11 +159,11 @@ export default function Settings() {
             <div className={`toggle ${notifs[key] ? 'toggle-on' : 'toggle-off'}`}><span className="toggle-knob" /></div>
           </label>
         ))}
-      </div>
+      </GlassSurface>
 
       {/* Billing */}
       <div className="section-header">Billing</div>
-      <div className="card-grouped">
+      <GlassSurface className="card-grouped">
         <button onClick={() => navigate('/billing')} className="list-row w-full justify-between">
           <div className="flex items-center gap-3">
             <CreditCard size={16} className="text-ap-blue" />
@@ -153,11 +171,11 @@ export default function Settings() {
           </div>
           <ChevronRight size={16} className="text-text-secondary" />
         </button>
-      </div>
+      </GlassSurface>
 
       {/* Privacy & Data */}
       <div className="section-header">Privacy</div>
-      <div className="card-grouped">
+      <GlassSurface className="card-grouped">
         <label className="list-row justify-between cursor-pointer">
           <div className="flex items-center gap-3">
             <Shield size={16} className="text-ap-blue" />
@@ -182,16 +200,16 @@ export default function Settings() {
           </div>
           <ChevronRight size={16} className="text-text-secondary" />
         </Link>
-      </div>
+      </GlassSurface>
 
       {/* Danger Zone */}
       <div className="section-header text-ap-red">Delete Account</div>
-      <div className="card-grouped border border-ap-red/20">
+      <GlassSurface className="card-grouped border border-ap-red/20">
         <div className="p-5">
           <p className="text-text-secondary text-sm mb-4">This permanently deletes your account, cameras, and recordings.</p>
           <button onClick={handleDeleteAccount} className="btn-destructive text-sm">Delete My Account</button>
         </div>
-      </div>
+      </GlassSurface>
     </div>
   );
 }
