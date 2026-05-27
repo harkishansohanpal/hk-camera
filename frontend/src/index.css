@@ -5,8 +5,8 @@
 @layer base {
   :root {
     --color-page: transparent;
-    --color-card: #FFFFFF;
-    --color-card-hover: #F2F2F7;
+    --color-card: rgba(255, 255, 255, 0.5);
+    --color-card-hover: rgba(0,0,0,0.03);
     --color-text-primary: #1C1C1E;
     --color-text-secondary: #8E8E93;
     --color-text-tertiary: #AEAEB2;
@@ -14,24 +14,23 @@
     --color-input-border: rgba(60,60,67,0.18);
     --color-input-focus: #007AFF;
     --color-separator: rgba(60,60,67,0.12);
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.03);
-    --shadow-md: 0 8px 24px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.03);
-    --shadow-lg: 0 20px 48px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    --shadow-sm: 0 4px 20px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.02);
+    --shadow-md: 0 8px 32px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.03);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
     --ap-blue: #007AFF;
     --ap-green: #34C759;
     --ap-red: #FF3B30;
     --ap-orange: #FF9500;
-    --glass-bg: rgba(255, 255, 255, 0.72);
-    --glass-blur: 20px;
-    --glass-border: rgba(255, 255, 255, 0.5);
-    --glass-highlight: rgba(255, 255, 255, 0.85);
-    --page-gradient: linear-gradient(135deg, #ede4f7 0%, #e6edf7 40%, #f7e8ee 100%);
+    --glass-bg: rgba(255, 252, 249, 0.45);
+    --glass-blur: 30px;
+    --glass-highlight: rgba(255, 255, 255, 0.8);
+    --page-gradient: linear-gradient(135deg, #e2cff5 0%, #b8d4f7 30%, #f5ccdd 55%, #fad9c1 80%, #e2d5f0 100%);
   }
 
   .dark {
     --color-page: transparent;
-    --color-card: #2C2C2E;
-    --color-card-hover: #3A3A3C;
+    --color-card: rgba(44, 44, 46, 0.5);
+    --color-card-hover: rgba(255,255,255,0.05);
     --color-text-primary: #F2F2F7;
     --color-text-secondary: #AEAEB2;
     --color-text-tertiary: #636366;
@@ -39,18 +38,17 @@
     --color-input-border: rgba(84,84,88,0.4);
     --color-input-focus: #0A84FF;
     --color-separator: rgba(84,84,88,0.36);
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
-    --shadow-md: 0 8px 24px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.3);
-    --shadow-lg: 0 20px 48px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3);
+    --shadow-sm: 0 4px 20px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.15);
+    --shadow-md: 0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.2);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.3);
     --ap-blue: #0A84FF;
     --ap-green: #30D158;
     --ap-red: #FF453A;
     --ap-orange: #FF9F0A;
-    --glass-bg: rgba(44, 44, 46, 0.72);
-    --glass-blur: 20px;
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glass-highlight: rgba(255, 255, 255, 0.05);
-    --page-gradient: linear-gradient(135deg, #0f0c29 0%, #1a1a3e 30%, #16213e 60%, #0f3460 100%);
+    --glass-bg: rgba(36, 36, 38, 0.4);
+    --glass-blur: 30px;
+    --glass-highlight: rgba(255, 255, 255, 0.06);
+    --page-gradient: linear-gradient(135deg, #120a24 0%, #16213e 30%, #0a1628 55%, #1a0a1e 80%, #0d1b2a 100%);
   }
 
   *, *::before, *::after { box-sizing: border-box; }
@@ -132,7 +130,6 @@
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-sm), inset 0 1px 0 var(--glass-highlight);
   }
   .card-grouped {
@@ -140,7 +137,6 @@
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-sm), inset 0 1px 0 var(--glass-highlight);
   }
   .card-grouped > .list-row:not(:last-child) {
@@ -150,9 +146,8 @@
   .list-row {
     @apply flex items-center gap-3 px-5 py-3 min-h-44 transition-colors cursor-pointer;
   }
-  .list-row:hover { background: rgba(0,0,0,0.03); }
-  .dark .list-row:hover { background: rgba(255,255,255,0.05); }
-  .list-row:active { background: color-mix(in srgb, var(--glass-bg) 90%, black); }
+  .list-row:hover { background: var(--color-card-hover); }
+  .list-row:active { background: color-mix(in srgb, var(--color-card-hover) 70%, black); }
 
   .input {
     @apply w-full rounded-xl px-4 py-3 transition-all duration-200;
@@ -222,13 +217,13 @@
   .toggle-off .toggle-knob  { transform: translateX(2px); }
 
   .nav-bar {
-    background-color: color-mix(in srgb, var(--color-card) 90%, transparent);
+    background: var(--glass-bg);
     @apply backdrop-blur-xl border-b transition-colors duration-200 safe-top;
     border-bottom-color: var(--color-separator);
   }
 
   .tab-bar {
-    background-color: color-mix(in srgb, var(--color-card) 90%, transparent);
+    background: var(--glass-bg);
     @apply backdrop-blur-xl border-t transition-colors duration-200 safe-bottom;
     border-top-color: var(--color-separator);
   }
