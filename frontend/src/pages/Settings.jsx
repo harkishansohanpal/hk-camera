@@ -86,12 +86,8 @@ export default function Settings() {
             <span className="text-[11px] text-text-secondary w-6 text-right">Light</span>
             <input type="range" min="0" max="100" value={bgTone}
               onChange={(e) => setBgTone(Number(e.target.value))}
-              className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer"
-              style={{
-                background: `linear-gradient(to right, rgba(255,255,255,0.4) 0%, transparent 50%, rgba(0,0,0,0.4) 100%)`,
-                WebkitAppearance: 'none',
-                accentColor: 'var(--ap-blue)',
-              }} />
+              className="flex-1 cursor-pointer"
+              style={{ accentColor: 'var(--ap-blue)' }} />
             <span className="text-[11px] text-text-secondary w-6">Dark</span>
           </div>
         </div>
