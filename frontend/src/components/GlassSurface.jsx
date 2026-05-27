@@ -5,7 +5,7 @@ export default function GlassSurface({ children, className, style, cornerRadius 
   const { glassStyle } = useTheme();
 
   if (glassStyle === 'liquid') {
-    const { as: _, ...liquidProps } = { cornerRadius, blurAmount: 0, displacementScale: 30, ...props };
+    const { as: _, ...liquidProps } = { cornerRadius, blurAmount: 0, displacementScale: 30, elasticity: 0, ...props };
     return (
       <LiquidGlass
         className={className}
