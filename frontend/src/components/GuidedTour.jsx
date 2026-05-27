@@ -2,15 +2,15 @@ import { useState, useCallback, useRef, useLayoutEffect } from 'react';
 import { ChevronRight, ChevronLeft, SkipForward } from 'lucide-react';
 
 const DEFAULT_STEPS = [
-  { target: 'tour-welcome', title: 'Welcome!', content: 'Quick tour to help you get started. Skip anytime.', position: 'center' },
-  { target: 'tour-stats', title: 'Overview', content: 'See how many cameras you have, which ones are on, and recent alerts.', position: 'bottom' },
-  { target: 'tour-add-camera', title: 'Add a Camera', content: 'Tap here to add a camera. You\'ll get a code to connect your phone.', position: 'left' },
-  { target: 'tour-broadcast', title: 'Stream from Your Phone', content: 'Open the app on your phone and tap \'Stream\' on the camera card. Enter the code to start streaming live video.', position: 'top' },
-  { target: 'tour-camera-list', title: 'Your Cameras', content: 'All your cameras show up here. Each one shows the name, status, and recording count.', position: 'top' },
-  { target: 'tour-view-live', title: 'Watch Live', content: 'Tap \'Watch\' to see live video from any device.', position: 'top' },
-  { target: 'tour-camera-menu', title: 'Manage', content: 'Tap the menu to rename, turn detection on/off, or delete a camera.', position: 'left' },
-  { target: 'tour-nav', title: 'Navigation', content: 'Use the menu to get to Recordings, Alerts, Settings, and more.', position: 'right' },
-  { target: 'tour-end', title: 'You\'re Ready!', content: 'Add a camera, open your phone\'s browser, and tap \'Stream\' to start.', position: 'center' },
+  { target: 'tour-welcome', title: 'Welcome to HK Camera!', content: 'Turn any device with a browser into a security camera. Add a camera, then broadcast from one device and watch from another.', position: 'center' },
+  { target: 'tour-stats', title: 'Dashboard at a Glance', content: 'See your total cameras, how many are online, and recent alert counts right at the top.', position: 'bottom' },
+  { target: 'tour-add-camera', title: 'Add a Camera', content: 'Tap \'Add Camera\' to create one. You will get a stream key to connect your phone.', position: 'left' },
+  { target: 'tour-camera-list', title: 'Your Cameras', content: 'Each card shows the camera name, online status, and recording count. Tap a card to broadcast from your phone.', position: 'top' },
+  { target: 'tour-broadcast', title: 'Broadcast Live', content: 'Tap the red \'Broadcast\' button to start streaming from your phone camera. The stream is encrypted and sent directly to viewers.', position: 'top' },
+  { target: 'tour-view-live', title: 'Watch Live', content: 'Tap \'View\' to watch the live stream from any other device. Controls include dimming, motion detection, recording, and two-way talk.', position: 'top' },
+  { target: 'tour-camera-menu', title: 'Manage Camera', content: 'Tap the menu to delete a camera or access additional settings.', position: 'left' },
+  { target: 'tour-nav', title: 'Navigation', content: 'Use the sidebar to switch between Dashboard, Recordings, Alerts, and Settings.', position: 'right' },
+  { target: 'tour-end', title: 'You\'re All Set!', content: 'Add a camera, tap \'Broadcast\' from your phone, then tap \'View\' from another device. Your stream connects in seconds.', position: 'center' },
 ];
 
 function getTargetEl(step) {
