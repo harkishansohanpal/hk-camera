@@ -110,9 +110,7 @@ export const recordingAPI = {
   delete: (id)               => api.delete(`/recordings/${id}`),
   deleteBulk: (recordingIds) => api.delete('/recordings/bulk-delete', { data: { recordingIds } }),
   upload: (cameraId, formData) =>
-    api.post(`/cameras/${cameraId}/recordings`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+    api.post(`/cameras/${cameraId}/recordings`, formData),
 };
 
 // ── Alerts ────────────────────────────────────────────────────
