@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { userAPI } from '../services/api';
-import { Trash2, CreditCard, ChevronRight, Download, Shield } from 'lucide-react';
+import { Trash2, CreditCard, ChevronRight, Download, Shield, Sun, Moon } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Settings() {
   const { user, refreshUser, logout } = useAuth();
+  const { theme, toggleTheme, bgTone, setBgTone } = useTheme();
   const navigate = useNavigate();
   const [profile, setProfile] = useState({ name: user?.name ?? '' });
   const [password, setPassword] = useState({ currentPassword: '', newPassword: '', confirm: '' });
@@ -64,6 +66,36 @@ export default function Settings() {
   return (
     <div className="page-container max-w-xl animate-fade-in">
       <div className="page-header"><h1 className="page-title">Settings</h1></div>
+
+      {/* Appearance */}
+      <div className="section-header">Appearance</div>
+      <div className="card-grouped">
+        <label className="list-row justify-between cursor-pointer">
+          <div className="flex items-center gap-3">
+            {theme === 'dark' ? <Moon size={16} className="text-ap-blue" /> : <Sun size={16} className="text-ap-blue" />}
+            <div><p className="text-sm font-semibold text-text-primary">Theme</p><p className="text-xs text-text-secondary">Switch between light and dark</p></div>
+          </div>
+          <button onClick={toggleTheme} className="btn-secondary text-xs px-4 py-2 capitalize">{theme}</button>
+        </label>
+        <div className="px-5 py-4 space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/30 border border-ap-separator text-[10px] font-bold">A</div>
+            <div><p className="text-sm font-semibold text-text-primary">Background Tone</p><p className="text-xs text-text-secondary">Lighten or darken the page background</p></div>
+          </div>
+          <div className="flex items-center gap-3 pl-[2.5rem]">
+            <span className="text-[11px] text-text-secondary w-6 text-right">Light</span>
+            <input type="range" min="0" max="100" value={bgTone}
+              onChange={(e) => setBgTone(Number(e.target.value))}
+              className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer"
+              style={{
+                background: `linear-gradient(to right, rgba(255,255,255,0.4) 0%, transparent 50%, rgba(0,0,0,0.4) 100%)`,
+                WebkitAppearance: 'none',
+                accentColor: 'var(--ap-blue)',
+              }} />
+            <span className="text-[11px] text-text-secondary w-6">Dark</span>
+          </div>
+        </div>
+      </div>
 
       {/* Profile */}
       <div className="section-header">Profile</div>
