@@ -47,7 +47,7 @@ export default function Layout() {
   return (
     <div className="w-full h-full flex bg-page overflow-hidden" style={{ height: '100dvh' }}>
       {/* ── Desktop Sidebar (lg+) ────────────────────────── */}
-      <aside className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'} backdrop-blur-xl border-r transition-all duration-200 safe-top shadow-sm`}
+      <aside className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'} backdrop-blur-xl border-r transition-all duration-200 safe-top shadow-apple-lg`}
         style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--color-separator)' }}>
         <div className="flex items-center justify-between px-4 py-4 border-b" style={{ borderColor: 'var(--color-separator)' }}>
           <div className="flex items-center gap-3 overflow-hidden">

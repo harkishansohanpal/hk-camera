@@ -22,7 +22,7 @@
     --ap-red: #FF3B30;
     --ap-orange: #FF9500;
     --glass-bg: rgba(255, 252, 249, 0.45);
-    --glass-blur: 30px;
+    --glass-blur: 24px;
     --glass-highlight: rgba(255, 255, 255, 0.8);
     --page-gradient: linear-gradient(135deg, #e2cff5 0%, #b8d4f7 30%, #f5ccdd 55%, #fad9c1 80%, #e2d5f0 100%);
   }
@@ -46,7 +46,7 @@
     --ap-red: #FF453A;
     --ap-orange: #FF9F0A;
     --glass-bg: rgba(36, 36, 38, 0.4);
-    --glass-blur: 30px;
+    --glass-blur: 24px;
     --glass-highlight: rgba(255, 255, 255, 0.06);
     --page-gradient: linear-gradient(135deg, #120a24 0%, #16213e 30%, #0a1628 55%, #1a0a1e 80%, #0d1b2a 100%);
   }
@@ -130,14 +130,16 @@
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
-    box-shadow: var(--shadow-sm), inset 0 1px 0 var(--glass-highlight);
+    border: 1px solid var(--color-separator);
+    box-shadow: var(--shadow-lg);
   }
   .card-grouped {
     @apply rounded-2xl overflow-hidden;
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
-    box-shadow: var(--shadow-sm), inset 0 1px 0 var(--glass-highlight);
+    border: 1px solid var(--color-separator);
+    box-shadow: var(--shadow-lg);
   }
   .card-grouped > .list-row:not(:last-child) {
     border-bottom: 1px solid var(--color-separator);
