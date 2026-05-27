@@ -47,8 +47,8 @@ export default function Layout() {
   return (
     <div className="w-full h-full flex bg-page overflow-hidden" style={{ height: '100dvh' }}>
       {/* ── Desktop Sidebar (lg+) ────────────────────────── */}
-      <aside className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'} backdrop-blur-xl border-r transition-all duration-200 safe-top shadow-apple-lg`}
-        style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--color-separator)' }}>
+      <aside className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'} backdrop-blur-xl border-r transition-all duration-200 safe-top`}
+        style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--color-separator)', boxShadow: 'inset 0 1px 0 0 var(--glass-highlight), var(--shadow-lg)' }}>
         <div className="flex items-center justify-between px-4 py-4 border-b" style={{ borderColor: 'var(--color-separator)' }}>
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
@@ -143,10 +143,10 @@ export default function Layout() {
 
       {/* ── Mobile Sidebar ───────────────────────────────── */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-72 backdrop-blur-xl border-r shadow-apple-lg
+        fixed inset-y-0 left-0 z-50 w-72 backdrop-blur-xl border-r
         transform transition-transform duration-200 ease-in-out lg:hidden safe-top
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `} style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--color-separator)' }}>
+      `} style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--color-separator)', boxShadow: 'inset 0 1px 0 0 var(--glass-highlight), var(--shadow-lg)' }}>
         <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--color-separator)' }}>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm"
