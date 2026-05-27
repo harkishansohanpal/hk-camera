@@ -28,7 +28,7 @@
   }
 
   .dark {
-    --color-page: transparent;
+    --color-page: rgba(28, 28, 30, 0.55);
     --color-card: rgba(44, 44, 46, 0.12);
     --color-card-hover: rgba(255,255,255,0.05);
     --color-text-primary: #F2F2F7;
@@ -74,6 +74,8 @@
     font-size: clamp(15px, 2vw, 17px);
     line-height: 1.47059;
     letter-spacing: -0.022em;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
   }
 
   #root {
