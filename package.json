@@ -4,7 +4,11 @@
   "private": true,
   "scripts": {
     "docs:sync": "node scripts/sync-docs.js",
-    "docs:check": "node scripts/sync-docs.js --check"
+    "docs:check": "node scripts/sync-docs.js --check",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "wrangler": "^4.95.0"
+  }
 }
