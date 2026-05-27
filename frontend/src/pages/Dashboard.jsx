@@ -219,18 +219,19 @@ export default function Dashboard() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {cam.isOnline && (
+                  {cam.isOnline ? (
                     <button onClick={() => navigate(`/viewer/${cam.streamKey}`)}
                       data-tour="tour-view-live"
-                      className="flex-1 btn-primary text-sm">
+                      className="w-full btn-primary text-sm">
                       <Eye size={15} /> View
                     </button>
+                  ) : (
+                    <button onClick={() => navigate(`/cameras/${cam.id}`)}
+                      data-tour="tour-broadcast"
+                      className="w-full inline-flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl transition-all bg-ap-red text-white hover:brightness-90">
+                      <Video size={15} /> Broadcast
+                    </button>
                   )}
-                  <button onClick={() => navigate(`/cameras/${cam.id}`)}
-                    data-tour="tour-broadcast"
-                    className={`inline-flex items-center justify-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl transition-all bg-ap-red text-white hover:brightness-90 ${cam.isOnline ? 'flex-1' : 'w-full'}`}>
-                    <Video size={15} /> Broadcast
-                  </button>
                 </div>
               </div>
             </div>

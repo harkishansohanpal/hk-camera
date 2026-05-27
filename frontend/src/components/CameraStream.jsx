@@ -10,9 +10,9 @@ const CameraStream = forwardRef(function CameraStream(
 
   return (
     <div className={`relative bg-black overflow-hidden ${className}`}>
-      {stream ? (
-        <video ref={videoRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover" />
-      ) : (
+      <video ref={videoRef} autoPlay muted playsInline
+        className={`absolute inset-0 w-full h-full object-cover ${stream ? '' : 'hidden'}`} />
+      {!stream && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
           <CameraOff size={40} className="text-white/30" />
           <p className="text-white/40 text-sm font-medium">Tap the button to start streaming</p>

@@ -8,7 +8,7 @@ import {
 
 const DURATION = parseInt(process.env.STRESS_DURATION || '60000');
 
-test.describe('1s Camera Toggle Stress', () => {
+test.describe('200ms Camera Toggle Stress', () => {
   let cameraId;
   let streamKey;
 
@@ -24,8 +24,8 @@ test.describe('1s Camera Toggle Stress', () => {
     await cleanupTestData();
   });
 
-  test(`Toggle camera stream every 1s for ${DURATION / 1000}s`, async ({ browser }) => {
-    test.setTimeout(DURATION + 120000);
+  test(`Toggle camera stream every 200ms for ${DURATION / 1000}s`, async ({ browser }) => {
+    test.setTimeout(DURATION + 240000);
 
     // ── Camera page ──────────────────────────────────────────
     const camCtx = await browser.newContext({
@@ -35,6 +35,21 @@ test.describe('1s Camera Toggle Stress', () => {
     const camPage = await camCtx.newPage();
     await mockGetUserMedia(camPage);
     await setupAuth(camPage);
+
+    // Intercept camera console for connectViewer timestamps
+    await camPage.addInitScript(() => {
+      const methods = ['log', 'warn', 'error', 'debug'];
+      for (const m of methods) {
+        const orig = console[m];
+        console[m] = (...args) => {
+          const msg = args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
+          window.__camEvents = window.__camEvents || [];
+          window.__camEvents.push({ msg, ts: Date.now() });
+          orig.apply(console, args);
+        };
+      }
+    });
+
     await startCameraBroadcast(camPage, cameraId);
 
     const stopKeepAlive = startKeepAlive();
@@ -64,7 +79,7 @@ test.describe('1s Camera Toggle Stress', () => {
     console.log(`  Viewer initial connect: ${initialConnect}`);
     if (!initialConnect) throw new Error('Viewer failed initial connect');
 
-    // ── Helper to extract event counts ───────────────────────
+    // ── Helpers to extract event data ────────────────────────
     async function getViewerEventTs(pattern) {
       return viewPage.evaluate((p) => {
         const events = window.__viewerEvents || [];
@@ -72,8 +87,30 @@ test.describe('1s Camera Toggle Stress', () => {
       }, pattern);
     }
 
+    async function getCameraEventTs(pattern) {
+      return camPage.evaluate((p) => {
+        const events = window.__camEvents || [];
+        return events.filter((e) => e.msg.includes(p)).map((e) => e.ts);
+      }, pattern);
+    }
+
+    function computeStats(values) {
+      if (!values.length) return null;
+      const sorted = [...values].sort((a, b) => a - b);
+      const sum = sorted.reduce((a, b) => a + b, 0);
+      return {
+        count: sorted.length,
+        min: sorted[0],
+        max: sorted[sorted.length - 1],
+        avg: Math.round(sum / sorted.length),
+        p50: sorted[Math.floor(sorted.length * 0.5)],
+        p99: sorted[Math.floor(sorted.length * 0.99)],
+      };
+    }
+
     // Clear accumulated events from initial connection
     await viewPage.evaluate(() => { window.__viewerEvents = []; });
+    await camPage.evaluate(() => { window.__camEvents = []; });
 
     // ── Toggle loop ──────────────────────────────────────────
     const start = Date.now();
@@ -82,8 +119,8 @@ test.describe('1s Camera Toggle Stress', () => {
     while (Date.now() - start < DURATION) {
       cycle++;
       await toggleCameraBroadcast(camPage);
-      // Wait for next cycle
-      await camPage.waitForTimeout(1000);
+      await camPage.waitForTimeout(200);
+      if (cycle % 50 === 0) console.log(`  Cycle ${cycle} at ${Math.round((Date.now() - start) / 1000)}s`);
     }
 
     stopKeepAlive();
@@ -120,8 +157,36 @@ test.describe('1s Camera Toggle Stress', () => {
     );
     console.log(`  PC disconnect/failed events: ${disconnectStates.length}`);
 
-    // Log every 5th cycle detail
-    console.log('\n=== Event Timeline (every 5th cycle) ===');
+    // ── Latency metrics ──────────────────────────────────────
+    const camConnectTs = await getCameraEventTs('Camera socket connected');
+    const offerTs = await getViewerEventTs('initiateOffer called');
+    const connectTs = await getViewerEventTs('Peer connection established');
+
+    const reconnectLatencies = [];
+    const pairs = Math.min(offerTs.length, connectTs.length);
+    for (let i = 0; i < pairs; i++) {
+      reconnectLatencies.push(connectTs[i] - offerTs[i]);
+    }
+
+    const e2eLatencies = [];
+    const e2ePairs = Math.min(camConnectTs.length, connectTs.length);
+    for (let i = 0; i < e2ePairs; i++) {
+      e2eLatencies.push(connectTs[i] - camConnectTs[i]);
+    }
+
+    const reconnectStats = computeStats(reconnectLatencies);
+    const e2eStats = computeStats(e2eLatencies);
+
+    console.log('\n=== Latency Metrics ===');
+    if (reconnectStats) {
+      console.log(`  Viewer reconnect latency (ms): min=${reconnectStats.min} max=${reconnectStats.max} avg=${reconnectStats.avg} p50=${reconnectStats.p50} p99=${reconnectStats.p99} (n=${reconnectStats.count})`);
+    }
+    if (e2eStats) {
+      console.log(`  Camera→Viewer E2E latency (ms): min=${e2eStats.min} max=${e2eStats.max} avg=${e2eStats.avg} p50=${e2eStats.p50} p99=${e2eStats.p99} (n=${e2eStats.count})`);
+    }
+
+    // Log every 10th cycle detail
+    console.log('\n=== Event Timeline (every 10th cycle) ===');
     const allEvents = await viewPage.evaluate(() => {
       return (window.__viewerEvents || []).map((e) => ({
         msg: e.msg.substring(0, 80),
@@ -129,16 +194,16 @@ test.describe('1s Camera Toggle Stress', () => {
       }));
     });
 
-    // Group events by second
-    const bySecond = {};
+    // Group events by 500ms buckets
+    const byBucket = {};
     for (const e of allEvents) {
-      const sec = Math.floor((e.ts - start) / 1000);
-      if (!bySecond[sec]) bySecond[sec] = [];
-      bySecond[sec].push(e.msg);
+      const bucket = Math.floor((e.ts - start) / 500) * 500;
+      if (!byBucket[bucket]) byBucket[bucket] = [];
+      byBucket[bucket].push(e.msg);
     }
-    for (const [sec, msgs] of Object.entries(bySecond).sort((a, b) => a[0] - b[0])) {
+    for (const [bucket, msgs] of Object.entries(byBucket).sort((a, b) => a[0] - b[0])) {
       if (msgs.length > 0) {
-        console.log(`  t+${sec}s: [${msgs.join('; ')}]`);
+        console.log(`  t+${bucket}ms: [${msgs.join('; ')}]`);
       }
     }
 

@@ -129,7 +129,10 @@ export default function CameraView() {
   }
 
   function exitFullscreen() {
-    if (document.fullscreenElement || document.webkitFullscreenElement) {
+    const v = videoRef.current;
+    if (v?.webkitDisplayingFullscreen && v.webkitExitFullscreen) {
+      v.webkitExitFullscreen();
+    } else if (document.fullscreenElement || document.webkitFullscreenElement) {
       (document.exitFullscreen || document.webkitExitFullscreen)?.().catch(() => {});
     }
   }
@@ -147,10 +150,12 @@ export default function CameraView() {
     try {
       logger.info('CameraView', 'Starting broadcast', { cameraId });
       setBroadcastStartedAt(new Date().toISOString());
-      // Request fullscreen synchronously before any await to preserve gesture chain.
-      // On iOS Chrome this is the only way webkitEnterFullscreen might work.
-      if (videoRef.current?.webkitEnterFullscreen) {
-        videoRef.current.webkitEnterFullscreen();
+      // Fullscreen chain: webkitEnterFullscreen (iOS <16) → video.requestFullscreen (iOS 16+) → container fallback
+      const v = videoRef.current;
+      if (v?.webkitEnterFullscreen) {
+        v.webkitEnterFullscreen();
+      } else if (v?.requestFullscreen) {
+        v.requestFullscreen().catch(() => {});
       } else {
         requestFullscreen();
       }

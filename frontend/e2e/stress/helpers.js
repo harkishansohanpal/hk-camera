@@ -214,8 +214,8 @@ export async function stopCameraBroadcast(page) {
 
 export async function toggleCameraBroadcast(page) {
   const btn = page.locator('button[class*="w-\\[68px\\]"]');
-  if (await btn.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await btn.click();
+  if (await btn.isVisible({ timeout: 500 }).catch(() => false)) {
+    await btn.click({ force: true, timeout: 500 });
   }
 }
 
