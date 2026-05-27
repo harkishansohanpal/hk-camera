@@ -24,7 +24,7 @@
     --glass-bg: rgba(255, 252, 249, 0.35);
     --glass-blur: 24px;
     --glass-highlight: rgba(255, 255, 255, 0.8);
-    --page-gradient: linear-gradient(135deg, #f0e4ff 0%, #dce8ff 30%, #ffe4ee 55%, #fff0e0 80%, #f0e4ff 100%);
+    --page-gradient: #D3D3D3;
   }
 
   .dark {
