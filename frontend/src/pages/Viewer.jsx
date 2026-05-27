@@ -4,7 +4,6 @@ import { ArrowLeft, Maximize2, RotateCcw, Moon, Eye, EyeOff, Circle, Mic, MicOff
 import { useWebRTC, prefetchIceServers } from '../hooks/useWebRTC';
 import { useMotionDetection } from '../hooks/useMotionDetection';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
-import { useWakeLock } from '../hooks/useWakeLock';
 import { logger } from '../lib/logger';
 import ViewerStream from '../components/ViewerStream';
 import api from '../services/api';
@@ -29,7 +28,6 @@ export default function Viewer() {
   const [retryCountdown, setRetryCountdown] = useState(null);
   const retryCountRef = useRef(0);
   const isRetryingRef = useRef(false);
-  const { acquire: acquireWL, release: releaseWL } = useWakeLock();
 
   const { remoteStream, status, cameraId, connectViewer, disconnectViewer, sendCommand, rejoinViewer, startTalk, stopTalk, isTalking } = useWebRTC({ streamKey });
 
@@ -77,7 +75,6 @@ export default function Viewer() {
   useEffect(() => { setIsRecording(recorderIsRecording); setRecordingDuration(duration); }, [recorderIsRecording, duration]);
   useEffect(() => { if (status !== 'connected') return; const t = setTimeout(() => setShowControls(false), 3000); return () => clearTimeout(t); }, [status]);
 
-  useEffect(() => { if (status === 'connected') acquireWL(); else releaseWL(); }, [status, acquireWL, releaseWL]);
   useEffect(() => { if (status !== 'connected') return; const interval = setInterval(() => api.get('/health').catch(() => {}), 60000); return () => clearInterval(interval); }, [status]);
   useEffect(() => { logger.info('Viewer', 'Status transition', { status }); }, [status]);
 

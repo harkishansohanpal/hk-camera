@@ -345,6 +345,7 @@ export function useWebRTC({ streamKey, onCommand }) {
     const handleConnect = () => {
       if (isActive) {
         logger.info('WebRTC', 'Socket connected, emitting viewer:join', { streamKey });
+        offerInFlightRef.current = false;
         socket.emit('viewer:join', { streamKey });
       }
     };
