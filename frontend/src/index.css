@@ -5,7 +5,7 @@
 @layer base {
   :root {
     --color-page: transparent;
-    --color-card: rgba(255, 255, 255, 0.5);
+    --color-card: rgba(255, 255, 255, 0.35);
     --color-card-hover: rgba(0,0,0,0.03);
     --color-text-primary: #1C1C1E;
     --color-text-secondary: #8E8E93;
@@ -13,7 +13,7 @@
     --color-input-bg: rgba(255,255,255,0.8);
     --color-input-border: rgba(60,60,67,0.18);
     --color-input-focus: #007AFF;
-    --color-separator: rgba(60,60,67,0.12);
+    --color-separator: rgba(60,60,67,0.10);
     --shadow-sm: 0 4px 20px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.02);
     --shadow-md: 0 8px 32px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.03);
     --shadow-lg: 0 20px 60px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
@@ -21,15 +21,15 @@
     --ap-green: #34C759;
     --ap-red: #FF3B30;
     --ap-orange: #FF9500;
-    --glass-bg: rgba(255, 252, 249, 0.45);
+    --glass-bg: rgba(255, 252, 249, 0.35);
     --glass-blur: 24px;
     --glass-highlight: rgba(255, 255, 255, 0.8);
-    --page-gradient: linear-gradient(135deg, #e2cff5 0%, #b8d4f7 30%, #f5ccdd 55%, #fad9c1 80%, #e2d5f0 100%);
+    --page-gradient: linear-gradient(135deg, #f0e4ff 0%, #dce8ff 30%, #ffe4ee 55%, #fff0e0 80%, #f0e4ff 100%);
   }
 
   .dark {
     --color-page: transparent;
-    --color-card: rgba(44, 44, 46, 0.5);
+    --color-card: rgba(44, 44, 46, 0.35);
     --color-card-hover: rgba(255,255,255,0.05);
     --color-text-primary: #F2F2F7;
     --color-text-secondary: #AEAEB2;
@@ -37,7 +37,7 @@
     --color-input-bg: rgba(44,44,46,0.9);
     --color-input-border: rgba(84,84,88,0.4);
     --color-input-focus: #0A84FF;
-    --color-separator: rgba(84,84,88,0.36);
+    --color-separator: rgba(84,84,88,0.30);
     --shadow-sm: 0 4px 20px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.15);
     --shadow-md: 0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.2);
     --shadow-lg: 0 20px 60px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.3);
@@ -45,10 +45,10 @@
     --ap-green: #30D158;
     --ap-red: #FF453A;
     --ap-orange: #FF9F0A;
-    --glass-bg: rgba(36, 36, 38, 0.4);
+    --glass-bg: rgba(36, 36, 38, 0.30);
     --glass-blur: 24px;
     --glass-highlight: rgba(255, 255, 255, 0.06);
-    --page-gradient: linear-gradient(135deg, #120a24 0%, #16213e 30%, #0a1628 55%, #1a0a1e 80%, #0d1b2a 100%);
+    --page-gradient: linear-gradient(135deg, #0d0d2b 0%, #1a1a3e 30%, #1a0a2e 55%, #0d1b2a 80%, #120a24 100%);
   }
 
   *, *::before, *::after { box-sizing: border-box; }
