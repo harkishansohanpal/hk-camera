@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, forwardRef } from 'react';
-import { Camera, CameraOff, RotateCcw, Mic, MicOff, ArrowLeft, Settings } from 'lucide-react';
+import { Camera, CameraOff, RotateCcw, Mic, MicOff, ArrowLeft, Settings, Circle } from 'lucide-react';
 
 const CameraStream = forwardRef(function CameraStream(
   { stream, isBroadcasting, broadcastStartedAt, onToggle, onFlip, micOn, onMicToggle, isRecording, onRecordToggle, onBack, onSettings, className = '' }, ref
@@ -48,16 +48,26 @@ const CameraStream = forwardRef(function CameraStream(
 
       {/* Bottom gradient bar - Google Lens style */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent z-10 safe-bottom">
-        <div className="flex items-end justify-center gap-10 pt-16 pb-6">
+        <div className="flex items-end justify-center gap-6 pt-16 pb-6">
           {/* Mic toggle */}
-          <div className="w-14 flex justify-center">
+          <div className="w-12 flex justify-center">
             {onMicToggle && (
               <button onClick={onMicToggle}
-                className={`w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-sm text-white active:scale-90 transition-all ${micOn ? 'bg-white/20' : 'bg-ap-red/80'}`}>
+                className={`w-11 h-11 flex items-center justify-center rounded-full backdrop-blur-sm text-white active:scale-90 transition-all ${micOn ? 'bg-white/20' : 'bg-ap-red/80'}`}>
                 {micOn ? <Mic size={18} /> : <MicOff size={18} />}
               </button>
             )}
           </div>
+
+          {/* Record button */}
+          {onRecordToggle && stream && (
+            <div className="w-12 flex justify-center">
+              <button onClick={onRecordToggle}
+                className={`w-11 h-11 flex items-center justify-center rounded-full backdrop-blur-sm text-white active:scale-90 transition-all ${isRecording ? 'bg-ap-red' : 'bg-white/20'}`}>
+                <Circle size={18} className={isRecording ? 'fill-white' : ''} />
+              </button>
+            </div>
+          )}
 
           {/* Big shutter/Stream button */}
           <button onClick={onToggle}
@@ -80,10 +90,10 @@ const CameraStream = forwardRef(function CameraStream(
           </button>
 
           {/* Flip camera */}
-          <div className="w-14 flex justify-center">
+          <div className="w-12 flex justify-center">
             {onFlip && (
               <button onClick={onFlip}
-                className="w-12 h-12 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-sm text-white active:scale-90 transition-all">
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-sm text-white active:scale-90 transition-all">
                 <RotateCcw size={18} />
               </button>
             )}

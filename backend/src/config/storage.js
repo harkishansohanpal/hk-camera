@@ -68,8 +68,8 @@ const uploadRecording = multer({
   storage: localStorage(process.env.LOCAL_RECORDING_DIR || './recordings'),
   limits: { fileSize: 500 * 1024 * 1024 }, // 500 MB
   fileFilter: (req, file, cb) => {
-    const allowed = ['video/webm', 'video/mp4', 'video/ogg'];
-    if (allowed.includes(file.mimetype)) cb(null, true);
+    const mimetype = file.mimetype?.split(';')[0].trim();
+    if (mimetype?.startsWith('video/')) cb(null, true);
     else cb(new Error('Only video files are allowed'), false);
   },
 });

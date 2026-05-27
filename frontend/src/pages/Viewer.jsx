@@ -34,7 +34,7 @@ export default function Viewer() {
   const { remoteStream, status, cameraId, connectViewer, disconnectViewer, sendCommand, rejoinViewer, startTalk, stopTalk, isTalking } = useWebRTC({ streamKey });
 
   const { startRecording, stopRecording, isRecording: recorderIsRecording, duration } = useMediaRecorder({
-    cameraId, trigger: 'MOTION',
+    cameraId, trigger: 'VIEWER_MANUAL',
     onRecordingReady: useCallback((recording) => { logger.info('Viewer', 'Recording saved', { recording: recording?.id }); setIsRecording(false); setRecordingDuration(0); }, [])
   });
 
@@ -42,7 +42,7 @@ export default function Viewer() {
     videoRef, sensitivity: 15, cooldownMs: 5000,
     onMotion: useCallback(({ changeRatio }) => {
       logger.info('Viewer', 'Pixel-diff motion detected', { changeRatio: changeRatio.toFixed(1) });
-      if (remoteStream && !recorderIsRecording && cameraId && recordOnMotion) { setIsRecording(true); startRecording(remoteStream); }
+      if (remoteStream && !recorderIsRecording && cameraId && recordOnMotion) { setIsRecording(true); startRecording(remoteStream, 'MOTION'); }
     }, [remoteStream, recorderIsRecording, cameraId, startRecording, recordOnMotion])
   });
 
@@ -160,7 +160,11 @@ export default function Viewer() {
               </button>
               <button onClick={() => setRecordOnMotion((v) => !v)}
                 className={`flex flex-col items-center justify-center gap-0.5 w-11 h-11 rounded-xl transition-colors ${recordOnMotion ? 'text-ap-red bg-ap-red/10' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
-                <Circle size={16} className={recordOnMotion ? 'fill-ap-red' : ''} /><span className="text-[9px] font-semibold">Record</span>
+                <Circle size={16} className={recordOnMotion ? 'fill-ap-red' : ''} /><span className="text-[9px] font-semibold">Auto</span>
+              </button>
+              <button onClick={() => { if (isRecording) stopRecording(); else if (remoteStream) { setIsRecording(true); startRecording(remoteStream, 'MANUAL'); } }}
+                className={`flex flex-col items-center justify-center gap-0.5 w-11 h-11 rounded-xl transition-colors ${isRecording ? 'text-white bg-ap-red' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
+                <Circle size={16} className={isRecording ? 'fill-white animate-pulse-slow' : ''} /><span className="text-[9px] font-semibold">{isRecording ? recordingDuration + 's' : 'Rec'}</span>
               </button>
               <button onClick={() => setNightVisionMode((m) => m === 'off' ? 'enhanced' : m === 'enhanced' ? 'ir' : 'off')}
                 className={`flex flex-col items-center justify-center gap-0.5 w-11 h-11 rounded-xl transition-colors ${nightVisionMode !== 'off' ? 'text-ap-green bg-ap-green/10' : 'text-white/50 hover:text-white hover:bg-white/5'}`}>
