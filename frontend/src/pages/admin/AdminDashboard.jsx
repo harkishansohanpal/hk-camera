@@ -143,8 +143,8 @@ export default function AdminDashboard() {
         )}
         <div className="w-px h-5 bg-ap-separator" />
         <button onClick={() => { setAnalyzeMode(!analyzeMode); setMessages([]); }}
-          className={`btn-ghost text-xs ${analyzeMode ? 'text-ap-blue bg-ap-blue/10' : ''}`}>
-          <MessageSquare size={12} /> Smart Analyze
+          className="btn-primary text-sm px-3 sm:px-5 whitespace-nowrap">
+          <MessageSquare size={16} /> Smart Analyze
         </button>
       </div>
 
