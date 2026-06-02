@@ -150,16 +150,23 @@ export default function CameraView() {
     try {
       logger.info('CameraView', 'Starting broadcast', { cameraId });
       setBroadcastStartedAt(new Date().toISOString());
+      const localStream = await getLocalStream(); setStream(localStream);
       // Fullscreen chain: webkitEnterFullscreen (iOS <16) → video.requestFullscreen (iOS 16+) → container fallback
       const v = videoRef.current;
-      if (v?.webkitEnterFullscreen) {
-        v.webkitEnterFullscreen();
-      } else if (v?.requestFullscreen) {
-        v.requestFullscreen().catch(() => {});
-      } else {
-        requestFullscreen();
+      if (v) {
+        const enterFS = () => {
+          if (v.webkitEnterFullscreen) {
+            try { v.webkitEnterFullscreen(); } catch (e) { logger.warn('CameraView', 'Fullscreen failed', { error: e.message }); }
+          } else if (v.requestFullscreen) {
+            v.requestFullscreen().catch(() => {});
+          } else {
+            requestFullscreen();
+          }
+        };
+        if (v.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) { enterFS(); }
+        else { v.addEventListener('loadedmetadata', enterFS, { once: true }); }
       }
-      const localStream = await getLocalStream(); setStream(localStream); await startBroadcast(localStream);
+      await startBroadcast(localStream);
       toast.success('Streaming started');
     } catch (err) { logger.error('CameraView', 'Failed to start broadcast', { error: err.message, cameraId }); toast.error('Could not start camera: ' + err.message); setBroadcastStartedAt(null); }
   }
