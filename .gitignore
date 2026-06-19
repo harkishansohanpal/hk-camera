@@ -72,3 +72,9 @@ frontend/test_backyard.mjs
 PROD_INFO.md
 image.png
 *.png
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
